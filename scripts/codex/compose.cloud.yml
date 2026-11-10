@@ -1,0 +1,32 @@
+services:
+  ogamex-app:
+    image: ogamex-cloud-php:8.5.12
+    build: !reset null
+    command: ["php-fpm"]
+    volumes:
+      - ${OGAMEX_CLOUD_STATE_DIR:?Cloud state directory is required}/ca.pem:/run/cloud-ca.pem:ro
+      - ${OGAMEX_CLOUD_STATE_DIR:?Cloud state directory is required}/composer-cache:/composer-cache
+    environment:
+      GIT_SSL_CAINFO: /run/cloud-ca.pem
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: safe.directory
+      GIT_CONFIG_VALUE_0: /var/www
+      COMPOSER_CACHE_DIR: /composer-cache
+      COMPOSER_CAFILE: /run/cloud-ca.pem
+      CURL_CA_BUNDLE: /run/cloud-ca.pem
+      SSL_CERT_FILE: /run/cloud-ca.pem
+  ogamex-scheduler:
+    user: "1000:1000"
+    image: ogamex-cloud-php:8.5.12
+    build: !reset null
+    command: ["sh", "-c", "while true; do php artisan schedule:run --no-interaction; sleep 60; done"]
+  ogamex-queue-worker:
+    user: "1000:1000"
+    image: ogamex-cloud-php:8.5.12
+    build: !reset null
+    command: ["php", "artisan", "queue:work", "--no-interaction"]
+  ogamex-reverb:
+    user: "1000:1000"
+    image: ogamex-cloud-php:8.5.12
+    build: !reset null
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8090"]
