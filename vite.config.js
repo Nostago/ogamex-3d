@@ -119,6 +119,7 @@ export default defineConfig({
             input: [
                 'resources/css/ingame.css',
                 'resources/css/outgame.css',
+                'resources/js/prototype3d/index.js',
             ],
             refresh: [
                 'resources/js/**',
