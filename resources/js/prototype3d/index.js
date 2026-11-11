@@ -1,5 +1,6 @@
 import '../../css/prototype3d.css'
-import { createDemoProvider } from './data.js'
+import { createDemoProvider, planBuild, checkUpgrade } from './data.js'
+import { demoPlanets } from './planets.js'
 import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createPlanetScene } from './scene.js'
 
@@ -26,6 +27,7 @@ const icons = {
     deuteriumStorage: '▤',
     rocket: '⋮',
     laser: '⊕',
+    terraformer: '◌',
 }
 let state = await provider.load()
 let selected = 'metal',
@@ -34,8 +36,7 @@ let selected = 'metal',
     rotating = false,
     operation = 0,
     placing = false
-let chosenType = 'shipyard',
-    chosenPlot = ''
+let chosenType = 'terraformer'
 function element(tag, className, text) {
     const node = document.createElement(tag)
     if (className) node.className = className
@@ -43,6 +44,8 @@ function element(tag, className, text) {
     return node
 }
 function metric(building) {
+    if (building.type === 'terraformer')
+        return `${number.format(building.value)} ${t.fields_unit}`
     const suffix = {
         production: t.per_hour,
         energy: t.energy,
@@ -56,14 +59,8 @@ function select(id) {
     if (busy) return
     if (root.dataset.mode === 'orbit') setView('colony')
     stopRotation()
-    if (state.plots.some((plot) => plot.id === id && !plot.occupiedBy)) {
-        chosenPlot = id
-        placing = true
-    } else {
-        selected = id
-        placing = false
-    }
-    scene?.setPlacementMode(placing)
+    selected = id
+    placing = false
     scene?.select(id)
     scene?.focus(id)
     renderUi()
@@ -79,36 +76,56 @@ function appendProgress(parent) {
     construction.append(progress)
     parent.append(construction)
 }
+function message(error) {
+    return t[`error_${error.code}`] || t.build_error
+}
 async function perform(action, id, type) {
     if (busy) return
-    const token = ++operation
+    let plan
+    try {
+        plan =
+            action === 'build'
+                ? planBuild(state, type)
+                : checkUpgrade(state, id)
+    } catch (error) {
+        status.textContent = message(error)
+        renderUi()
+        return
+    }
+    const planetId = state.planet.id,
+        token = ++operation
     busy = true
-    root.dataset.building = id
+    root.dataset.building = action === 'build' ? type : id
     status.textContent = t.working
+    if (action === 'build') scene?.focus(plan.siteId)
     renderUi()
     try {
-        const completed = scene ? await scene.animateUpgrade(id) : true
-        if (!completed || token !== operation) return
+        const completed = scene
+            ? await scene.animateUpgrade(
+                  id,
+                  action === 'build' ? plan.siteId : null,
+              )
+            : true
+        if (!completed || token !== operation || state.planet.id !== planetId)
+            return
         const snapshot =
             action === 'build'
-                ? await provider.build(type, id)
+                ? await provider.build(type)
                 : await provider.upgrade(id)
         if (token !== operation) return
         state = snapshot
         if (action === 'build') {
             selected = state.buildings.find(
-                (building) => building.plotId === id,
+                (building) => building.siteId === plan.siteId,
             ).id
             placing = false
-            scene?.setPlacementMode(false)
         }
         scene?.update(state)
         scene?.select(selected)
         if (action === 'build') scene?.focus(selected)
         status.textContent = action === 'build' ? t.built : t.upgraded
     } catch (error) {
-        if (token === operation) status.textContent = t.build_error
-        console.error(error)
+        if (token === operation) status.textContent = message(error)
     } finally {
         if (token === operation) {
             busy = false
@@ -116,6 +133,38 @@ async function perform(action, id, type) {
             renderUi()
         }
     }
+}
+function renderPlanet() {
+    const selector = document.querySelector('#planet-select')
+    if (!selector.options.length) {
+        for (const profile of demoPlanets) {
+            const option = element(
+                'option',
+                '',
+                `${profile.name} · ${t[`planet_${profile.id}`]}`,
+            )
+            option.value = profile.id
+            selector.append(option)
+        }
+    }
+    selector.value = state.planet.id
+    document.querySelector('#planet-name').textContent = state.name
+    document.querySelector('#planet-coordinates').textContent =
+        state.coordinates
+    document.querySelector('#planet-diameter').textContent =
+        `${number.format(state.planet.diameter)} km`
+    document.querySelector('#fields-used').textContent =
+        `${state.capacity.field_current} / ${state.capacity.effective_max}`
+    document.querySelector('#fields-free').textContent = String(
+        state.capacity.remaining,
+    )
+    document.querySelector('#terraformer-effect').textContent =
+        `${t.base_fields}: ${state.capacity.field_max} · ${t.terraformer}: ${t.level} ${state.capacity.terraformer} (+${state.capacity.terraformer_bonus})`
+    const meter = document.querySelector('#capacity-meter')
+    meter.max = state.capacity.effective_max
+    meter.value = state.capacity.field_current
+    document.querySelector('#plot-summary').textContent =
+        `${state.buildings.length} ${t.visual_facilities}`
 }
 function renderBuilder() {
     builder.replaceChildren()
@@ -129,11 +178,8 @@ function renderBuilder() {
             type.repeatable ||
             !state.buildings.some((building) => building.type === type.id),
     )
-    const free = state.plots.filter((plot) => !plot.occupiedBy)
     if (!available.some((type) => type.id === chosenType))
         chosenType = available[0]?.id ?? ''
-    if (!free.some((plot) => plot.id === chosenPlot))
-        chosenPlot = free[0]?.id ?? ''
     builder.append(
         element('h3', '', t.build_menu),
         element('p', 'builder-note', t.build_note),
@@ -141,7 +187,7 @@ function renderBuilder() {
     const typeLabel = element('label', '', t.choose_facility),
         typeSelect = element('select')
     typeSelect.id = 'build-type'
-    typeSelect.disabled = busy || !free.length
+    typeSelect.disabled = busy || !available.length
     for (const category of ['economy', 'facilities', 'storage', 'defense']) {
         const group = element('optgroup')
         group.label = t[category]
@@ -157,52 +203,42 @@ function renderBuilder() {
     typeSelect.value = chosenType
     typeSelect.addEventListener('change', () => {
         chosenType = typeSelect.value
+        renderBuilder()
     })
     typeLabel.append(typeSelect)
     builder.append(typeLabel)
-    const plotLabel = element('label', '', t.choose_plot),
-        plotSelect = element('select')
-    plotSelect.id = 'build-plot'
-    plotSelect.disabled = busy || !free.length
-    for (const plot of free) {
-        const option = element('option', '', `${t.plot} ${plot.id.slice(-2)}`)
-        option.value = plot.id
-        plotSelect.append(option)
+    let reason = null
+    try {
+        planBuild(state, chosenType)
+    } catch (error) {
+        reason = message(error)
     }
-    plotSelect.value = chosenPlot
-    plotSelect.addEventListener('change', () => {
-        chosenPlot = plotSelect.value
-        scene?.select(chosenPlot)
-        scene?.focus(chosenPlot)
-    })
-    plotLabel.append(plotSelect)
-    builder.append(plotLabel)
-    const preview = element('button', 'text-button', t.show_plot)
-    preview.id = 'preview-plot'
-    preview.disabled = busy || !free.length
-    preview.addEventListener('click', () => {
-        scene?.select(chosenPlot)
-        scene?.focus(chosenPlot)
-    })
-    builder.append(preview)
+    builder.append(element('p', 'builder-note', t.auto_layout))
+    if (chosenType)
+        builder.append(
+            element(
+                'p',
+                'builder-note',
+                buildingCatalog[chosenType].consumesField
+                    ? t.field_cost
+                    : t.field_free,
+            ),
+        )
+    if (reason) {
+        const warning = element('p', 'capacity-warning', reason)
+        warning.id = 'build-limit'
+        warning.setAttribute('role', 'status')
+        builder.append(warning)
+    }
     if (busy) appendProgress(builder)
-    const build = element(
-        'button',
-        'upgrade-button',
-        free.length ? t.build : t.no_plots,
-    )
+    const build = element('button', 'upgrade-button', t.build)
     build.id = 'build-facility'
-    build.disabled = busy || !free.length || !chosenType
-    build.addEventListener('click', () => {
-        scene?.select(chosenPlot)
-        scene?.focus(chosenPlot)
-        perform('build', chosenPlot, chosenType)
-    })
+    build.disabled = busy || !!reason || !chosenType
+    build.addEventListener('click', () => perform('build', null, chosenType))
     builder.append(build)
-    document.querySelector('#plot-summary').textContent =
-        `${state.buildings.length} / ${state.plots.length} ${t.occupied}`
 }
 function renderUi() {
+    renderPlanet()
     list.replaceChildren()
     const summary = document.querySelector('#production-summary')
     summary.replaceChildren()
@@ -252,11 +288,25 @@ function renderUi() {
     details.append(
         element('span', '', t.level),
         element('strong', 'detail-level', `${building.level} / 8`),
-        element('span', '', t[`metric_${building.metric}`]),
+        element(
+            'span',
+            '',
+            building.type === 'terraformer'
+                ? t.terraformer_bonus
+                : t[`metric_${building.metric}`],
+        ),
         element('strong', '', metric(building)),
     )
     info.append(details)
     if (busy && !placing) appendProgress(info)
+    let blocked = null
+    try {
+        checkUpgrade(state, selected)
+    } catch (error) {
+        blocked = message(error)
+    }
+    if (blocked && building.level < 8)
+        info.append(element('p', 'capacity-warning', blocked))
     const upgrade = element(
         'button',
         'upgrade-button',
@@ -267,7 +317,7 @@ function renderUi() {
               : `${t.upgrade} → ${building.level + 1}`,
     )
     upgrade.id = 'upgrade-building'
-    upgrade.disabled = busy || building.level >= 8
+    upgrade.disabled = busy || !!blocked
     upgrade.addEventListener('click', () => perform('upgrade', selected))
     info.append(upgrade)
     renderBuilder()
@@ -334,7 +384,6 @@ document.querySelector('#toggle-build').addEventListener('click', () => {
     if (busy) return
     if (root.dataset.mode === 'orbit') setView('colony')
     placing = !placing
-    scene?.setPlacementMode(placing)
     renderUi()
 })
 document
@@ -358,13 +407,30 @@ document.querySelector('#rotate').addEventListener('click', (event) => {
     scene?.setRotation(rotating)
     event.currentTarget.setAttribute('aria-pressed', String(rotating))
 })
+document
+    .querySelector('#planet-select')
+    .addEventListener('change', async (event) => {
+        cancelUpgrade()
+        stopRotation()
+        placing = false
+        const token = ++operation
+        const snapshot = await provider.selectPlanet(event.target.value)
+        if (token !== operation) return
+        state = snapshot
+        selected = state.buildings[0].id
+        chosenType = 'terraformer'
+        scene?.update(state)
+        scene?.select(selected)
+        setView('colony')
+        status.textContent = t.ready
+    })
 document.querySelector('#reset-demo').addEventListener('click', async () => {
     cancelUpgrade()
     stopRotation()
     placing = false
-    scene?.setPlacementMode(false)
     state = await provider.reset()
     selected = 'metal'
+    chosenType = 'terraformer'
     scene?.select(selected)
     scene?.update(state)
     scene?.resetCamera()

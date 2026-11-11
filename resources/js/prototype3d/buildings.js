@@ -619,6 +619,41 @@ export function createBuilding(id, level, palette) {
         motion.push((time) => {
             turret.rotation.y = Math.sin(time * 0.2) * 0.4
         })
+    } else if (id === 'terraformer') {
+        cylinder(group, dark, 0, 0.4, 0, 0.7, 0.3, 24)
+        const rotor = new THREE.Group()
+        rotor.position.y = 0.9 + level * 0.06
+        group.add(rotor)
+        mesh(
+            new THREE.TorusGeometry(0.69, 0.07, 8, 36),
+            steel,
+            rotor,
+        ).rotation.x = Math.PI / 2
+        box(rotor, cyan, 0, 0, 0, 1.25, 0.035, 0.035)
+        motion.push((time) => {
+            rotor.rotation.y = time * 0.18
+        })
+        for (let i = 0; i < 3; i++) {
+            const a = (i * Math.PI * 2) / 3
+            cylinder(
+                group,
+                insulation,
+                Math.cos(a) * 0.75,
+                0.6 + level * 0.035,
+                Math.sin(a) * 0.75,
+                0.16,
+                0.75 + level * 0.07,
+                16,
+            )
+            beam(
+                group,
+                steel,
+                [Math.cos(a) * 0.75, 0.7, Math.sin(a) * 0.75],
+                [0, 0.55, 0],
+                0.04,
+            )
+        }
+        cylinder(group, purple, 0, 0.65, 0, 0.28, 0.25)
     } else {
         throw new Error(`Unknown model: ${id}`)
     }

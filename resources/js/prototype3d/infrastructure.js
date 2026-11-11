@@ -1,28 +1,43 @@
 import * as THREE from './vendor/three.module.min.js'
-import { colonyPlots, surfacePosition } from './catalog.js'
+import { surfacePosition } from './layout.js'
 
-export function createInfrastructure(palette) {
+export function createInfrastructure(palette, colonySites, radius) {
     const group = new THREE.Group(),
         positions = [],
         lines = []
-    const nodes = [...colonyPlots, { id: 'hub', x: 0, z: 0 }]
+    const nodes = [{ id: 'hub', normal: [0, 1, 0] }, ...colonySites]
     const point = (node, radius) =>
         new THREE.Vector3(...surfacePosition(node, radius))
-    const edges = []
-    for (let i = 0; i < colonyPlots.length; i++)
-        for (let j = i + 1; j < colonyPlots.length; j++) {
-            const a = colonyPlots[i],
-                b = colonyPlots[j]
-            if (
-                (a.x === b.x && Math.abs(a.z - b.z) === 3.5) ||
-                (a.z === b.z && Math.abs(a.x - b.x) === 3.5)
-            )
-                edges.push([a, b])
-        }
-    for (const node of colonyPlots.slice(0, 4)) edges.push([nodes.at(-1), node])
+    const edges = [],
+        seen = new Set()
+    function connect(a, b) {
+        const key = [a.id, b.id].sort().join(':')
+        if (seen.has(key)) return
+        seen.add(key)
+        edges.push([a, b])
+    }
+    for (let i = 1; i < nodes.length; i++) {
+        const nearest = nodes
+            .slice(0, i)
+            .sort(
+                (a, b) =>
+                    point(nodes[i], radius).distanceToSquared(
+                        point(a, radius),
+                    ) -
+                    point(nodes[i], radius).distanceToSquared(point(b, radius)),
+            )[0]
+        connect(nearest, nodes[i])
+    }
+    for (const [a, b] of [
+        [0, 1],
+        [1, 3],
+        [3, 2],
+        [2, 0],
+    ])
+        connect(colonySites[a], colonySites[b])
     for (const [a, b] of edges) {
-        const start = point(a, 8),
-            end = point(b, 8)
+        const start = point(a, radius),
+            end = point(b, radius)
         let previous
         const conduitPoints = []
         for (let step = 0; step <= 16; step++) {
@@ -30,7 +45,7 @@ export function createInfrastructure(palette) {
                 .clone()
                 .lerp(end, step / 16)
                 .normalize()
-                .multiplyScalar(8.035)
+                .multiplyScalar(radius + 0.035)
             const normal = p.clone().normalize(),
                 tangent = end.clone().sub(start).normalize()
             const side = new THREE.Vector3()
@@ -51,16 +66,29 @@ export function createInfrastructure(palette) {
                     positions.push(...v.toArray())
                 // A separate utility conduit follows one road edge.
                 lines.push(
-                    ...previous.right.clone().multiplyScalar(1.002).toArray(),
-                    ...right.clone().multiplyScalar(1.002).toArray(),
+                    ...previous.right
+                        .clone()
+                        .normalize()
+                        .multiplyScalar(radius + 0.052)
+                        .toArray(),
+                    ...right
+                        .clone()
+                        .normalize()
+                        .multiplyScalar(radius + 0.052)
+                        .toArray(),
                 )
             }
-            conduitPoints.push(right.clone().multiplyScalar(1.006))
+            conduitPoints.push(
+                right
+                    .clone()
+                    .normalize()
+                    .multiplyScalar(radius + 0.085),
+            )
             previous = { left, right }
         }
         if (
-            colonyPlots.slice(0, 4).includes(a) &&
-            colonyPlots.slice(0, 4).includes(b)
+            colonySites.slice(0, 4).includes(a) &&
+            colonySites.slice(0, 4).includes(b)
         ) {
             const conduit = new THREE.Mesh(
                 new THREE.TubeGeometry(
@@ -98,7 +126,7 @@ export function createInfrastructure(palette) {
         return object
     }
     const hub = new THREE.Group()
-    hub.position.set(0, 8.05, 0)
+    hub.position.set(0, radius + 0.05, 0)
     group.add(hub)
     block(hub, palette.concrete, 0, 0.05, 0, 0.9, 0.13, 0.9)
     block(hub, palette.painted, 0, 0.32, 0, 0.65, 0.45, 0.65)
@@ -124,16 +152,16 @@ export function createInfrastructure(palette) {
         vehicles.push(vehicle)
     }
     const route = [
-        colonyPlots[0],
-        colonyPlots[1],
-        colonyPlots[3],
-        colonyPlots[2],
+        colonySites[0],
+        colonySites[1],
+        colonySites[3],
+        colonySites[2],
     ]
     function animate(time, moving) {
         vehicles.forEach((vehicle, index) => {
             const phase = ((moving ? time * 0.06 : 0) + index * 1.3) % 4
-            const start = point(route[Math.floor(phase)], 8),
-                end = point(route[(Math.floor(phase) + 1) % 4], 8)
+            const start = point(route[Math.floor(phase)], radius),
+                end = point(route[(Math.floor(phase) + 1) % 4], radius)
             const normal = start
                 .clone()
                 .lerp(end, phase % 1)
@@ -143,7 +171,7 @@ export function createInfrastructure(palette) {
             const right = new THREE.Vector3()
                 .crossVectors(normal, forward)
                 .normalize()
-            vehicle.position.copy(normal).multiplyScalar(8.13)
+            vehicle.position.copy(normal).multiplyScalar(radius + 0.13)
             vehicle.quaternion.setFromRotationMatrix(
                 new THREE.Matrix4().makeBasis(right, normal, forward),
             )

@@ -9,19 +9,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OGameX-3D · 0.4</title>
+    <title>OGameX-3D · 0.5</title>
     {{ $prototypeVite('resources/js/prototype3d/index.js') }}
 </head>
 <body class="prototype-3d">
 <div id="prototype" data-mode="colony">
     <header class="topbar">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.4</small></a>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.5</small></a>
         <span class="demo-tag"><i></i>{{ $t['demo'] }}</span>
         <a class="back-link" href="{{ url('/') }}">{{ $t['back'] }} ↗</a>
     </header>
     <main>
         <section class="scene-panel" aria-label="{{ $t['scene'] }}">
-            <div class="scene-title"><span class="eyebrow">{{ $t['sector'] }} · 01</span><h1>Kepler <em>IX</em></h1><p>[1:42:8] <span> / </span> {{ $t['class'] }}</p></div>
+            <div class="scene-title"><span class="eyebrow">{{ $t['sector'] }} · 01</span><h1 id="planet-name">Kepler IX</h1><p><span id="planet-coordinates">[1:42:8]</span> <span> / </span> {{ $t['class'] }}</p></div>
             <div class="view-switch" role="group" aria-label="{{ $t['view'] }}">
                 <button id="colony-view" aria-pressed="true">◉ {{ $t['colony'] }}</button>
                 <button id="orbit-view" aria-pressed="false">◎ {{ $t['orbit'] }}</button>
@@ -40,6 +40,13 @@
         </section>
         <aside class="colony-panel">
             <div class="panel-heading"><div><span class="eyebrow">{{ $t['command'] }}</span><h2 id="panel-title">{{ $t['colony'] }}</h2></div><span class="online-dot"></span></div>
+            <section class="planet-capacity" aria-label="{{ $t['planet_state'] }}">
+                <label for="planet-select">{{ $t['choose_planet'] }}</label>
+                <select id="planet-select"></select>
+                <div class="capacity-stats"><span>{{ $t['diameter'] }}</span><strong id="planet-diameter"></strong><span>{{ $t['fields_used'] }}</span><strong id="fields-used"></strong><span>{{ $t['fields_free'] }}</span><strong id="fields-free"></strong></div>
+                <progress id="capacity-meter" aria-label="{{ $t['fields_used'] }}"></progress>
+                <p id="terraformer-effect"></p><p>{{ $t['planet_demo'] }}</p>
+            </section>
             <div id="production-summary" class="production-summary"></div>
             <div class="section-heading"><h3>{{ $t['structures'] }}</h3><span id="structure-count">04</span></div>
             <div id="building-list"></div>

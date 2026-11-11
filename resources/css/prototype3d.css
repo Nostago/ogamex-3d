@@ -766,8 +766,78 @@ body:has(#prototype) {
     }
 }
 @media (min-width: 761px) {
-    #prototype { height: 100dvh; min-height: 760px; }
-    .prototype-3d main { min-height: 0; overflow: hidden; }
-    .scene-panel { min-height: 0; }
-    .colony-panel { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+    #prototype {
+        height: 100dvh;
+        min-height: 760px;
+    }
+    .prototype-3d main {
+        min-height: 0;
+        overflow: hidden;
+    }
+    .scene-panel {
+        min-height: 0;
+    }
+    .colony-panel {
+        min-height: 0;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+}
+.planet-capacity {
+    border: 1px solid #2a475b;
+    border-radius: 7px;
+    padding: 13px;
+    margin: 0 0 18px;
+    background: #0a1926;
+}
+.planet-capacity label {
+    display: block;
+    color: #8fb2c9;
+    font-size: 11px;
+    margin-bottom: 8px;
+}
+.planet-capacity select {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid #36536b;
+    border-radius: 4px;
+    background: #0d2233;
+    color: #d1e7f5;
+    font: inherit;
+    font-size: 12px;
+}
+.planet-capacity select:focus-visible {
+    outline: 2px solid #7de4ff;
+}
+.capacity-stats {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    margin: 13px 0;
+    font-size: 10px;
+}
+.capacity-stats span {
+    color: #82a2b8;
+}
+.capacity-stats strong {
+    color: #bedeea;
+    font-weight: 500;
+}
+.planet-capacity progress {
+    width: 100%;
+    height: 6px;
+    accent-color: #66d0e6;
+}
+.planet-capacity p {
+    color: #7d9db2;
+    font-size: 9px;
+    line-height: 1.7;
+    margin-bottom: 0;
+}
+.capacity-warning {
+    color: #e8bd80;
+    border-left: 2px solid #ae864a;
+    padding-left: 10px;
+    font-size: 11px;
+    line-height: 1.7;
 }

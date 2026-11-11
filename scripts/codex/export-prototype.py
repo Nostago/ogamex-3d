@@ -49,8 +49,12 @@ Nach dem Download funktioniert die Demo ohne Internet.
 Maus ziehen: drehen. Mausrad oder +/−: zoomen.
 Gebäude anklicken: Details und sanfter Kamerafokus.
 Übersicht: zurück zum Planeten. Rotation: automatische Kameradrehung.
-Baumenü: Anlagentyp und freie Baufläche wählen, dann „Demo errichten“.
-Alternativ eine markierte freie Fläche in der 3D-Ansicht anklicken.
+Planetenauswahl: Aster (klein), Kepler IX (mittel), Titan Prime (groß).
+Durchmesser, belegte/maximale Baufelder und freie Kapazität stehen in der Kopfzeile.
+Baumenü: Anlagentyp wählen, dann „Demo errichten“. Standort wird automatisch vergeben.
+Jede Gebäudestufe benötigt ein Feld, Verteidigungsmodelle benötigen keine Felder.
+Terraformer: erweitert die Feldkapazität, nicht den Planetendurchmesser.
+Sein eigener Bau/Ausbau benötigt zunächst ein freies Feld.
 Vorhandene Anlagen lassen sich über die scrollbare Gebäudeliste auswählen.
 Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle auch mehrfach.
 Schiffswerft und Verteidigung sind Modelle: keine Schiffsproduktion oder Kämpfe.
@@ -59,7 +63,9 @@ Während des Baus: Demo zurücksetzen oder Orbit wählen bricht den Ausbau ab.
 Orbit: Station und drei Beispielschiffe. Kamera kann jederzeit per Maus bewegt werden.
 
 Alle Werte sind Beispieldaten; keine Verbindung zu einem echten Spielstand.
-Neuladen oder Demo zurücksetzen stellt die Ausgangswerte wieder her.
+„Diesen Planeten zurücksetzen“ setzt nur den ausgewählten Planeten zurück.
+Neuladen setzt alle Planeten zurück. Ein Planetenwechsel bricht laufende Bauten ab.
+Demo-Kosten, Forschungsvoraussetzungen und echte Bauzeiten werden nicht simuliert.
 Betriebsanimationen und Kamerafahrten beachten die Systemeinstellung
 „Bewegung reduzieren“. Der optionale Projekt-Link benötigt Internet.
 Three.js-MIT-Lizenz ist im Quelltext der HTML-Datei enthalten.

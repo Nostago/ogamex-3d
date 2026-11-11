@@ -1,45 +1,45 @@
 # OGameX-3D als lokale Demo
 
-## Aktuelle Version 0.4
+## Aktuelle Version 0.5
 
-[OGameX-3D-0.4.zip herunterladen](OGameX-3D-0.4.zip): Auf der GitHub-Dateiseite
-**Download raw file** wählen. Die ZIP entpacken und `OGameX-3D-0.4.html` mit
-Safari, Chrome, Firefox oder Edge öffnen. Keine Installation und kein Server nötig.
-JavaScript und WebGL müssen aktiviert sein; die Demo funktioniert ohne Internet.
+[OGameX-3D-0.5.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.5/downloads/OGameX-3D-0.5.zip),
+entpacken und `OGameX-3D-0.5.html` mit Safari, Chrome, Firefox oder Edge öffnen.
+Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
+aktiv sein. Nach dem Download funktioniert die Demo ohne Internet.
 
-Die Kolonie umfasst zwölf Anlagentypen: Metallmine, Kristallmine,
-Deuterium-Synthesizer, Solarkraftwerk, Schiffswerft, Forschungslabor, Roboterfabrik,
-Metalllager, Kristalllager, Deuteriumtank, Raketenwerfer und leichter Laser.
-Die vier Ressourcenanlagen sind bereits gebaut. Im **Baumenü** lassen sich die
-weiteren Anlagen auf freien Flächen errichten. Es gibt 16 feste Bauflächen.
-Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle mehrfach.
+Neu sind drei unterschiedlich große Demo-Planeten, automatische stabile
+Gebäudestandorte und der Terraformer. Die Anzeige trennt Durchmesser,
+belegte/maximale Baufelder, freie Kapazität und Terraformer-Bonus.
+Jede Gebäudestufe verbraucht ein Feld, Verteidigungsmodelle keine. Ein voller
+Planet blockiert feldverbrauchende Bauten; auch der Terraformer braucht für seine
+eigene Stufe zuerst ein freies Feld. Seine Kapazitätserweiterung verändert nicht
+den Durchmesser. Die gewählten Planetendurchmesser und Basisfelder sind Demodaten.
 
-Straßen, Versorgungstrassen, Rohrleitungen, ein dekorativer Logistikknoten und
-drei animierte Transportfahrzeuge verbinden die Kolonie. Alle Anlagen besitzen
-Detailansichten und Demo-Ausbaustufen. Kamerafokus, Bauanimation, Reset und Orbit
-bleiben verfügbar. Die Gebäude- und Seitenleiste sind scrollbar.
+Alle 13 Anlagentypen, Stufenmodelle, Betriebsanimationen, Straßen,
+Versorgungstrassen, Transportfahrzeuge, Kamerafokus, Bauanimation und Orbit
+bleiben verfügbar. Im Baumenü genügt die Wahl eines Anlagentyps. Es gibt keine
+manuelle Flächenwahl. Verteidigung ist mehrfach baubar; das separate Grafiklimit
+begrenzt die Modellanzahl für die Performance, nicht die Spiel-Baufelder.
 
-Es handelt sich ausschließlich um Beispieldaten: keine echten Kosten oder
-Bauvoraussetzungen, keine Schiffsproduktion, Forschung oder Kämpfe, keine Verbindung
-zu einem Spielstand. Lagerwerte und Verteidigungspunkte sind Demowerte. Neuladen
-oder „Demo zurücksetzen“ stellt die vier ursprünglichen Gebäude wieder her.
-Die Three.js-MIT-Lizenz ist in der HTML-Datei enthalten.
-
-Geprüft wurden alle Anlagentypen und Stufen, Daten-/Flächenvalidierung sowie der
-Offline-Browserablauf einschließlich Neubau, Flächenwahl, Ausbau, Abbruch,
-Zurücksetzen, Mobilansicht und reduzierter Bewegung. Das Paket enthält eine
-kurze deutsche Anleitung. Texturen und Modelle benötigen keine Netzwerkzugriffe.
+Planetenwechsel, Orbit und Reset brechen laufende Bauten ohne Zustandsänderung
+ab. „Diesen Planeten zurücksetzen“ setzt nur den ausgewählten Planeten zurück;
+Neuladen setzt alle zurück. Alle Werte sind Beispieldaten, ohne echte Kosten,
+Bauvoraussetzungen oder Verbindung zu Spielständen. Keine Schiffsproduktion,
+Forschung oder Kämpfe. Die ZIP enthält eine Anleitung und die HTML-Datei die
+Three.js-MIT-Lizenz. Texturen und Modelle benötigen keine Netzwerkzugriffe.
 
 SHA-256:
 
 ```text
-3969b12839a47be9e1899347e6288cd5a1a7ded49eec18cddc6cfd189adcc2c1
+b9ac8db35c23eb14cd5b20f948e0da1530cb3f90703e789937759244a17f0f9d
 ```
 
-Weitere Informationen: [Dokumentation](../docs/OGAMEX-3D.md).
+Bedienung, Feldregeln, Provider-Vertrag und Testbefehle:
+[Dokumentation](../docs/OGAMEX-3D.md).
 
 ## Frühere Versionen
 
+- [Version 0.4](OGameX-3D-0.4.zip)
 - [Version 0.3](OGameX-3D-0.3.zip)
 - [Version 0.2](OGameX-3D-0.2.zip)
 - [Version 0.1](OGameX-3D-0.1.zip)
