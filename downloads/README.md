@@ -1,41 +1,47 @@
 # OGameX-3D als lokale Demo
 
-## Aktuelle Version 0.3
+## Aktuelle Version 0.4
 
-[OGameX-3D-0.3.zip herunterladen](OGameX-3D-0.3.zip): Auf der GitHub-Dateiseite
-**Download raw file** (Download-Symbol) wählen. Die ZIP-Datei entpacken und
-`OGameX-3D-0.3.html` mit Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.4.zip herunterladen](OGameX-3D-0.4.zip): Auf der GitHub-Dateiseite
+**Download raw file** wählen. Die ZIP entpacken und `OGameX-3D-0.4.html` mit
+Safari, Chrome, Firefox oder Edge öffnen. Keine Installation und kein Server nötig.
+JavaScript und WebGL müssen aktiviert sein; die Demo funktioniert ohne Internet.
 
-Neu in 0.3: alle vier Gebäudetypen wurden als industrielle Baugruppen überarbeitet.
-Sie besitzen prozedurale Metall-, Beton- und Solarzellenoberflächen, getrennte
-Glas- und Isolationsmaterialien, Fachwerkträger, Rohrleitungen, Wartungsleitern und
-technische Details. Neutraleres Licht, gefilterte Schatten und Kontaktschatten
-verbessern die räumliche Wirkung. Animationen, Baufortschritt, Kamerafokus und
-Übersicht bleiben erhalten. „Bewegung reduzieren“ wird weiterhin berücksichtigt.
+Die Kolonie umfasst zwölf Anlagentypen: Metallmine, Kristallmine,
+Deuterium-Synthesizer, Solarkraftwerk, Schiffswerft, Forschungslabor, Roboterfabrik,
+Metalllager, Kristalllager, Deuteriumtank, Raketenwerfer und leichter Laser.
+Die vier Ressourcenanlagen sind bereits gebaut. Im **Baumenü** lassen sich die
+weiteren Anlagen auf freien Flächen errichten. Es gibt 16 feste Bauflächen.
+Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle mehrfach.
 
-Es sind keine Installation und kein Server nötig. Die HTML-Datei enthält alle
-benötigten Assets und funktioniert ohne Internet. JavaScript und WebGL müssen
-aktiviert sein. Alle Werte sind Beispieldaten; Ausbauten verändern keinen echten
-Spielstand und werden beim Neuladen zurückgesetzt. Das vollständige Laravel-Spiel
-ist nicht enthalten. Die Three.js-MIT-Lizenz steht im Quelltext der HTML-Datei.
+Straßen, Versorgungstrassen, Rohrleitungen, ein dekorativer Logistikknoten und
+drei animierte Transportfahrzeuge verbinden die Kolonie. Alle Anlagen besitzen
+Detailansichten und Demo-Ausbaustufen. Kamerafokus, Bauanimation, Reset und Orbit
+bleiben verfügbar. Die Gebäude- und Seitenleiste sind scrollbar.
 
-Die Gebäudemodelle werden für alle Demostufen auf gültige Geometrie, funktionierende
-Animationen und begrenzte Komplexität geprüft. Der Offline-Browsertest umfasst
-Rendering, direkten 3D-Klick, Kamerafokus/Übersicht, Bauanimation, verzögerte
-Stufenänderung, Abbruch, Stufenlimit, Orbit, Zoom, Rotation, Mobilansicht und
-reduzierte Bewegung. Texturen und Modelle benötigen keine Netzwerkzugriffe.
+Es handelt sich ausschließlich um Beispieldaten: keine echten Kosten oder
+Bauvoraussetzungen, keine Schiffsproduktion, Forschung oder Kämpfe, keine Verbindung
+zu einem Spielstand. Lagerwerte und Verteidigungspunkte sind Demowerte. Neuladen
+oder „Demo zurücksetzen“ stellt die vier ursprünglichen Gebäude wieder her.
+Die Three.js-MIT-Lizenz ist in der HTML-Datei enthalten.
 
-SHA-256 der ZIP-Datei:
+Geprüft wurden alle Anlagentypen und Stufen, Daten-/Flächenvalidierung sowie der
+Offline-Browserablauf einschließlich Neubau, Flächenwahl, Ausbau, Abbruch,
+Zurücksetzen, Mobilansicht und reduzierter Bewegung. Das Paket enthält eine
+kurze deutsche Anleitung. Texturen und Modelle benötigen keine Netzwerkzugriffe.
+
+SHA-256:
 
 ```text
-f510d219728927abbc81132b4740952341e439041029758c14744f5cb9160bef
+3969b12839a47be9e1899347e6288cd5a1a7ded49eec18cddc6cfd189adcc2c1
 ```
 
-Quellcode, Entwicklerstart und Export-Befehl: [Dokumentation](../docs/OGAMEX-3D.md).
+Weitere Informationen: [Dokumentation](../docs/OGAMEX-3D.md).
 
 ## Frühere Versionen
 
-- [OGameX-3D-0.2.zip](OGameX-3D-0.2.zip)
-- [OGameX-3D-0.1.zip](OGameX-3D-0.1.zip)
+- [Version 0.3](OGameX-3D-0.3.zip)
+- [Version 0.2](OGameX-3D-0.2.zip)
+- [Version 0.1](OGameX-3D-0.1.zip)
 
-Beide älteren Pakete bleiben unverändert verfügbar.
+Die älteren Pakete bleiben unverändert erhalten.

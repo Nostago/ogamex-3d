@@ -1,6 +1,8 @@
 import * as THREE from './vendor/three.module.min.js'
 import { createColonyMaterials } from './materials.js'
 import { createBuilding } from './buildings.js'
+import { colonyPlots, surfacePosition } from './catalog.js'
+import { createInfrastructure } from './infrastructure.js'
 
 // Procedural scene only. No remote textures, models, game services or mutations.
 export function createPlanetScene(host, labelsHost, onSelect, names) {
@@ -135,6 +137,15 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     )
     const colony = new THREE.Group()
     world.add(colony)
+    const infrastructure = createInfrastructure(materials.palette)
+    world.add(infrastructure.group)
+    let placementMode = false
+    const plotMaterial = new THREE.MeshBasicMaterial({
+        color: 0x4985a1,
+        transparent: true,
+        opacity: 0.24,
+        side: THREE.DoubleSide,
+    })
     const buildings = new Map()
     let selected = 'metal'
     const labels = new Map()
@@ -147,18 +158,27 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     function buildModel(data, index) {
         const group = new THREE.Group()
         group.userData.buildingId = data.id
-        const x = ((index % 2) - 0.5) * 3.5,
-            z = (Math.floor(index / 2) - 0.5) * 3.5
-        const normal = new THREE.Vector3(
-            x,
-            Math.sqrt(64 - x * x - z * z),
-            z,
-        ).normalize()
+        const plot = colonyPlots.find((item) => item.id === data.plotId)
+        const normal = new THREE.Vector3(...surfacePosition(plot)).normalize()
         group.position.copy(normal).multiplyScalar(8.02)
         group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
         colony.add(group)
-        const model = createBuilding(data.id, data.level, materials.palette)
+        const model = data.empty
+            ? { group: new THREE.Group(), motion: [], labelHeight: 0.4 }
+            : createBuilding(data.type, data.level, materials.palette)
         group.add(model.group)
+        if (data.empty) {
+            const pad = mesh(
+                new THREE.CircleGeometry(1.25, 32),
+                plotMaterial,
+                group,
+                0,
+                0.025,
+                0,
+            )
+            pad.rotation.x = -Math.PI / 2
+            group.visible = placementMode
+        }
         const ring = mesh(
             new THREE.TorusGeometry(1.4, 0.016, 5, 48),
             selectionMat,
@@ -174,10 +194,14 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             ring,
             motion: model.motion,
             labelHeight: model.labelHeight,
+            empty: !!data.empty,
         })
         const label = document.createElement('span')
         label.className = 'building-label'
-        label.textContent = `${names[data.id]} · ${data.level}`
+        label.textContent = data.empty
+            ? `+ ${data.plotId.slice(-2)}`
+            : `${names[data.type]} · ${data.level}`
+        if (data.empty) label.classList.add('site-label')
         labelsHost.append(label)
         labels.set(data.id, label)
     }
@@ -191,6 +215,11 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         labels.forEach((label) => label.remove())
         labels.clear()
         data.buildings.forEach(buildModel)
+        data.plots
+            .filter((plot) => !plot.occupiedBy)
+            .forEach((plot) =>
+                buildModel({ id: plot.id, plotId: plot.id, empty: true }),
+            )
         renderer.shadowMap.needsUpdate = true
     }
     let construction = null
@@ -365,9 +394,16 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         )
     }
     const setMode = (value) => {
+        if (value === 'orbit') setPlacementMode(false)
         mode = value
         orbit.visible = value === 'orbit'
         resetCamera()
+    }
+    function setPlacementMode(value) {
+        placementMode = value
+        buildings.forEach((item) => {
+            if (item.empty) item.group.visible = value
+        })
     }
     const select = (id) => {
         selected = id
@@ -387,7 +423,12 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             camera,
         )
         const hits = raycaster.intersectObjects(
-            [globe, ...Array.from(buildings.values(), (item) => item.group)],
+            [
+                globe,
+                ...Array.from(buildings.values())
+                    .filter((item) => !item.empty || placementMode)
+                    .map((item) => item.group),
+            ],
             true,
         )
         let object = hits[0]?.object
@@ -544,7 +585,8 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                 )
                 ship.rotation.y = -a
             })
-        buildings.forEach(({ group, motion, labelHeight }, id) => {
+        infrastructure.animate(time / 1000, !reducedMotion.matches)
+        buildings.forEach(({ group, motion, labelHeight, empty }, id) => {
             if (!reducedMotion.matches)
                 motion.forEach((animate) => animate(time / 1000))
             group.getWorldPosition(worldPosition)
@@ -556,6 +598,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             towardCamera.subVectors(camera.position, worldPosition)
             const visible =
                 mode === 'colony' &&
+                (!empty || placementMode) &&
                 worldPosition.dot(towardCamera) > 0 &&
                 Math.abs(projected.x) < 0.94 &&
                 Math.abs(projected.y) < 0.9
@@ -577,6 +620,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         animateUpgrade,
         cancelConstruction,
         setMode,
+        setPlacementMode,
         zoom,
         resetCamera,
         setRotation(value) {
@@ -593,6 +637,8 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             ;[selectionMat, globe.material, atmosphere.material].forEach(
                 (mat) => mat.dispose(),
             )
+            plotMaterial.dispose()
+            infrastructure.dispose()
             materials.dispose()
             renderer.dispose()
         },

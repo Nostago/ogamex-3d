@@ -709,3 +709,65 @@ body:has(#prototype) {
 .prototype-3d:has(#prototype[data-building]) .selected {
     border-color: #caab67 !important;
 }
+
+/* The growing colony remains navigable without making the canvas taller. */
+#building-list {
+    max-height: 260px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-right: 4px;
+}
+.plot-summary {
+    color: #7ca5bd;
+    font-size: 10px;
+    margin: 12px 0;
+}
+#builder {
+    margin-top: 20px;
+    border-top: 1px solid #244056;
+    padding-top: 14px;
+}
+#builder h3 {
+    font-size: 17px;
+    font-weight: 500;
+}
+#builder label {
+    display: grid;
+    gap: 7px;
+    margin: 14px 0;
+    color: #8eadc1;
+    font-size: 11px;
+}
+#builder select {
+    font: inherit;
+    width: 100%;
+    background: #0b1a29;
+    color: #cce5f5;
+    border: 1px solid #36536b;
+    padding: 10px;
+    border-radius: 4px;
+}
+#builder select:focus-visible {
+    outline: 2px solid #7de4ff;
+}
+.builder-note {
+    font-size: 11px;
+    color: #809eb2;
+    line-height: 1.7;
+}
+.site-label {
+    color: #81bbce;
+    border-style: dashed;
+    font-size: 9px;
+}
+@media (max-width: 760px) {
+    #building-list {
+        max-height: 340px;
+    }
+}
+@media (min-width: 761px) {
+    #prototype { height: 100dvh; min-height: 760px; }
+    .prototype-3d main { min-height: 0; overflow: hidden; }
+    .scene-panel { min-height: 0; }
+    .colony-panel { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+}

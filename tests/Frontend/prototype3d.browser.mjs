@@ -14,6 +14,7 @@ const browser = await chromium.launch({
 });
 try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    page.setDefaultTimeout(90000);
     const errors = [], network = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('request', request => { if (/^https?:/.test(request.url())) network.push(request.url()); });
@@ -113,7 +114,44 @@ try {
     assert.deepEqual(still, await canvas.screenshot(), 'Reduced motion must stop operating animations');
     await load();
     await level(4);
+    // Construct the new facilities on explicit free lots; keep this path fast and static.
+    await page.locator('#toggle-build').click();
+    await page.locator('#build-plot').selectOption('plot-06');
+    await page.locator('#preview-plot').click();
+    assert.equal(await page.locator('#scene').getAttribute('data-focus'), 'plot-06');
+    await page.locator('#build-facility').click();
+    await page.waitForFunction(() => document.querySelector('#structure-count').textContent === '05');
+    assert.equal(await page.locator('#building-info h3').textContent(), 'Schiffswerft');
+    const shipyardId = await page.locator('.building-item[aria-pressed="true"]').getAttribute('data-building');
+    assert.equal(shipyardId, 'shipyard-plot-06');
+    await page.locator('#upgrade-building').click();
+    await level(2);
+    for (const [index, type] of ['research', 'robotics', 'metalStorage', 'crystalStorage', 'deuteriumStorage', 'rocket', 'laser'].entries()) {
+        await page.locator('#toggle-build').click();
+        await page.locator('#build-type').selectOption(type);
+        if (type !== 'rocket' && type !== 'laser') assert.equal(await page.locator('#build-type option[value="shipyard"]').count(), 0);
+        await page.locator('#build-facility').click();
+        await page.waitForFunction(count => document.querySelector('#structure-count').textContent === String(count).padStart(2, '0'), index + 6);
+    }
+    assert.equal(await page.locator('.building-item').count(), 12);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.locator('#reset-camera').click();
+    await settle();
+    await page.waitForTimeout(350);
+    await page.screenshot({ path: `${artifacts}/expanded-colony.png` });
+    await page.locator('#reset-demo').click();
+    await page.waitForFunction(() => document.querySelector('#structure-count').textContent === '04');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.locator('#toggle-build').click();
+    await page.locator('#build-facility').click();
+    await progress();
+    await page.locator('#orbit-view').click();
+    await page.waitForTimeout(2200);
+    assert.equal(await page.locator('.building-item').count(), 4, 'Cancelling a new build must leave its lot free');
+    await page.locator('#colony-view').click();
+    await page.locator('#toggle-build').click();
+    assert.equal(await page.locator('#build-plot option').count(), 12);
     assert.deepEqual(errors, []);
     if (standalone) assert.deepEqual(network, [], 'Offline export must make no HTTP requests');
-    console.log('PASS: WebGL, raycast, camera focus/overview, animated construction, delayed commit, cancellation/reset, level cap, orbit, drag, zoom, rotation, mobile, reduced motion, reload; no page errors');
+    console.log('PASS: new facility construction, unique facilities, plot choice, upgrades, cancelled placement, colony reset, WebGL, raycast, camera focus/overview, animated construction, delayed commit, cancellation/reset, level cap, orbit, drag, zoom, rotation, mobile, reduced motion, reload; no page errors');
 } finally { await browser.close(); }

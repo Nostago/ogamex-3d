@@ -364,7 +364,7 @@ export function createBuilding(id, level, palette) {
             valve.rotation.z = Math.sin(time * 0.4) * 0.15
         })
         ladder(group, 0.97, 0.24, tankHeight + 0.4, -0.13)
-    } else {
+    } else if (id === 'solar') {
         const count = 2 + Math.floor(level / 2)
         const mountHeight = 0.62 + level * 0.035
         for (let i = 0; i < count; i++) {
@@ -402,6 +402,225 @@ export function createBuilding(id, level, palette) {
         box(group, glass, 0, 0.5, -0.6, 0.24, 0.1, 0.02)
         for (let i = 0; i < 4; i++)
             box(group, dark, 0, 0.35 + i * 0.035, -0.605, 0.26, 0.012, 0.02)
+    } else if (id === 'shipyard') {
+        housing(
+            group,
+            painted,
+            0,
+            0.65,
+            -0.35,
+            1.65,
+            0.85 + level * 0.035,
+            1.15,
+        )
+        box(group, dark, 0, 0.62, 0.24, 1.25, 0.65, 0.025)
+        box(group, steel, 0, 0.26, 0.7, 1.35, 0.08, 0.95)
+        for (const side of [-1, 1]) {
+            beam(
+                group,
+                steel,
+                [side * 0.94, 0.25, 0.8],
+                [side * 0.94, h, 0.8],
+                0.045,
+            )
+            beam(
+                group,
+                gold,
+                [side * 0.94, h, -0.8],
+                [side * 0.94, h, 0.8],
+                0.045,
+            )
+        }
+        beam(group, steel, [-0.94, h, 0.8], [0.94, h, 0.8], 0.055)
+        const hull = mesh(
+            new THREE.ConeGeometry(0.2, 0.8, 6),
+            insulation,
+            group,
+            0,
+            0.48,
+            0.65,
+        )
+        hull.rotation.x = -Math.PI / 2
+        box(group, steel, 0, 0.45, 0.55, 0.85, 0.06, 0.32)
+        const hoist = box(group, gold, 0, h - 0.1, 0.8, 0.22, 0.16, 0.18)
+        motion.push((time) => {
+            hoist.position.x = Math.sin(time * 0.3) * 0.65
+        })
+    } else if (id === 'research') {
+        cylinder(group, insulation, 0, 0.48, 0, 0.7, 0.5)
+        const dome = mesh(
+            new THREE.SphereGeometry(
+                0.68,
+                20,
+                12,
+                0,
+                Math.PI * 2,
+                0,
+                Math.PI / 2,
+            ),
+            glass,
+            group,
+            0,
+            0.73,
+            0,
+        )
+        dome.scale.y = 0.8 + level * 0.04
+        for (const side of [-1, 1])
+            housing(group, painted, side * 0.85, 0.47, 0.25, 0.3, 0.45, 0.75)
+        const scanner = new THREE.Group()
+        scanner.position.set(0, 1.3 + level * 0.03, 0)
+        group.add(scanner)
+        mesh(
+            new THREE.TorusGeometry(0.38, 0.025, 6, 28),
+            steel,
+            scanner,
+        ).rotation.x = 0.5
+        box(scanner, cyan, 0, 0, 0, 0.6, 0.035, 0.035)
+        motion.push((time) => {
+            scanner.rotation.y = time * 0.22
+        })
+    } else if (id === 'robotics') {
+        housing(group, painted, 0, 0.55, -0.4, 1.6, 0.6 + level * 0.05, 0.85)
+        for (const x of [-0.5, 0, 0.5])
+            box(group, warmWindow, x, 0.65, 0.04, 0.3, 0.12, 0.025)
+        for (const side of [-1, 1]) {
+            cylinder(
+                group,
+                steel,
+                side * 0.65,
+                1.05 + level * 0.025,
+                -0.65,
+                0.12,
+                0.7,
+            )
+            const arm = new THREE.Group()
+            arm.position.set(side * 0.55, 0.35, 0.65)
+            group.add(arm)
+            cylinder(arm, dark, 0, 0, 0, 0.16, 0.15)
+            beam(arm, gold, [0, 0, 0], [0, 0.6, 0.12], 0.07)
+            beam(arm, steel, [0, 0.6, 0.12], [side * -0.38, 0.75, 0.25], 0.05)
+            box(arm, dark, side * -0.38, 0.75, 0.25, 0.15, 0.13, 0.17)
+            motion.push((time) => {
+                arm.rotation.y = Math.sin(time * 0.6 + side) * 0.35
+            })
+        }
+    } else if (
+        ['metalStorage', 'crystalStorage', 'deuteriumStorage'].includes(id)
+    ) {
+        const height = 0.55 + level * 0.09
+        const accent =
+            id === 'metalStorage'
+                ? gold
+                : id === 'crystalStorage'
+                  ? purple
+                  : cyan
+        for (const side of [-1, 1]) {
+            if (id === 'deuteriumStorage') {
+                cylinder(
+                    group,
+                    insulation,
+                    side * 0.48,
+                    0.25 + height / 2,
+                    0,
+                    0.35,
+                    height,
+                    20,
+                )
+                mesh(
+                    new THREE.SphereGeometry(0.35, 16, 8),
+                    steel,
+                    group,
+                    side * 0.48,
+                    0.25 + height,
+                    0,
+                ).scale.y = 0.4
+            } else {
+                housing(
+                    group,
+                    painted,
+                    side * 0.48,
+                    0.25 + height / 2,
+                    0,
+                    0.74,
+                    height,
+                    1.25,
+                )
+                for (let i = 0; i < 4; i++)
+                    box(
+                        group,
+                        steel,
+                        side * 0.48,
+                        0.35 + (height * i) / 4,
+                        0.635,
+                        0.65,
+                        0.025,
+                        0.025,
+                    )
+            }
+            box(group, accent, side * 0.48, 0.45, 0.65, 0.45, 0.1, 0.02)
+        }
+        fan(group, 0, 0.5, 0.85, 0.1)
+    } else if (id === 'rocket' || id === 'laser') {
+        cylinder(group, dark, 0, 0.4, 0, 0.6, 0.35, 20)
+        cylinder(
+            group,
+            steel,
+            0,
+            0.53 + level * 0.0175,
+            0,
+            0.42,
+            0.15 + level * 0.035,
+            20,
+        )
+        const turret = new THREE.Group()
+        turret.position.y = 0.65 + level * 0.035
+        group.add(turret)
+        housing(turret, painted, 0, 0.12, 0, 0.8, 0.33 + level * 0.025, 0.65)
+        if (id === 'rocket') {
+            for (const x of [-0.23, 0.23])
+                for (const y of [0.2, 0.5]) {
+                    const tube = cylinder(
+                        turret,
+                        steel,
+                        x,
+                        y,
+                        0.28,
+                        0.11,
+                        0.8 + level * 0.03,
+                        12,
+                    )
+                    tube.rotation.x = 0.9
+                    const tip = mesh(
+                        new THREE.ConeGeometry(0.09, 0.2, 12),
+                        dark,
+                        turret,
+                        x,
+                        y + 0.3,
+                        0.65,
+                    )
+                    tip.rotation.x = 0.9
+                }
+        } else {
+            const barrel = cylinder(
+                turret,
+                steel,
+                0,
+                0.25,
+                0.62,
+                0.1,
+                0.9 + level * 0.05,
+                12,
+            )
+            barrel.rotation.x = Math.PI / 2
+            box(turret, cyan, 0, 0.26, 1.1, 0.1, 0.1, 0.025)
+            for (const side of [-1, 1])
+                box(turret, dark, side * 0.28, 0.3, 0, 0.12, 0.3, 0.4)
+        }
+        motion.push((time) => {
+            turret.rotation.y = Math.sin(time * 0.2) * 0.4
+        })
+    } else {
+        throw new Error(`Unknown model: ${id}`)
     }
     // Bolted electrical cabinets and subdued area lighting establish a common scale.
     housing(group, painted, -0.84, 0.4, -0.74, 0.28, 0.33, 0.28)

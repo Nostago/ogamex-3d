@@ -9,13 +9,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OGameX-3D · 0.3</title>
+    <title>OGameX-3D · 0.4</title>
     {{ $prototypeVite('resources/js/prototype3d/index.js') }}
 </head>
 <body class="prototype-3d">
 <div id="prototype" data-mode="colony">
     <header class="topbar">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.3</small></a>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.4</small></a>
         <span class="demo-tag"><i></i>{{ $t['demo'] }}</span>
         <a class="back-link" href="{{ url('/') }}">{{ $t['back'] }} ↗</a>
     </header>
@@ -41,8 +41,11 @@
         <aside class="colony-panel">
             <div class="panel-heading"><div><span class="eyebrow">{{ $t['command'] }}</span><h2 id="panel-title">{{ $t['colony'] }}</h2></div><span class="online-dot"></span></div>
             <div id="production-summary" class="production-summary"></div>
-            <div class="section-heading"><h3>{{ $t['structures'] }}</h3><span>04</span></div>
+            <div class="section-heading"><h3>{{ $t['structures'] }}</h3><span id="structure-count">04</span></div>
             <div id="building-list"></div>
+            <p id="plot-summary" class="plot-summary" aria-live="polite"></p>
+            <button id="toggle-build" class="upgrade-button" aria-expanded="false" aria-controls="builder">+ {{ $t['build_menu'] }}</button>
+            <section id="builder" hidden></section>
             <section id="building-info" aria-live="polite"></section>
             <section id="orbit-info" hidden><span class="eyebrow">{{ $t['orbit_network'] }}</span><h3>{{ $t['station'] }}</h3><p>{{ $t['orbit_description'] }}</p><div class="fleet-row">◁ <span>{{ $t['scout'] }}</span><b>02</b></div><div class="fleet-row">◇ <span>{{ $t['transport'] }}</span><b>01</b></div></section>
             <div class="demo-note"><span>◈</span><p>{{ $t['note'] }}</p></div>

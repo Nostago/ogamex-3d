@@ -49,6 +49,11 @@ Nach dem Download funktioniert die Demo ohne Internet.
 Maus ziehen: drehen. Mausrad oder +/−: zoomen.
 Gebäude anklicken: Details und sanfter Kamerafokus.
 Übersicht: zurück zum Planeten. Rotation: automatische Kameradrehung.
+Baumenü: Anlagentyp und freie Baufläche wählen, dann „Demo errichten“.
+Alternativ eine markierte freie Fläche in der 3D-Ansicht anklicken.
+Vorhandene Anlagen lassen sich über die scrollbare Gebäudeliste auswählen.
+Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle auch mehrfach.
+Schiffswerft und Verteidigung sind Modelle: keine Schiffsproduktion oder Kämpfe.
 Demo-Ausbau: Bauanimation, danach neue Stufe und Gebäudemodell (maximal Stufe 8).
 Während des Baus: Demo zurücksetzen oder Orbit wählen bricht den Ausbau ab.
 Orbit: Station und drei Beispielschiffe. Kamera kann jederzeit per Maus bewegt werden.

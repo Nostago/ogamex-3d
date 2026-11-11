@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from '../../resources/js/prototype3d/vendor/three.module.min.js';
+import { buildingCatalog } from '../../resources/js/prototype3d/catalog.js';
 import { createBuilding } from '../../resources/js/prototype3d/buildings.js';
 
 const keys = ['steel', 'painted', 'dark', 'concrete', 'insulation', 'gold', 'cyan', 'window', 'warmWindow', 'panel', 'purple', 'ore', 'contact'];
 const palette = Object.fromEntries(keys.map(key => [key, new THREE.MeshStandardMaterial()]));
-for (const id of ['metal', 'crystal', 'deuterium', 'solar']) {
+for (const id of Object.keys(buildingCatalog)) {
     test(`${id}: complete finite assemblies at every demo level, within geometry budget`, () => {
         let firstSize, lastSize;
         for (let level = 1; level <= 8; level++) {

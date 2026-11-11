@@ -1,13 +1,29 @@
-# OGameX-3D 0.3 ausprobieren
+# OGameX-3D 0.4 ausprobieren
 
 ## Lokale Demo ohne Server
 
-Die fertige ZIP-Datei liegt unter [`downloads/OGameX-3D-0.3.zip`](../downloads/OGameX-3D-0.3.zip).
-Auf GitHub „Download raw file“ wählen, entpacken und `OGameX-3D-0.3.html`
+Die fertige ZIP-Datei liegt unter [`downloads/OGameX-3D-0.4.zip`](../downloads/OGameX-3D-0.4.zip).
+Auf GitHub „Download raw file“ wählen, entpacken und `OGameX-3D-0.4.html`
 mit Safari, Chrome, Firefox oder Edge öffnen. Es ist kein Server und keine
-Installation erforderlich. Version 0.1 und 0.2 bleiben separat erhalten.
+Installation erforderlich. Alle früheren Demo-Versionen bleiben separat erhalten.
 
-Neu in 0.3:
+Neu in 0.4:
+
+- Zentraler Katalog mit zwölf Typen: vier Ressourcenanlagen, Schiffswerft,
+  Forschungslabor, Roboterfabrik, drei Ressourcenlager, Raketenwerfer und leichter Laser.
+- 16 feste, nummerierte Bauflächen auf der Planetenoberfläche. Im Baumenü Typ und
+  freie Fläche wählen; „Baufläche anzeigen“ fokussiert die Auswahl. Sichtbare freie
+  Flächen sind im Baumodus auch direkt in der 3D-Ansicht auswählbar.
+- „Demo errichten“ zeigt zuerst das Gerüst. Erst nach erfolgreichem Abschluss wird
+  die Fläche belegt. Reset oder Orbitwechsel bricht den Neubau ohne Belegung ab.
+- Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle mehrfach. Alle
+  Anlagen besitzen eigene Detailinformationen und sind bis Stufe 8 ausbaubar.
+- Straßen, Kabeltrassen, Versorgungsrohre, ein dekorativer Logistikknoten und drei
+  Transportfahrzeuge verbinden die Kolonie. Die Fahrzeuge sind eine Animation,
+  kein echtes Transport- oder Wirtschaftsmodell.
+- Die Gebäudeliste und die Desktop-Seitenleiste scrollen unabhängig vom Planeten.
+
+Erhalten aus 0.3:
 
 - Alle vier Anlagen wurden als technische Baugruppen neu modelliert: Schachtanlage
   mit Fachwerkträgern, Seilrollen und Förderband; Kristall-Verarbeitungsanlage;
@@ -88,9 +104,19 @@ Konfiguration und die vorhandenen jQuery-Einstiege bleiben erhalten.
 ```js
 await provider.load();       // { name, coordinates, buildings: [{ id, level, production }] }
 await provider.upgrade(id);  // derselbe vollständige Snapshot nach dem Ausbau
+await provider.build(type, plotId); // Neubau auf einer freien Fläche
 ```
 
-Die vier IDs sind `metal`, `crystal`, `deuterium`, `solar`. Die aktuelle Demo hat
+Die vier ursprünglichen Instanz-IDs sind `metal`, `crystal`, `deuterium`, `solar`.
+Neue Instanzen bekommen eine ID aus Typ und Fläche, beispielsweise
+`shipyard-plot-06`. Jeder Datensatz enthält `type`, `plotId`, `level`, `metric`
+und `value`; `production` bleibt für die ursprünglichen Ressourcen kompatibel.
+Snapshots enthalten außerdem `plots` mit `occupiedBy`. Katalog, Kategorien,
+Wiederholbarkeit und Koordinaten stehen in `catalog.js`. Der Provider validiert
+unbekannte Typen, fehlende/belegte Flächen und doppelte einzigartige Anlagen vor
+jeder Mutation. Lagerkapazitäten und Verteidigungskennwerte sind frei gewählte
+Demoangaben. Schiffswerft, Forschung und Verteidigung lösen keine echten
+Spielaktionen aus. Die aktuelle Demo hat
 zusätzlich `reset()`. Jeder Provider besitzt seinen eigenen flüchtigen Zustand;
 es gibt keine Speicherung in Datenbank, Local Storage oder Cookies durch den
 Prototyp. Die gewöhnliche Laravel-Session bleibt unverändert verfügbar.
@@ -145,7 +171,7 @@ Die Laravel-Seite muss laufen und die Assets müssen gebaut sein:
 
 ```sh
 (umask 022; npm run build)
-python3 scripts/codex/export-prototype.py --version 0.3 --output /workspace/exports/v0.3
+python3 scripts/codex/export-prototype.py --version 0.4 --output /workspace/exports/v0.4
 ```
 
 Der Export enthält CSS, JavaScript, Übersetzungen und die Three.js-Lizenz in
@@ -156,8 +182,8 @@ Den gesamten Browser-Test gegen genau diese Datei ohne Netzwerk ausführen:
 
 ```sh
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.3/OGameX-3D-0.3.html \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v03-artifacts \
+PROTOTYPE_HTML=/workspace/exports/v0.4/OGameX-3D-0.4.html \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v04-final-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 
