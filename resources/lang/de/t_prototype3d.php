@@ -16,7 +16,7 @@ return [
     'zoom_in' => 'Vergrößern',
     'zoom_out' => 'Verkleinern',
     'rotate' => 'Rotation',
-    'camera' => 'Kamera',
+    'camera' => 'Übersicht',
     'command' => 'KOMMANDOZENTRALE',
     'structures' => 'Infrastruktur',
     'orbit_network' => 'ORBITALES NETZWERK',
@@ -50,4 +50,7 @@ return [
     'solar_description' => 'Versorgt die Kolonie mit Energie aus Sonnenlicht.',
     'units' => 'Einheiten',
     'demo_stats' => 'Beispielproduktion',
+    'build_progress' => 'Baufortschritt',
+    'cancelled' => 'Demo-Ausbau abgebrochen',
+    'build_error' => 'Der Demo-Ausbau konnte nicht abgeschlossen werden.',
 ];

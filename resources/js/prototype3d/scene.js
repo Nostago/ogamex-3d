@@ -2,6 +2,7 @@ import * as THREE from './vendor/three.module.min.js'
 
 // Procedural scene only. No remote textures, models, game services or mutations.
 export function createPlanetScene(host, labelsHost, onSelect, names) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 160)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -153,12 +154,15 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         )
         ring.rotation.x = Math.PI / 2
         ring.visible = data.id === selected
+        const model = new THREE.Group()
+        const motion = []
+        group.add(model)
         const height = 0.4 + data.level * 0.13
         if (data.id === 'metal') {
-            box(group, steel, 0, height / 2 + 0.2, 0, 1.1, height, 1.05)
+            box(model, steel, 0, height / 2 + 0.2, 0, 1.1, height, 1.05)
             for (let floor = 0; floor < data.level; floor++) {
                 box(
-                    group,
+                    model,
                     cyan,
                     0,
                     0.35 + floor * 0.13,
@@ -169,53 +173,139 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                 )
             }
             for (let side of [-1, 1]) {
-                cylinder(group, dark, side * 0.85, 0.7, 0, 0.22, 1)
-                cylinder(group, gold, side * 0.85, 1.22, 0, 0.15, 0.08)
+                cylinder(model, dark, side * 0.85, 0.7, 0, 0.22, 1)
+                cylinder(model, gold, side * 0.85, 1.22, 0, 0.15, 0.08)
             }
             const drill = mesh(
                 new THREE.ConeGeometry(0.38, 0.8, 6),
                 steel,
-                group,
+                model,
                 0,
                 height + 0.55,
                 0,
             )
             drill.rotation.z = Math.PI
+            // Working drill, overhead gantry and moving ore conveyor.
+            motion.push((time) => {
+                drill.rotation.y = time * 0.85
+            })
+            for (const side of [-1, 1]) {
+                box(
+                    model,
+                    gold,
+                    side * 0.58,
+                    height + 0.5,
+                    -0.5,
+                    0.09,
+                    1.1,
+                    0.09,
+                )
+            }
+            box(model, gold, 0, height + 1.05, -0.5, 1.3, 0.09, 0.1)
+            box(model, dark, 0, 0.32, 0.9, 1.55, 0.18, 0.35)
+            for (let i = 0; i < 3; i++) {
+                const ore = box(model, gold, 0, 0.5, 0.9, 0.17, 0.14, 0.16)
+                motion.push((time) => {
+                    ore.position.x = (((time * 0.22 + i / 3) % 1) - 0.5) * 1.35
+                })
+            }
         } else if (data.id === 'crystal') {
-            cylinder(group, steel, 0, 0.35, 0, 0.82, 0.35)
+            cylinder(model, steel, 0, 0.35, 0, 0.82, 0.35)
             for (let i = 0; i < data.level + 2; i++) {
                 const angle = i * 2.4,
                     radius = i ? 0.65 : 0
                 const crystal = mesh(
                     new THREE.ConeGeometry(0.25, height + (i % 3) * 0.25, 5),
                     i % 2 ? purple : cyan,
-                    group,
+                    model,
                     Math.cos(angle) * radius,
                     0.6 + height / 2,
                     Math.sin(angle) * radius,
                 )
                 crystal.rotation.z = Math.cos(angle) * 0.18
+                const restY = crystal.position.y
+                motion.push((time) => {
+                    crystal.position.y =
+                        restY + Math.sin(time * 1.2 + i) * 0.045
+                })
             }
+            const collector = mesh(
+                new THREE.TorusGeometry(0.94, 0.055, 6, 32),
+                gold,
+                model,
+                0,
+                0.64,
+                0,
+            )
+            collector.rotation.x = Math.PI / 2
+            for (let i = 0; i < 4; i++) {
+                const a = (i * Math.PI) / 2
+                box(
+                    model,
+                    steel,
+                    Math.cos(a),
+                    0.6,
+                    Math.sin(a),
+                    0.13,
+                    0.9,
+                    0.13,
+                )
+                mesh(
+                    new THREE.SphereGeometry(0.09, 8, 6),
+                    cyan,
+                    collector,
+                    Math.cos(a) * 0.94,
+                    Math.sin(a) * 0.94,
+                    0,
+                )
+            }
+            motion.push((time) => {
+                collector.rotation.z = time * 0.25
+            })
         } else if (data.id === 'deuterium') {
             for (let i = 0; i < 2 + Math.floor(data.level / 3); i++) {
                 const angle =
                     (i * Math.PI * 2) / (2 + Math.floor(data.level / 3))
                 const x = Math.cos(angle) * 0.65,
                     z = Math.sin(angle) * 0.65
-                cylinder(group, steel, x, height / 2 + 0.2, z, 0.36, height)
+                cylinder(model, steel, x, height / 2 + 0.2, z, 0.36, height)
                 mesh(
                     new THREE.SphereGeometry(0.36, 12, 8),
                     cyan,
-                    group,
+                    model,
                     x,
                     height + 0.2,
                     z,
                 ).scale.y = 0.4
-                cylinder(group, cyan, x, 0.35, z, 0.38, 0.06)
+                cylinder(model, cyan, x, 0.35, z, 0.38, 0.06)
             }
-            box(group, dark, 0, 0.4, 0, 1.4, 0.2, 0.15)
+            box(model, dark, 0, 0.4, 0, 1.4, 0.2, 0.15)
+            const pump = mesh(
+                new THREE.TorusGeometry(0.35, 0.085, 8, 20),
+                gold,
+                model,
+                0,
+                0.75,
+                0.45,
+            )
+            box(pump, steel, 0, 0, 0, 0.65, 0.07, 0.09)
+            motion.push((time) => {
+                pump.rotation.z = time * 0.7
+            })
+            for (let i = 0; i < 3; i++) {
+                const pipe = cylinder(
+                    model,
+                    dark,
+                    -0.9 + i * 0.16,
+                    0.45,
+                    -0.65,
+                    0.045,
+                    0.8,
+                )
+                pipe.rotation.z = Math.PI / 2
+            }
         } else {
-            cylinder(group, steel, 0, 0.65, 0, 0.15, 1.05)
+            cylinder(model, steel, 0, 0.65, 0, 0.15, 1.05)
             for (let i = 0; i < 2 + Math.floor(data.level / 2); i++) {
                 const array = new THREE.Group()
                 array.position.set(
@@ -224,14 +314,44 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                     (Math.floor(i / 2) - 1) * 0.65,
                 )
                 array.rotation.x = -0.3
-                group.add(array)
+                motion.push((time) => {
+                    array.rotation.x = -0.3 + Math.sin(time * 0.25) * 0.1
+                })
+                model.add(array)
                 box(array, gold, 0, 0, 0, 1.03, 0.08, 0.58)
                 box(array, panel, 0, 0.05, 0, 0.94, 0.025, 0.5)
                 for (let line = -1; line <= 1; line++)
                     box(array, cyan, line * 0.25, 0.07, 0, 0.012, 0.01, 0.49)
             }
         }
-        buildings.set(data.id, { group, ring })
+        // Lit control cabin and landing-pad hazard strips, shared by every facility.
+        box(model, steel, -0.65, 0.42, -0.6, 0.42, 0.42, 0.38)
+        box(model, cyan, -0.65, 0.47, -0.395, 0.3, 0.13, 0.025)
+        for (let i = 0; i < 5; i++) {
+            const stripe = box(
+                model,
+                gold,
+                -0.5 + i * 0.25,
+                0.22,
+                1.12,
+                0.12,
+                0.025,
+                0.2,
+            )
+            stripe.rotation.y = 0.35
+        }
+        for (const side of [-1, 1]) {
+            cylinder(model, steel, side * 1.1, 0.4, -0.8, 0.045, 0.4, 6)
+            mesh(
+                new THREE.SphereGeometry(0.075, 8, 6),
+                cyan,
+                model,
+                side * 1.1,
+                0.63,
+                -0.8,
+            )
+        }
+        buildings.set(data.id, { group, ring, motion })
         const label = document.createElement('span')
         label.className = 'building-label'
         label.textContent = `${names[data.id]} · ${data.level}`
@@ -248,6 +368,56 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         labels.forEach((label) => label.remove())
         labels.clear()
         data.buildings.forEach(buildModel)
+    }
+    let construction = null
+    function cancelConstruction() {
+        if (!construction) return
+        const current = construction
+        construction = null
+        disposeGroup(current.scaffold)
+        current.resolve(false)
+    }
+    function animateUpgrade(id) {
+        cancelConstruction()
+        const building = buildings.get(id)
+        if (!building) return Promise.resolve(false)
+        if (reducedMotion.matches) return Promise.resolve(true)
+        const scaffold = new THREE.Group()
+        scaffold.position.copy(building.group.position)
+        scaffold.quaternion.copy(building.group.quaternion)
+        colony.add(scaffold)
+        for (let i = 0; i < 4; i++) {
+            const a = Math.PI / 4 + (i * Math.PI) / 2
+            box(
+                scaffold,
+                gold,
+                Math.cos(a) * 1.24,
+                1.25,
+                Math.sin(a) * 1.24,
+                0.055,
+                2.3,
+                0.055,
+            )
+        }
+        const scanner = mesh(
+            new THREE.TorusGeometry(1.3, 0.045, 6, 48),
+            cyan,
+            scaffold,
+            0,
+            0.25,
+            0,
+        )
+        scanner.rotation.x = Math.PI / 2
+        return new Promise((resolve) => {
+            construction = {
+                id,
+                scaffold,
+                scanner,
+                elapsed: 0,
+                duration: 1.8,
+                resolve,
+            }
+        })
     }
     const orbit = new THREE.Group()
     world.add(orbit)
@@ -296,6 +466,8 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             0,
             0.45,
         ).scale.z = 2
+        ship.position.set(Math.cos(i * 2) * 11.4, 0, Math.sin(i * 2) * 11.4)
+        ship.rotation.y = -i * 2
         orbit.add(ship)
         ships.push(ship)
     }
@@ -306,15 +478,65 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         distance = 25,
         autoRotate = false
     const target = new THREE.Vector3(0, 2.6, 0)
-    const resetCamera = () => {
-        angle = 0.55
-        elevation = 0.82
-        distance = mode === 'orbit' ? 37 : 25
+    let cameraFlight = null
+    let focused = null
+    function flyTo(destination) {
+        host.dataset.camera = 'moving'
+        if (reducedMotion.matches) {
+            angle = destination.angle
+            elevation = destination.elevation
+            distance = destination.distance
+            target.copy(destination.target)
+            host.dataset.camera = 'idle'
+            cameraFlight = null
+        } else {
+            cameraFlight = destination
+        }
     }
+    function stopFlight() {
+        cameraFlight = null
+        host.dataset.camera = 'idle'
+    }
+    const resetCamera = () => {
+        focused = null
+        host.dataset.focus = ''
+        flyTo({
+            angle:
+                angle +
+                Math.atan2(Math.sin(0.55 - angle), Math.cos(0.55 - angle)),
+            elevation: 0.82,
+            distance: mode === 'orbit' ? 37 : 25,
+            target: new THREE.Vector3(0, mode === 'orbit' ? 0 : 2.6, 0),
+        })
+    }
+    function focus(id) {
+        const building = buildings.get(id)
+        if (!building || mode !== 'colony') return
+        focused = id
+        host.dataset.focus = id
+        autoRotate = false
+        const position = building.group.position
+        const destinationAngle = Math.atan2(position.x, position.z)
+        flyTo({
+            angle:
+                angle +
+                Math.atan2(
+                    Math.sin(destinationAngle - angle),
+                    Math.cos(destinationAngle - angle),
+                ),
+            elevation: 0.8,
+            distance: 11.5,
+            target: position
+                .clone()
+                .addScaledVector(position.clone().normalize(), 0.9),
+        })
+    }
+    host.dataset.camera = 'idle'
     const zoom = (delta) => {
+        stopFlight()
         distance = THREE.MathUtils.clamp(
             distance + delta,
-            mode === 'orbit' ? 25 : 17,
+            mode === 'orbit' ? 25 : focused ? 6 : 17,
             52,
         )
     }
@@ -349,6 +571,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         return object?.userData.buildingId
     }
     const down = (event) => {
+        stopFlight()
         pointer = {
             x: event.clientX,
             y: event.clientY,
@@ -398,6 +621,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         )
             return
         event.preventDefault()
+        stopFlight()
         if (event.key === 'ArrowLeft') angle -= 0.1
         if (event.key === 'ArrowRight') angle += 0.1
         if (event.key === 'ArrowUp') elevation = Math.min(1.35, elevation + 0.1)
@@ -430,12 +654,51 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         const delta = Math.min((time - previous) / 1000, 0.05)
         previous = time
         if (document.hidden) return
-        if (autoRotate && !pointer) angle += delta * 0.12
-        target.y = THREE.MathUtils.lerp(
-            target.y,
-            mode === 'orbit' ? 0 : 2.6,
-            0.06,
-        )
+        if (autoRotate && !pointer && !reducedMotion.matches)
+            angle += delta * 0.12
+        if (cameraFlight) {
+            const blend = 1 - Math.exp(-delta * 6)
+            angle = THREE.MathUtils.lerp(angle, cameraFlight.angle, blend)
+            elevation = THREE.MathUtils.lerp(
+                elevation,
+                cameraFlight.elevation,
+                blend,
+            )
+            distance = THREE.MathUtils.lerp(
+                distance,
+                cameraFlight.distance,
+                blend,
+            )
+            target.lerp(cameraFlight.target, blend)
+            if (
+                Math.abs(distance - cameraFlight.distance) < 0.01 &&
+                target.distanceTo(cameraFlight.target) < 0.01 &&
+                Math.abs(angle - cameraFlight.angle) < 0.001
+            ) {
+                angle = cameraFlight.angle
+                elevation = cameraFlight.elevation
+                distance = cameraFlight.distance
+                target.copy(cameraFlight.target)
+                stopFlight()
+            }
+        }
+        if (construction) {
+            construction.elapsed += delta
+            const progress = Math.min(
+                1,
+                construction.elapsed / construction.duration,
+            )
+            construction.scanner.position.y = 0.25 + progress * 2.2
+            host.dispatchEvent(
+                new CustomEvent('construction-progress', { detail: progress }),
+            )
+            if (progress === 1) {
+                const completed = construction
+                construction = null
+                disposeGroup(completed.scaffold)
+                completed.resolve(true)
+            }
+        }
         const framedDistance = distance * (camera.aspect < 0.85 ? 1.55 : 1)
         camera.position
             .set(
@@ -446,17 +709,20 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             .add(target)
         camera.lookAt(target)
         camera.updateMatrixWorld()
-        orbit.rotation.y = time * 0.00004
-        ships.forEach((ship, index) => {
-            const a = time * (0.00009 + index * 0.000015) + index * 2
-            ship.position.set(
-                Math.cos(a) * 11.4,
-                Math.sin(a * 2) * 0.2,
-                Math.sin(a) * 11.4,
-            )
-            ship.rotation.y = -a
-        })
-        buildings.forEach(({ group }, id) => {
+        if (!reducedMotion.matches) orbit.rotation.y = time * 0.00004
+        if (!reducedMotion.matches)
+            ships.forEach((ship, index) => {
+                const a = time * (0.00009 + index * 0.000015) + index * 2
+                ship.position.set(
+                    Math.cos(a) * 11.4,
+                    Math.sin(a * 2) * 0.2,
+                    Math.sin(a) * 11.4,
+                )
+                ship.rotation.y = -a
+            })
+        buildings.forEach(({ group, motion }, id) => {
+            if (!reducedMotion.matches)
+                motion.forEach((animate) => animate(time / 1000))
             group.getWorldPosition(worldPosition)
             projected
                 .copy(worldPosition)
@@ -483,13 +749,18 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     return {
         update,
         select,
+        focus,
+        animateUpgrade,
+        cancelConstruction,
         setMode,
         zoom,
         resetCamera,
         setRotation(value) {
             autoRotate = value
+            if (value) stopFlight()
         },
         dispose() {
+            cancelConstruction()
             cancelAnimationFrame(frame)
             resize.disconnect()
             scene.traverse((object) => {

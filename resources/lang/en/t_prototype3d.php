@@ -15,7 +15,7 @@ return [
     'zoom_in' => 'Zoom in',
     'zoom_out' => 'Zoom out',
     'rotate' => 'Rotation',
-    'camera' => 'Camera',
+    'camera' => 'Overview',
     'command' => 'COMMAND CENTER',
     'structures' => 'Infrastructure',
     'orbit_network' => 'ORBITAL NETWORK',
@@ -49,4 +49,7 @@ return [
     'solar_description' => 'Supplies the colony with energy from sunlight.',
     'units' => 'units',
     'demo_stats' => 'Sample production',
+    'build_progress' => 'Construction progress',
+    'cancelled' => 'Demo upgrade cancelled',
+    'build_error' => 'The demo upgrade could not be completed.',
 ];

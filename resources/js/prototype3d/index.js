@@ -16,7 +16,8 @@ let state = await provider.load()
 let selected = 'metal',
     scene,
     busy = false,
-    rotating = false
+    rotating = false,
+    operation = 0
 
 // Use DOM text nodes for provider content so a future HTTP adapter cannot inject HTML.
 function element(tag, className, text) {
@@ -26,8 +27,12 @@ function element(tag, className, text) {
     return node
 }
 function select(id) {
+    if (busy) return
+    if (root.dataset.mode === 'orbit') setView('colony')
+    stopRotation()
     selected = id
     scene?.select(id)
+    scene?.focus(id)
     renderUi()
 }
 function renderUi() {
@@ -55,6 +60,7 @@ function renderUi() {
             `building-item ${building.id === selected ? 'selected' : ''}`,
         )
         button.dataset.building = building.id
+        button.disabled = busy
         button.setAttribute('aria-pressed', String(building.id === selected))
         const text = element('span', 'building-name')
         text.append(
@@ -104,17 +110,43 @@ function renderUi() {
     upgrade.id = 'upgrade-building'
     upgrade.disabled = busy || building.level >= 8
     upgrade.addEventListener('click', async () => {
+        if (busy) return
+        const id = selected
+        const token = ++operation
         busy = true
+        root.dataset.building = id
+        status.textContent = t.working
         renderUi()
         try {
-            state = await provider.upgrade(selected)
+            const completed = scene ? await scene.animateUpgrade(id) : true
+            if (!completed || token !== operation) return
+            const snapshot = await provider.upgrade(id)
+            if (token !== operation) return
+            state = snapshot
             scene?.update(state)
             status.textContent = t.upgraded
+        } catch (error) {
+            if (token === operation) status.textContent = t.build_error
+            console.error(error)
         } finally {
-            busy = false
-            renderUi()
+            if (token === operation) {
+                busy = false
+                delete root.dataset.building
+                renderUi()
+            }
         }
     })
+    if (busy) {
+        const construction = element('div', 'construction-status')
+        construction.append(element('span', '', t.working))
+        const progress = element('progress')
+        progress.id = 'build-progress'
+        progress.max = 1
+        progress.value = 0
+        progress.setAttribute('aria-label', t.build_progress)
+        construction.append(progress)
+        info.append(construction)
+    }
     info.append(upgrade)
 }
 renderUi()
@@ -133,11 +165,36 @@ try {
     status.classList.add('render-error')
     console.error(error)
 }
+function stopRotation() {
+    rotating = false
+    scene?.setRotation(false)
+    document.querySelector('#rotate').setAttribute('aria-pressed', 'false')
+}
+function cancelUpgrade() {
+    ++operation
+    scene?.cancelConstruction()
+    busy = false
+    delete root.dataset.building
+}
+document
+    .querySelector('#scene')
+    .addEventListener('construction-progress', (event) => {
+        const progress = document.querySelector('#build-progress')
+        if (progress) progress.value = event.detail
+    })
 document.querySelector('#scene').addEventListener('scene-error', () => {
+    cancelUpgrade()
+    renderUi()
     status.textContent = t.error
     status.classList.add('render-error')
 })
 function setView(mode) {
+    if (busy) {
+        cancelUpgrade()
+        renderUi()
+        status.textContent = t.cancelled
+    }
+    stopRotation()
     root.dataset.mode = mode
     scene?.setMode(mode)
     document
@@ -162,15 +219,18 @@ document
 document
     .querySelector('#zoom-out')
     .addEventListener('click', () => scene?.zoom(2))
-document
-    .querySelector('#reset-camera')
-    .addEventListener('click', () => scene?.resetCamera())
+document.querySelector('#reset-camera').addEventListener('click', () => {
+    stopRotation()
+    scene?.resetCamera()
+})
 document.querySelector('#rotate').addEventListener('click', (event) => {
     rotating = !rotating
     scene?.setRotation(rotating)
     event.currentTarget.setAttribute('aria-pressed', String(rotating))
 })
 document.querySelector('#reset-demo').addEventListener('click', async () => {
+    cancelUpgrade()
+    stopRotation()
     state = await provider.reset()
     selected = 'metal'
     scene?.select(selected)

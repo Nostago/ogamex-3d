@@ -1,4 +1,27 @@
-# OGameX-3D 0.1 ausprobieren
+# OGameX-3D 0.2 ausprobieren
+
+## Lokale Demo ohne Server
+
+Die fertige ZIP-Datei liegt unter [`downloads/OGameX-3D-0.2.zip`](../downloads/OGameX-3D-0.2.zip).
+Auf GitHub „Download raw file“ wählen, entpacken und `OGameX-3D-0.2.html`
+mit Safari, Chrome, Firefox oder Edge öffnen. Es ist kein Server und keine
+Installation erforderlich. Version 0.1 bleibt separat erhalten.
+
+Neu in 0.2:
+
+- Förderband und rotierender Bohrer, schwebende Kristalle mit Kollektor,
+  Pumpenrad und langsam nachgeführte Solarfelder. Zusätzliche Kontrollkabinen,
+  beleuchtete Fenster, Positionsleuchten und Bodenmarkierungen.
+- Sanfter Kamerafokus bei Auswahl eines Gebäudes; „Übersicht“ führt zurück.
+  Maussteuerung unterbricht eine Kamerafahrt jederzeit.
+- Ausbau mit Gerüst, aufsteigendem Scanring und Fortschrittsanzeige. Erst nach
+  Ende der Animation ändern sich Stufe, Produktion und Modell. Reset oder
+  Orbitwechsel bricht laufende Demo-Bauten ohne Stufenänderung ab.
+- „Bewegung reduzieren“ wird berücksichtigt: Betriebsanimationen stoppen,
+  Kamerafokus und Ausbau erfolgen direkt.
+
+## Laravel-Integration für Entwickler
+
 
 Ein eigenständiger Three.js-Prototyp im bestehenden Laravel-/Vite-Projekt. Die
 normale Spieloberfläche und ihre Routen bleiben erhalten. Die Demoseite ist ohne
@@ -34,7 +57,7 @@ Die vollständige Abhängigkeitsinstallation muss nicht erneut ausgeführt werde
 - Jeder Ausbau verändert das Modell und die Beispielproduktion sofort. Stufe 8
   ist das Demo-Maximum. Es werden keine Rohstoffe abgebucht oder Bauaufträge erzeugt.
 - „Orbit“ zeigt eine prozedurale Raumstation und drei animierte Beispielschiffe.
-- „Rotation“ aktiviert die automatische Kameradrehung, „Kamera“ setzt die Sicht
+- „Rotation“ aktiviert die automatische Kameradrehung, „Übersicht“ setzt die Sicht
   zurück. Bei fokussierter Szene funktionieren Pfeiltasten sowie Plus/Minus.
 - „Demo zurücksetzen“ oder Neuladen stellt die Beispieldaten wieder her.
 
@@ -100,3 +123,30 @@ Andernorts `PLAYWRIGHT_MODULE` auf eine vorhandene Playwright-Installation setze
 bei Bedarf `CHROMIUM_PATH` und `PROTOTYPE_BASE_URL` anpassen. Der Browser-Test
 prüft Rendering, direkte 3D-Auswahl, sichtbaren Ausbau, Stufenlimit, Zurücksetzen,
 Orbit, Maussteuerung, Mobilansicht und Neuladen und speichert Screenshots.
+
+## Download reproduzieren
+
+Die Laravel-Seite muss laufen und die Assets müssen gebaut sein:
+
+```sh
+(umask 022; npm run build)
+python3 scripts/codex/export-prototype.py --version 0.2 --output /workspace/exports/v0.2
+```
+
+Der Export enthält CSS, JavaScript, Übersetzungen und die Three.js-Lizenz in
+**einer** HTML-Datei. Die ZIP enthält zusätzlich eine deutsche Anleitung. Der
+Export verändert keine Spielstände oder Abhängigkeiten.
+
+Den gesamten Browser-Test gegen genau diese Datei ohne Netzwerk ausführen:
+
+```sh
+PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
+PROTOTYPE_HTML=/workspace/exports/v0.2/OGameX-3D-0.2.html \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v02-artifacts \
+node tests/Frontend/prototype3d.browser.mjs
+```
+
+Das Testsystem setzt den HTML-Inhalt offline direkt in ein Browserdokument;
+verwaltete Cloud-Browser können die Navigation zu `file://` blockieren. Es prüft
+auch verzögerte Stufenänderung, Bauabbruch, Kamerafokus und reduzierte Bewegung.
+Die lokale HTML-Datei benötigt keine solchen Cloud-Browserrechte auf dem Mac.
