@@ -7,13 +7,26 @@ export function missionProgress(mission, now) {
               1,
               Math.max(
                   0,
-                  (now - mission.startedAt) /
-                      (mission.arrivesAt - mission.startedAt),
+                  (now -
+                      (mission.delivered
+                          ? mission.arrivesAt
+                          : mission.startedAt)) /
+                      ((mission.delivered
+                          ? mission.returnsAt
+                          : mission.arrivesAt) -
+                          (mission.delivered
+                              ? mission.arrivesAt
+                              : mission.startedAt)),
               ),
           )
 }
 export function missionShips(missions, targetId) {
     return missions
-        .filter((m) => m.status === 'flying' && m.targetId === targetId)
+        .filter(
+            (m) =>
+                m.status === 'flying' &&
+                m.kind !== 'transport' &&
+                m.targetId === targetId,
+        )
         .reduce((sum, m) => sum + m.ships.reduce((n, s) => n + s.count, 0), 0)
 }

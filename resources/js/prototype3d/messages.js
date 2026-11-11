@@ -75,6 +75,23 @@ export function createDemoInbox() {
                 })
             messages = messages.filter((item) => item.id !== id)
         },
+        transport(mission, createdAt, returned) {
+            messages.push({
+                id: `message-${nextId++}`,
+                tab: 'fleets',
+                subtab: 'transport',
+                key: returned ? 'transport_return' : 'transport_delivery',
+                viewed: false,
+                createdAt,
+                params: {
+                    name: mission.name,
+                    from: mission.originName,
+                    to: mission.targetName,
+                    ...mission.cargo,
+                },
+            })
+            messages = messages.slice(-100)
+        },
         arrival(mission, createdAt) {
             messages.push({
                 id: `message-${nextId++}`,

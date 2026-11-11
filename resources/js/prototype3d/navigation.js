@@ -3,6 +3,7 @@ export const pages = Object.freeze([
     'buildings',
     'ships',
     'fleets',
+    'galaxy',
     'messages',
 ])
 export function pageFromHash(hash) {

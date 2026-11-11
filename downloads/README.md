@@ -1,62 +1,57 @@
 # OGameX-3D als lokale Demo
 
-## Aktuelle Version 0.11
+## Aktuelle Version 0.12
 
-[OGameX-3D-0.11.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.11/downloads/OGameX-3D-0.11.zip),
-entpacken und `OGameX-3D-0.11.html` mit Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.12.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.12/downloads/OGameX-3D-0.12.zip),
+entpacken und `OGameX-3D-0.12.html` mit Safari, Chrome, Firefox oder Edge öffnen.
 Kein Server und keine Installation nötig. JavaScript und WebGL müssen aktiv sein.
 Nach dem Download funktioniert die Demo ohne Internet.
 
-Neu in 0.11:
+Neu in 0.12:
 
-- **Alle Aufträge abarbeiten:** unter Schiffe die gesamte Liste in ihrer
-  Reihenfolge ausführen. Die Verarbeitung läuft bei Menüwechsel weiter.
-- **Sicher stoppen:** Unterbrechen und Planetenwechsel stoppen den Lauf.
-  Offene Aufträge bleiben für später erhalten; Reset verwirft sie.
-  Fertige Schiffe werden pro Auftrag genau einmal gutgeschrieben.
+- **Galaxie:** eigener Navigationsbereich mit Galaxie-/Systemwahl, Systempfeilen,
+  Positionen 1–15 und Expeditionsplatz 16. Eigene Kolonien öffnen oder direkt als
+  Transportziel übernehmen. Fremde Planeten sind gekennzeichnete Beispieldaten.
+- **Rohstoffe:** Metall, Kristall und Deuterium pro Planet, immer oben sichtbar.
+- **Transport:** verfügbaren Verband und Zielkolonie auswählen, Ladung eingeben,
+  Kapazität und Bestände prüfen und starten. Beim Start abgebucht, nach 15 s
+  zugestellt, nach weiteren 15 s kehren die Schiffe leer zurück. Bis zur Rückkehr
+  ist die Flotte gesperrt. Keine doppelt gezählten Schiffe oder Rohstoffe.
+- **Berichte:** Zustellung und Rückkehr unter Nachrichten → Flotten → Transport.
+- **Erhalten:** vollständige Auftragsliste automatisch abarbeiten, Flottenverwaltung,
+  Verlegungen, Nachrichten und die bisherigen Gebäude-/Orbitansichten.
 
-Seit 0.10:
+Ausprobieren: Unter Flotten einen Verband mit einem Kleinen Transporter anlegen.
+Unter Galaxie im eigenen System `[1:42]` Position 6 wählen, „Transport planen“
+drücken und 3.000 Metall, 1.000 Kristall sowie 500 Deuterium einladen. Starten,
+Zielbestand und Bericht prüfen, danach die Rückkehr abwarten.
 
-- **Verlegungsmissionen:** bestehende Flotte und Zielplanet wählen, Zusammensetzung
-  und Demo-Flugzeit prüfen und starten. Fortschritt und Ankunft stehen unter Flotten.
-- **Korrekte Bestände:** unterwegs sind die Schiffe gebunden. Bei Ankunft wird die
-  Flotte samt Stückzahlen genau einmal zum Ziel übertragen und wieder freigegeben.
-  Keine verlorenen oder doppelt gezählten Schiffe; Bearbeiten und Auflösen sind
-  während des Flugs gesperrt.
-- **Nachrichten:** neue Hauptseite mit den Kategorien und Unterkategorien des
-  Originals, Ungelesenzählern, Nachrichtendetails, Löschen und Zehner-Pagination.
-  Demo-Ankünfte erzeugen einen Bericht unter Flotten → Sonstiges.
-- **Originalpostfach:** im Laravel-Projekt ist über `/messages?prototype3d=1`
-  eine optionale neue Gestaltung verfügbar. Die bisherigen Controller, Services,
-  Berichte, Berechtigungsprüfungen und AJAX-Aktionen bleiben erhalten. In der ZIP
-  sind ausschließlich lokale Beispielnachrichten enthalten.
+Startbestand je Planet: 100.000 Metall / 50.000 Kristall / 25.000 Deuterium.
+Basis-Laderaum: Kleiner Transporter 5.000, Leichter Jäger 50, Spionagesonde 0.
+Keine automatische Produktion, Baukosten, Forschungsboni, Treibstoffkosten oder
+originalgetreuen Flugzeiten. Transporte sind auf eigene Beispielkolonien begrenzt;
+Angriffe, Spionage, Expeditionen und Kolonisation sind noch nicht verfügbar.
 
-Ausprobieren: Unter Schiffe den Großflotten-Beispielbestand laden. Unter Flotten
-einen Verband anlegen, einen anderen Planeten wählen und „Verlegung bestätigen
-und starten“ drücken. Nach 15 Sekunden Demo-Flugzeit den Zielplaneten öffnen.
-Unter Nachrichten → Flotten → Sonstiges den Ankunftsbericht lesen.
+Menüwechsel stoppen laufende Aufträge und Missionen nicht. Hintergrundtabs holen
+fällige Missionen beim Rückwechsel nach. Reset stoppt betroffene Demo-Flüge und
+verwirft lokale Demodaten. Bei Zielreset wird noch unzugestellte Ladung an den
+Ursprung erstattet; bereits zugestellte Ladung wird nicht rückwirkend erstattet.
+Neuladen setzt die gesamte Demo zurück. Es wird keine Post an andere Spieler gesendet.
 
-Die Flugzeit ist frei gewählt und bildet keine echte OGame-Berechnung ab.
-Keine echten Treibstoffkosten, Transporte oder Kämpfe. Die Zeit läuft bei
-Seitenwechsel weiter; nach Rückkehr aus einem Hintergrundtab werden fällige
-Ankünfte nachgeholt. Alle Mengen bleiben Zahlen, mit höchstens zwölf Orbitmodellen.
-Reset stoppt betroffene Flüge sicher; Neuladen setzt alle Demodaten zurück.
-Historische Nachrichten sind planetenübergreifend und bleiben bei lokalem Reset
-bestehen. Es werden keine Nachrichten an andere Spieler gesendet.
-
-Die ZIP enthält eine Anleitung und die HTML-Datei die Three.js-MIT-Lizenz.
-Kein Zugriff auf echte Spielstände. Der angemeldete Server-Link zum Originalpostfach
-ist im Offline-Export entfernt. Abhängigkeiten und Lockfiles bleiben unverändert.
+Die ZIP enthält die deutsche Anleitung und eine HTML-Datei mit Three.js-MIT-Lizenz.
+Keine echten Spielstände. Abhängigkeiten und Lockfiles bleiben unverändert.
 
 SHA-256:
 
 ```text
-37c88c976942a282c64bce75906d57b06b20320343516a3e9db43b42ec1027a6
+34e2541bc476dabaf27309c38e3922a2d45448c5d99ba7279066307280708d0a
 ```
 
 [Dokumentation und Testbefehle](../docs/OGAMEX-3D.md).
 
 ## Frühere Versionen
+
+- [Version 0.11](OGameX-3D-0.11.zip)
 
 - [Version 0.10](OGameX-3D-0.10.zip)
 

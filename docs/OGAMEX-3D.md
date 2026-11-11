@@ -1,15 +1,63 @@
-# OGameX-3D 0.11 ausprobieren
+# OGameX-3D 0.12 ausprobieren
 
 ## ZIP-Demo ohne Server
 
-[OGameX-3D-0.11.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.11/downloads/OGameX-3D-0.11.zip),
-entpacken und `OGameX-3D-0.11.html` in Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.12.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.12/downloads/OGameX-3D-0.12.zip),
+entpacken und `OGameX-3D-0.12.html` in Safari, Chrome, Firefox oder Edge öffnen.
 Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
 aktiv sein. Nach dem Download funktioniert die Demo vollständig ohne Internet.
 Die ZIP enthält zusätzlich eine deutsche Anleitung und die HTML-Datei enthält
-die Three.js-Lizenz. Versionen 0.1–0.10 bleiben unter `downloads/` erhalten.
+die Three.js-Lizenz. Versionen 0.1–0.11 bleiben unter `downloads/` erhalten.
 
-## Neu in 0.11: Aufträge automatisch abarbeiten
+## Neu in 0.12: Galaxie, Rohstoffbestände und Transporte
+
+**Galaxie** ist ein eigener Hauptbereich. Galaxie und System eingeben oder mit
+Systempfeilen navigieren; „Eigenes System“ führt nach `[1:42]`. Die Übersicht
+enthält die Positionen 1–15 und einen gekennzeichneten Expeditionsplatz 16.
+Die drei eigenen Kolonien befinden sich auf Position 6–8; fremde Beispielplaneten
+auf 3 und 10. Eine Position auswählen, um Details zu sehen. Eigene Kolonien
+lassen sich öffnen und als Transportziel übernehmen. Fremde Spieleraktionen,
+Kolonisation, Expeditionen, Monde und Trümmerfelder werden noch nicht simuliert.
+Die Grenzen von 3 Galaxien und 499 Systemen sind lokale Beispieldaten; das echte
+Universum wird später über einen Serveradapter geladen.
+
+Oben stehen **Metall, Kristall und Deuterium** des gewählten Planeten. Jeder
+startet mit 100.000 / 50.000 / 25.000. Es gibt noch keine passive Produktion,
+Baukosten, Energiebilanz oder Speicherung nach dem Schließen der HTML-Datei.
+
+Unter **Flotten → Transport planen** eine bereits angelegte, verfügbare Flotte,
+eine eigene Zielkolonie und Rohstoffmengen wählen. Die Mengen müssen ganzzahlig,
+nicht negativ, zusammen größer als null und durch Bestand und Laderaum gedeckt
+sein. Die Prüfung erfolgt zusätzlich im Provider vor jeder Änderung. Ausstehende
+Schiffe können nicht verwendet und Flotten nicht doppelt gestartet werden.
+
+Die Basis-Ladekapazitäten entsprechen `CivilShipObjects.php` und
+`MilitaryShipObjects.php`: Kleiner Transporter 5.000, Leichter Jäger 50,
+Spionagesonde 0. Forschungs-/Klassenboni und Treibstoff sind ausgenommen.
+`TransportMission::processArrival` ist das Vorbild für Zustellung und leeren
+Rückflug; alle neuen Abläufe verwenden ausschließlich lokale Beispieldaten.
+
+Beim Start wird Ladung sofort vom Ursprung abgebucht und bleibt im Missions-DTO.
+Nach **15 Sekunden** wird sie genau einmal zugestellt. Der Verband bleibt am
+Ursprung reserviert und bis zur Rückkehr nach **weiteren 15 Sekunden** gesperrt.
+Seine Schiffe werden am Ziel nicht dem Bestand hinzugefügt. Erst zuhause werden
+sie wieder frei. Nachrichten → Flotten → Transport enthält die Berichte zu
+Zustellung und Rückkehr. Menüwechsel und Hintergrundtabs stoppen die Missionen
+nicht; beim nächsten Abgleich werden auch beide Flugabschnitte nachgeholt.
+
+Reset stoppt betroffene Demo-Missionen. Wird das Ziel vor Zustellung zurückgesetzt,
+kehrt noch unzugestellte Ladung in den unveränderten Ursprung zurück und die
+Flotte wird freigegeben. Nach Zustellung gibt es keine rückwirkende Erstattung.
+Reset des Ursprungs setzt dessen Daten auf den Startzustand; verspätete Ankünfte
+bleiben ausgeschlossen. Das ist eine Reset-Regel der Demo, keine OGame-Mission.
+
+Ausprobieren: Unter Flotten einen Verband mit einem Kleinen Transporter anlegen,
+unter Galaxie Position 6 auswählen und „Transport planen“ drücken. 3.000 Metall,
+1.000 Kristall und 500 Deuterium einladen und starten. Nach Zustellung die Kolonie
+öffnen, ihren Bestand sowie den Bericht prüfen. Nach Rückkehr die Flotte erneut
+verwenden. Der Auftragssammelbutton aus 0.11 bleibt unverändert verfügbar.
+
+## Seit 0.11: Aufträge automatisch abarbeiten
 
 Unter **Schiffe** mehrere Mengenaufträge vormerken und **Alle Aufträge abarbeiten**
 drücken. Die Liste wird in ihrer Reihenfolge verarbeitet, ein Auftrag nach dem
@@ -43,7 +91,7 @@ Die Uhr verwendet Zeitstempel, keinen Fortschrittszähler pro Bild. Seitenwechse
 und eine geschlossene 3D-Vorschau stoppen Missionen nicht. Nach Rückkehr aus einem
 Hintergrundtab werden fällige Ankünfte nachgeholt. Die kurze Demo-Flugzeit bildet
 keine echte OGame-Flugzeit, Geschwindigkeitsauswahl oder Treibstoffberechnung ab.
-Es gibt weiterhin keine Transport-, Angriffs- oder Kampfmissionen.
+Es gibt weiterhin keine Angriffs- oder Kampfmissionen.
 
 Reset eines Zielplaneten bricht seine noch eintreffenden Demo-Missionen ab und
 gibt die Ursprungsflotten wieder frei. Reset des Ursprungs entfernt dessen
@@ -52,7 +100,7 @@ unverändert. Neuladen setzt die gesamte Offline-Demo zurück.
 
 ### Nachrichten: Originalstruktur und neue Gestaltung
 
-Die fünfte Hauptseite **Nachrichten** übernimmt die Kategorien aus
+Die Hauptseite **Nachrichten** übernimmt die Kategorien aus
 `MessageService::$tabs`: Flotten, Kommunikation, Wirtschaft, Universum, System,
 Favoriten. Bei Flotten gibt es Spionage, Kampfberichte, Expeditionen, Transport
 und Sonstiges; Kommunikation enthält Nachrichten und Informationen.
@@ -145,8 +193,8 @@ JavaScript-Integerbereich werden vor einer Änderung abgewiesen.
 Erhalten aus 0.6 sind die detaillierte Schiffswerft und Verteidigung, Nanitenfabrik
 und Fusionskraftwerk, insgesamt 15 Anlagentypen, drei prozedurale Schiffsmodelle
 und die nach Kategorien gegliederte Gebäudeliste. Keine echten Rohstoffkosten,
-Bauzeiten, Forschungsvoraussetzungen, Flugmissionen, Transporte, Spionage oder
-Kämpfe. Nanitenfabrik und Fusionskraftwerk beeinflussen keine echte Wirtschaft.
+Bauzeiten, Forschungsvoraussetzungen, Spionage oder Kämpfe.
+Verlegungen und Transporte sind vereinfachte lokale Demo-Missionen. Nanitenfabrik und Fusionskraftwerk beeinflussen keine echte Wirtschaft.
 Eine Kampfvisualisierung ist nicht Teil dieser Version.
 
 ## Planeten und automatische Bebauung
@@ -249,10 +297,13 @@ Auftragsmengen und begrenzte Formationen und enthält die Beispielbestände;
 `data.js` verwaltet Zustand und validiert vor jeder Mutation. `fleetManagement.js` prüft Reservierungen und Missionssperren,
 `fleetManagerUi.js` zeichnet Liste und Editor. `missions.js` enthält die kurze
 Demo-Flugzeit und Fortschrittsprojektion, `missionUi.js` die Missionsübersicht.
+`galaxy.js` liefert Systempositionen, `galaxyUi.js` zeigt die Galaxieauswahl.
+`transport.js` validiert Ladung und Basis-Laderaum, `transportUi.js` übernimmt
+die Transportplanung.
 `messages.js` hält das lokale Beispielpostfach, `messageUi.js` stellt es dar.
 Ziel-Flottenplätze und Mengen werden vor dem Start reserviert; fällige Ankünfte
 werden im Provider synchron abgeschlossen und sind dadurch idempotent. `buildingGroups.js` ordnet die
-Anlagen den drei Übersichten zu. `navigation.js` definiert die fünf Hash-Routen. `scene.js` erhält
+Anlagen den drei Übersichten zu. `navigation.js` definiert die sechs Hash-Routen. `scene.js` erhält
 Snapshots und zeichnet nur; `index.js` verbindet UI, Provider und Animationen.
 Abbruchmarken verhindern, dass verspätete Animationsabschlüsse auf dem falschen
 Planeten angewandt werden.
@@ -273,7 +324,9 @@ await provider.loadFleetExample('armada'); // ohne offene Aufträge oder Flotten
 await provider.saveFleet('Alpha', { lightFighter: 10000 });
 await provider.saveFleet('Alpha II', { lightFighter: 12000 }, fleetId);
 await provider.disbandFleet(fleetId);
-await provider.startMission(fleetId, 'small');
+await provider.startMission(fleetId, 'small'); // Verlegung
+await provider.startMission(fleetId, 'small', 'transport', { metal: 3000, crystal: 1000, deuterium: 500 });
+// alternativer Start desselben verfügbaren Verbands, kein zweiter gleichzeitiger Flug
 await provider.advanceMissions(); // Snapshot bei Ankunft, sonst null
 await provider.readMessages('fleets', 'other', 1);
 await provider.deleteMessage(messageId);
@@ -288,10 +341,11 @@ await provider.reset();              // nur aktueller Planet
     field_current, field_max, terraformer,
     terraformer_bonus, effective_max, remaining
   },
+  resources: { metal, crystal, deuterium }, // lokaler Bestand ohne passive Produktion
   fleet: [{ type, count }], // gesamter fertiggestellter Bestand
   shipInventory: [{ type, completed, ready, available, assigned, onMission, inProduction }],
   managedFleets: [{ id, name, status, ships: [{ type, count }] }], // docked / mission
-  missions: [{ id, fleetId, originId, targetId, ships, startedAt, arrivesAt, status }],
+  missions: [{ id, fleetId, originId, targetId, ships, startedAt, arrivesAt, status, kind, cargo, delivered, returnsAt }],
   messages: [{ id, tab, subtab, key, params, viewed, createdAt }],
   incomingTotal, // für Zielkapazitäts- und Integerprüfungen reservierte Mengen
   fleetSummary: { total, pending },
@@ -370,7 +424,7 @@ Playwright-/Chromium-Installation außerhalb der Projektabhängigkeiten:
 
 ```sh
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v011-artifacts \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v012-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 
@@ -379,9 +433,12 @@ Andernorts `PLAYWRIGHT_MODULE`, bei Bedarf `CHROMIUM_PATH` und
 idempotente Ankunft, Hin-/Rück- und gleichzeitige Flüge, nachgeholte Ankünfte,
 Missionssperren, Zielkapazitätsreservierungen, Reset während eines Flugs,
 Nachrichten-Pagination, Gelesenstatus, Löschung und die bisherigen Bestände,
-Modelle und Baufelder. Browserchecks durchlaufen zwei echte zeitgesteuerte
+Modelle und Baufelder. Weitere Tests prüfen Galaxiegrenzen, Koordinaten,
+Transportvalidierung, doppelte Starts, Ressourcenreservierung, Zustellung,
+leere Rückkehr, Nachholen und Reset/Erstattung. Browserchecks durchlaufen zwei echte zeitgesteuerte
 Demo-Verlegungen, Nachrichten öffnen/lesen/löschen, Ankunftsberichte,
-Planetenwechsel, Flottenbearbeitung, Mobilansichten und die bestehende Bedienung.
+Planetenwechsel, Flottenbearbeitung, Mobilansichten, Galaxienavigation,
+Zielübergabe, Transportbeladung, Zustellung und Rückflug.
 Der Offline-Test prüft, dass keine HTTP-Anfragen und keine lokalen Server-Links
 im Paket verbleiben. PHP-Tests prüfen auch das Originalnachrichtenmodul und den
 optionalen Theme-Parameter bei ansonsten unveränderter Originalroute.
@@ -391,10 +448,10 @@ optionalen Theme-Parameter bei ansonsten unveränderter Originalroute.
 Bei laufender Laravel-Seite und gebauten Assets:
 
 ```sh
-python3 scripts/codex/export-prototype.py --version 0.11 --output /workspace/exports/v0.11
+python3 scripts/codex/export-prototype.py --version 0.12 --output /workspace/exports/v0.12
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.11/OGameX-3D-0.11.html \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v011-artifacts \
+PROTOTYPE_HTML=/workspace/exports/v0.12/OGameX-3D-0.12.html \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v012-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 

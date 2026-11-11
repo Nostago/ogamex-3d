@@ -1399,7 +1399,7 @@ footer {
 }
 @media (max-width: 850px) {
     .main-nav {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(6, minmax(0, 1fr));
     }
     .main-nav a {
         font-size: 9px;
@@ -1410,5 +1410,138 @@ footer {
         right: 6px;
         font-size: 8px;
         padding: 2px 5px;
+    }
+}
+
+/* Galaxy and transport workspaces: lists remain primary, one shared 3D canvas. */
+.resource-balances {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 30px;
+    padding: 12px 16px;
+    background: #0b1b29;
+    border-bottom: 1px solid #254459;
+    font-size: 12px;
+    color: #a0bfd3;
+}
+.resource-balances strong {
+    color: #78dcff;
+    margin-left: 6px;
+}
+.galaxy-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 12px;
+}
+.galaxy-controls label {
+    display: grid;
+    gap: 6px;
+    max-width: 120px;
+}
+.galaxy-controls input {
+    width: 100%;
+}
+.galaxy-row {
+    display: grid;
+    grid-template-columns: 76px 32px minmax(0, 1fr) 90px;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    margin-top: 8px;
+    text-align: left;
+}
+.galaxy-row[aria-pressed='true'] {
+    border-color: #62daff;
+    background: #10394b;
+}
+.galaxy-row small,
+.galaxy-coordinate {
+    color: #91afc4;
+    font-size: 11px;
+}
+.galaxy-sphere {
+    display: block;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle at 28% 25%,
+        #7ee4e8,
+        #256a95 50%,
+        #061725 90%
+    );
+    box-shadow: 0 0 10px #178ecc44;
+}
+.galaxy-sphere.foreign {
+    background: radial-gradient(
+        circle at 28% 25%,
+        #ddb781,
+        #7c5143 50%,
+        #161523 90%
+    );
+}
+.galaxy-sphere.empty,
+.galaxy-sphere.expedition {
+    background: transparent;
+    border: 1px dashed #486478;
+    box-shadow: none;
+}
+.galaxy-detail {
+    align-self: start;
+}
+.galaxy-detail button {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+}
+.transport-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+.transport-form label {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    color: #a0bfd3;
+    font-size: 12px;
+}
+.transport-form input,
+.transport-form select {
+    width: 100%;
+    min-width: 0;
+}
+.transport-form p,
+.transport-form > button {
+    grid-column: 1 / -1;
+}
+#transport-planner {
+    margin: 20px 0;
+    scroll-margin-top: 20px;
+}
+#run-all-ship-orders {
+    margin-top: 10px;
+}
+@media (max-width: 680px) {
+    .main-nav {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+    .main-nav a {
+        min-width: 0;
+        padding-left: 2px;
+        padding-right: 2px;
+        font-size: 8px;
+    }
+    .galaxy-row {
+        grid-template-columns: 65px 26px minmax(0, 1fr);
+        gap: 8px;
+    }
+    .galaxy-row small {
+        grid-column: 3;
+    }
+    .transport-form {
+        grid-template-columns: 1fr;
     }
 }

@@ -1,4 +1,4 @@
-// Visual demo types only: no real costs, combat, cargo or flight calculations.
+// Visual demo types only: no real costs, combat or flight calculations.
 export const shipCatalog = Object.freeze({
     lightFighter: Object.freeze({ role: 'ship_role_fighter' }),
     smallCargo: Object.freeze({ role: 'ship_role_cargo' }),

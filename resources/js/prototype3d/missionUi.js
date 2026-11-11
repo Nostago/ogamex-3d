@@ -13,7 +13,7 @@ export function renderMissions(host, state, t, number, onTarget) {
             node(
                 'h3',
                 '',
-                `${mission.name} · ${t[mission.status === 'flying' ? 'mission_flying' : 'mission_arrived']}`,
+                `${mission.name} · ${t[mission.status === 'flying' ? (mission.delivered ? 'transport_returning' : 'mission_flying') : 'mission_arrived']}`,
             ),
             node('p', '', `${mission.originName} → ${mission.targetName}`),
             node(
@@ -24,6 +24,21 @@ export function renderMissions(host, state, t, number, onTarget) {
                     .join(' · '),
             ),
         )
+        if (mission.kind === 'transport')
+            card.append(
+                node(
+                    'p',
+                    'muted',
+                    `${t.transport_mission}: ${Object.entries(mission.cargo)
+                        .map(
+                            ([key, value]) =>
+                                `${t[`resource_${key}`]} ${number.format(value)}`,
+                        )
+                        .join(
+                            ' · ',
+                        )} · ${t[mission.status === 'arrived' ? 'transport_home' : mission.delivered ? 'transport_returning' : 'transport_outbound']}`,
+                ),
+            )
         const bar = node('progress')
         bar.max = 1
         bar.value = missionProgress(mission, Date.now())
@@ -51,7 +66,7 @@ export function updateMissionProgress(host, state, t) {
             remaining.textContent =
                 mission.status === 'arrived'
                     ? t.mission_arrived
-                    : `${t.arrival_in} ${Math.max(0, Math.ceil((mission.arrivesAt - Date.now()) / 1000))} s`
+                    : `${t.arrival_in} ${Math.max(0, Math.ceil(((mission.delivered ? mission.returnsAt : mission.arrivesAt) - Date.now()) / 1000))} s`
     }
 }
 function node(tag, cls, text) {

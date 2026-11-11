@@ -4,7 +4,7 @@ import {
     pages,
     pageFromHash,
 } from '../../resources/js/prototype3d/navigation.js';
-test('five workspaces have stable offline hash routes and unknown routes fall back to planet', () => {
+test('six workspaces have stable offline hash routes and unknown routes fall back to planet', () => {
     for (const page of pages) assert.equal(pageFromHash(`#${page}`), page);
     for (const hash of [
         '',
@@ -15,5 +15,5 @@ test('five workspaces have stable offline hash routes and unknown routes fall ba
         '#<script>',
     ])
         assert.equal(pageFromHash(hash), 'planet');
-    assert.equal(pages.length, 5);
+    assert.equal(pages.length, 6);
 });

@@ -1,3 +1,5 @@
+import { createGalaxyUi } from './galaxyUi.js'
+import { createTransportUi } from './transportUi.js'
 import { createOrderRunner } from './orderRunner.js'
 import '../../css/prototype3d.css'
 import {
@@ -68,6 +70,7 @@ const previews = {
     ships: false,
     fleets: false,
     messages: false,
+    galaxy: false,
 }
 const orderRunner = createOrderRunner()
 const scenePanel = document.querySelector('.scene-panel')
@@ -83,6 +86,38 @@ const fleetManager = createFleetManager({
         state = snapshot
         scene?.update(state)
         renderUi()
+    },
+})
+const transportUi = createTransportUi({
+    host: document.querySelector('#transport-planner'),
+    t,
+    number,
+    provider,
+    planets,
+    getState: () => state,
+    isBusy: () => busy,
+    onChange(snapshot) {
+        state = snapshot
+        scene?.update(state)
+        renderUi()
+    },
+})
+const galaxyUi = createGalaxyUi({
+    host: document.querySelector('#galaxy-overview'),
+    t,
+    getState: () => state,
+    onOpen(id) {
+        const select = document.querySelector('#planet-select')
+        select.value = id
+        select.dispatchEvent(new Event('change'))
+        navigate('planet')
+    },
+    onTransport(id) {
+        transportUi.chooseTarget(id)
+        navigate('fleets', false, true)
+        document
+            .querySelector('#transport-planner')
+            .scrollIntoView({ block: 'start' })
     },
 })
 const messageUi = createMessageUi({
@@ -468,6 +503,21 @@ function renderUi() {
     renderFleet()
     renderShipStock()
     renderOrders()
+    transportUi.render()
+    galaxyUi.render()
+    document.querySelector('#resource-balances').replaceChildren(
+        ...['metal', 'crystal', 'deuterium'].map((key) => {
+            const item = element('span', '', `${t[`resource_${key}`]} `)
+            const amount = element(
+                'strong',
+                '',
+                number.format(state.resources[key]),
+            )
+            amount.id = `balance-${key}`
+            item.append(amount)
+            return item
+        }),
+    )
     renderBuilder()
     messageUi.render()
     const unread = state.messages.filter((m) => !m.viewed).length,

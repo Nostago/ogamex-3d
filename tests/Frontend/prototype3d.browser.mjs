@@ -306,7 +306,14 @@ try {
     );
     await load('ships');
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const name of ['planet', 'buildings', 'ships', 'fleets', 'messages']) {
+    for (const name of [
+        'planet',
+        'buildings',
+        'ships',
+        'fleets',
+        'galaxy',
+        'messages',
+    ]) {
         await nav(name);
         assert.equal(
             await page.evaluate(
@@ -375,6 +382,84 @@ try {
     assert.equal(await stock('lightFighter', 'ready'), '1');
     console.log(
         'PASS FIFO queue, interruption/resume, navigation, planet switch and reset without duplicate ships',
+    );
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await nav('fleets');
+    await create('Versorgung', { smallCargo: 1, lightFighter: 1 });
+    await nav('galaxy');
+    assert.equal(await page.locator('[data-position]').count(), 16);
+    await page.locator('#galaxy-system').fill('1');
+    await page.locator('.galaxy-controls button[type="submit"]').click();
+    assert.equal(await page.locator('#previous_system').isDisabled(), true);
+    await page.locator('#next_system').click();
+    assert.equal(await page.locator('#galaxy-system').inputValue(), '2');
+    await page.locator('#own-system').click();
+    await page.locator('[data-position="3"]').click();
+    assert.equal(await page.locator('#galaxy-plan-transport').count(), 0);
+    await page.locator('[data-position="6"]').click();
+    await page.screenshot({
+        path: `${artifacts}/galaxy-desktop.png`,
+        fullPage: true,
+    });
+    await page.locator('#galaxy-plan-transport').click();
+    assert.equal(await page.locator('#transport-target').inputValue(), 'small');
+    await page.locator('#cargo-metal').fill('5051');
+    assert.equal(await page.locator('#launch-transport').isDisabled(), true);
+    await page.locator('#cargo-metal').fill('3000');
+    await page.locator('#cargo-crystal').fill('1000');
+    await page.locator('#cargo-deuterium').fill('500');
+    assert.equal(await page.locator('#launch-transport').isEnabled(), true);
+    await nav('galaxy');
+    await nav('fleets');
+    assert.equal(await page.locator('#cargo-metal').inputValue(), '3000');
+    await page.screenshot({
+        path: `${artifacts}/transport-planner.png`,
+        fullPage: true,
+    });
+    await page.locator('#launch-transport').click();
+    assert.equal(await text('#balance-metal'), '97.000');
+    const supply = page
+        .locator('.mission-card')
+        .filter({ hasText: 'Versorgung' });
+    await supply.locator('h3').filter({ hasText: 'Rückflug' }).waitFor();
+    await nav('ships');
+    assert.equal(await stock('smallCargo', 'ready'), '0');
+    await nav('galaxy');
+    await page.locator('[data-position="6"]').click();
+    await page.locator('#galaxy-open-colony').click();
+    await page.waitForFunction(
+        () =>
+            document.querySelector('#planet-select').value === 'small' &&
+            document.querySelector('#balance-metal').textContent === '103.000',
+    );
+    assert.equal(
+        await page.locator('#prototype').getAttribute('data-page'),
+        'planet',
+    );
+    await nav('messages');
+    await page.locator('#mail-tab-fleets').click();
+    await page.locator('#mail-subtab-transport').click();
+    assert.match(await text('#message-center'), /Transport zugestellt/);
+    await page.locator('#planet-select').selectOption('medium');
+    await nav('fleets');
+    await supply.getByText(/Zurück am Ursprung/).waitFor();
+    await nav('ships');
+    assert.equal(await stock('smallCargo', 'ready'), '1');
+    assert.equal(await text('#balance-metal'), '97.000');
+    await nav('galaxy');
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        true,
+    );
+    await page.screenshot({
+        path: `${artifacts}/galaxy-mobile.png`,
+        fullPage: true,
+    });
+    console.log(
+        'PASS galaxy positions, system navigation, colony links, capacity validation, transport target handoff, delivery, report and empty return',
     );
     assert.deepEqual(errors, []);
     if (standalone) {

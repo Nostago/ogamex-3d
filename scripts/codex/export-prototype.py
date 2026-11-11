@@ -47,7 +47,7 @@ ZIP entpacken und {name} mit Safari, Chrome, Firefox oder Edge öffnen.
 Kein Server und keine Installation nötig. JavaScript und WebGL müssen aktiv sein.
 Nach dem Download funktioniert die Demo ohne Internet.
 
-Hauptnavigation: Planet / Gebäude / Schiffe / Flotten. Auf dem Handy unten.
+Hauptnavigation: Planet / Gebäude / Schiffe / Flotten / Galaxie / Nachrichten. Auf dem Handy unten.
 Planet und Reset sind oben auf allen Seiten erreichbar.
 Planet: Kolonie und Orbit sind zwei Ansichten desselben Planeten.
 Orbit bleibt hier; die linke Navigation Flotten öffnet die Flottenverwaltung.
@@ -75,6 +75,19 @@ Nachrichten: Kategorien wie im Original, Ungelesenzähler, Details und Löschen.
 Flotten → Sonstiges enthält die Ankunftsberichte deiner Demo-Verlegungen.
 Die Offline-Datei enthält Beispielpost, keine echte Post oder Sendefunktion.
 Das angemeldete Originalpostfach kann im Laravel-Projekt mit neuem Theme geöffnet werden.
+Galaxie: Galaxie/System eingeben oder mit den Systempfeilen navigieren.
+Eigenes System zeigt [1:42] mit den eigenen Kolonien auf Position 6, 7 und 8.
+Eine Position auswählen, dann Kolonie öffnen oder Transport planen.
+Fremde Planeten, freie Positionen und Expeditionsraum sind noch ohne Missionen.
+Transport planen: verfügbare Flotte, eigene Zielkolonie und Rohstoffmengen wählen.
+Kapazität: Kleiner Transporter 5.000, Leichter Jäger 50, Spionagesonde 0.
+Die Ladung wird beim Start vom Rohstoffbestand oben abgezogen.
+Nach 15 Sekunden zugestellt, nach weiteren 15 Sekunden kehrt die Flotte leer zurück.
+Berichte dazu stehen unter Nachrichten → Flotten → Transport.
+Startbestand je Planet: 100.000 Metall, 50.000 Kristall, 25.000 Deuterium.
+Keine passive Rohstoffproduktion, Baukosten, Boni oder Treibstoffkosten.
+Reset verwirft lokale Bestände; bei Zielreset wird unzugestellte Ladung erstattet.
+Bereits zugestellte Ladung wird bei Zielreset nicht rückwirkend erstattet.
 Keine echten OGame-Flugzeiten, Kosten oder Kämpfe.
 Flotten werden in dieser geöffneten Demo gespeichert; Neuladen setzt die Demo zurück.
 Unter Schiffe den Beispielbestand Großflotte wählen: 1.100.000 Schiffe.

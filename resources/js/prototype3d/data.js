@@ -1,3 +1,4 @@
+import { resourceTypes, validateCargo } from './transport.js'
 import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createLayout, chooseSite } from './layout.js'
 import { demoPlanets, initialBuildings } from './planets.js'
@@ -118,6 +119,7 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
         return {
             layout,
             buildings,
+            resources: { metal: 100000, crystal: 50000, deuterium: 25000 },
             fleet: exampleFleet('patrol'),
             orders: [],
             nextOrder: 1,
@@ -134,12 +136,14 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
             { layout, buildings, fleet, orders, managedFleets } = current()
         return {
             planet: { ...planet },
+            resources: { ...current().resources },
             name: planet.name,
             coordinates: `[1:42:${demoPlanets.indexOf(planet) + 6}]`,
             capacity: getCapacity(planet, buildings),
             missions: missions.map((m) => ({
                 ...m,
                 ships: m.ships.map((s) => ({ ...s })),
+                ...(m.cargo ? { cargo: { ...m.cargo } } : {}),
             })),
             messages: inbox.snapshot(),
             incomingTotal: missionShips(missions, selectedPlanet),
@@ -198,6 +202,7 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
                     missions.filter(
                         (m) =>
                             m.status === 'flying' &&
+                            m.kind !== 'transport' &&
                             m.targetId === selectedPlanet,
                     ).length >=
                     maxManagedFleets
@@ -222,7 +227,9 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
             )
             return snapshot()
         },
-        async startMission(id, targetId) {
+        async startMission(id, targetId, kind = 'deployment', cargo = null) {
+            if (!['deployment', 'transport'].includes(kind))
+                throw new DemoError('mission_kind')
             const group = requireGroup(id)
             if (group.status !== 'docked')
                 throw new DemoError('fleet_on_mission')
@@ -234,16 +241,47 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
             )
                 throw new DemoError('mission_limit')
             const target = states.get(targetId)
+            if (kind === 'transport') {
+                const reason = validateCargo(
+                    current().resources,
+                    group.ships,
+                    cargo,
+                )
+                if (reason) throw new DemoError(reason)
+                for (const key of resourceTypes) {
+                    const incoming = missions
+                        .filter(
+                            (m) =>
+                                m.kind === 'transport' &&
+                                m.status === 'flying' &&
+                                !m.delivered &&
+                                (m.targetId === targetId ||
+                                    m.originId === targetId),
+                        )
+                        .reduce((sum, m) => sum + m.cargo[key], 0)
+                    if (
+                        !Number.isSafeInteger(
+                            target.resources[key] + incoming + cargo[key],
+                        )
+                    )
+                        throw new DemoError('count_overflow')
+                }
+            }
             if (
+                kind === 'deployment' &&
                 target.managedFleets.length +
                     missions.filter(
-                        (m) => m.status === 'flying' && m.targetId === targetId,
+                        (m) =>
+                            m.status === 'flying' &&
+                            m.kind !== 'transport' &&
+                            m.targetId === targetId,
                     ).length >=
-                maxManagedFleets
+                    maxManagedFleets
             )
                 throw new DemoError('target_full')
             const quantity = group.ships.reduce((sum, s) => sum + s.count, 0)
             if (
+                kind === 'deployment' &&
                 !Number.isSafeInteger(
                     fleetTotal(target.fleet) +
                         pendingCount(target.orders) +
@@ -255,11 +293,19 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
             const startedAt = now()
             if (
                 !Number.isSafeInteger(startedAt) ||
-                !Number.isSafeInteger(startedAt + demoFlightMs)
+                !Number.isSafeInteger(startedAt + demoFlightMs * 2)
             )
                 throw new DemoError('mission_clock')
             const mission = {
                 id: `mission-${nextMission++}`,
+                kind,
+                ...(kind === 'transport'
+                    ? {
+                          cargo: { ...cargo },
+                          delivered: false,
+                          returnsAt: startedAt + demoFlightMs * 2,
+                      }
+                    : {}),
                 fleetId: id,
                 originId: selectedPlanet,
                 targetId,
@@ -271,6 +317,9 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
                 startedAt,
                 arrivesAt: startedAt + demoFlightMs,
             }
+            if (kind === 'transport')
+                for (const key of resourceTypes)
+                    current().resources[key] -= cargo[key]
             group.status = 'mission'
             group.missionId = mission.id
             missions = missions
@@ -294,6 +343,23 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
                         g.id === mission.fleetId && g.missionId === mission.id,
                 )
                 if (!group) continue
+                if (mission.kind === 'transport') {
+                    if (!mission.delivered) {
+                        for (const key of resourceTypes)
+                            target.resources[key] += mission.cargo[key]
+                        mission.delivered = true
+                        inbox.transport(mission, mission.arrivesAt, false)
+                        changed = true
+                    }
+                    if (mission.returnsAt <= time) {
+                        group.status = 'docked'
+                        delete group.missionId
+                        mission.status = 'arrived'
+                        inbox.transport(mission, mission.returnsAt, true)
+                        changed = true
+                    }
+                    continue
+                }
                 for (const ship of mission.ships) {
                     source.fleet.find((s) => s.type === ship.type).count -=
                         ship.count
@@ -428,6 +494,15 @@ export function createDemoProvider({ now = () => Date.now() } = {}) {
                 const group = states
                     .get(mission.originId)
                     .managedFleets.find((g) => g.missionId === mission.id)
+                if (
+                    mission.kind === 'transport' &&
+                    !mission.delivered &&
+                    mission.originId !== selectedPlanet
+                ) {
+                    const source = states.get(mission.originId)
+                    for (const key of resourceTypes)
+                        source.resources[key] += mission.cargo[key]
+                }
                 if (group) {
                     group.status = 'docked'
                     delete group.missionId
