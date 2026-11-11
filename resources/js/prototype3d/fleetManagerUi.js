@@ -8,6 +8,7 @@ export function createFleetManager({
     t,
     number,
     isBusy,
+    planets,
 }) {
     let planetId,
         editingId = null,
@@ -15,6 +16,7 @@ export function createFleetManager({
         name = '',
         counts = {},
         notice = ''
+    const missionTargets = new Map()
     const el = (tag, cls, text) => {
         const node = document.createElement(tag)
         if (cls) node.className = cls
@@ -23,6 +25,7 @@ export function createFleetManager({
     }
     const message = (error) => t[`error_${error.code}`] || t.build_error
     function reset() {
+        missionTargets.clear()
         editingId = null
         opened = false
         name = ''
@@ -74,6 +77,9 @@ export function createFleetManager({
             !state.managedFleets.some((group) => group.id === editingId)
         )
             reset()
+        for (const id of missionTargets.keys())
+            if (!state.managedFleets.some((group) => group.id === id))
+                missionTargets.delete(id)
         host.replaceChildren()
         const layout = el('div', 'split-layout'),
             list = el('section', 'card managed-fleet-list'),
@@ -138,29 +144,37 @@ export function createFleetManager({
                     },
                 ),
             )
-            const mission = el(
-                'button',
-                'text-button',
-                t[
-                    group.status === 'mission'
-                        ? 'finish_demo_mission'
-                        : 'start_demo_mission'
-                ],
-            )
-            mission.dataset.action = 'mission'
-            mission.disabled = isBusy()
-            mission.addEventListener('click', () =>
-                action(() =>
-                    provider.setFleetMission(
-                        group.id,
-                        group.status !== 'mission',
-                    ),
-                ),
-            )
-            buttons.append(update, disband, mission)
+            buttons.append(update, disband)
             card.append(buttons)
             if (group.status === 'mission')
-                card.append(el('p', 'muted', t.fleet_locked_note))
+                card.append(el('p', 'muted', t.mission_locked))
+            else {
+                const label = el('label', 'mission-target', t.mission_target),
+                    target = el('select')
+                target.dataset.target = group.id
+                for (const planet of planets.filter(
+                    (p) => p.id !== state.planet.id,
+                )) {
+                    const option = el('option', '', planet.name)
+                    option.value = planet.id
+                    target.append(option)
+                }
+                const previousTarget = missionTargets.get(group.id)
+                if (previousTarget) target.value = previousTarget
+                target.addEventListener('change', () =>
+                    missionTargets.set(group.id, target.value),
+                )
+                target.disabled = isBusy()
+                label.append(target)
+                const confirmation = el('p', 'muted', t.mission_confirmation)
+                const launch = el('button', '', t.launch_deployment)
+                launch.dataset.action = 'mission'
+                launch.disabled = isBusy()
+                launch.addEventListener('click', () =>
+                    action(() => provider.startMission(group.id, target.value)),
+                )
+                card.append(label, confirmation, launch)
+            }
             list.append(card)
         }
         editor.append(

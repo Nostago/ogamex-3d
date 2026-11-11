@@ -1,6 +1,11 @@
 @extends('ingame.layouts.main')
 
 @section('content')
+    @if (request()->boolean('prototype3d'))
+        @include('prototype3d.message-theme')
+        <div class="prototype-mail-theme">
+        <a class="prototype-mail-back" href="{{ route('prototype3d.index') }}#messages">← {{ __('t_prototype3d.back_to_prototype') }}</a>
+    @endif
 
     @if (session('status'))
         <div class="alert alert-success">
@@ -464,4 +469,7 @@
             })(jQuery);
         </script>
     </div>
+    @if (request()->boolean('prototype3d'))
+        </div>
+    @endif
 @endsection

@@ -9,13 +9,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OGameX-3D · 0.9</title>
+    <title>OGameX-3D · 0.10</title>
     {{ $prototypeVite('resources/js/prototype3d/index.js') }}
 </head>
 <body class="prototype-3d">
 <div id="prototype" data-mode="colony" data-page="planet">
     <header class="topbar">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.9</small></a>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.10</small></a>
         <span class="demo-tag">{{ $t['demo'] }}</span>
         <div class="planet-context"><label for="planet-select">{{ $t['choose_planet'] }}</label><select id="planet-select"></select><span id="context-fields"></span></div>
         <button id="reset-demo" class="text-button">↺ {{ $t['reset'] }}</button>
@@ -25,8 +25,8 @@
     <div class="app-shell">
         <nav class="main-nav" aria-label="{{ $t['main_navigation'] }}">
             <span class="eyebrow nav-caption">{{ $t['command'] }}</span>
-            @foreach (['planet' => '◉', 'buildings' => '▥', 'ships' => '◇', 'fleets' => '⌁'] as $page => $icon)
-                <a href="#{{ $page }}" data-page-link="{{ $page }}"><span aria-hidden="true">{{ $icon }}</span><span>{{ $t['nav_' . $page] }}</span></a>
+            @foreach (['planet' => '◉', 'buildings' => '▥', 'ships' => '◇', 'fleets' => '⌁', 'messages' => '✉'] as $page => $icon)
+                <a href="#{{ $page }}" data-page-link="{{ $page }}"><span aria-hidden="true">{{ $icon }}</span><span>{{ $t['nav_' . $page] }}</span>@if($page === 'messages')<b id="message-unread" class="unread-badge" hidden></b>@endif</a>
             @endforeach
             <p class="nav-note">{{ $t['note'] }}</p>
         </nav>
@@ -64,11 +64,15 @@
                 <div class="equal-layout"><section class="card"><div id="ship-stock"></div><div id="shipyard-summary"></div><div id="ship-builder"></div><button id="open-shipyard-building" class="text-button">{{ $t['shipyard_details'] }} →</button><div class="preview-area"><button data-preview="ships" aria-controls="ships-preview" aria-expanded="false">{{ $t['preview_show'] }}</button><div id="ships-preview" class="preview-slot" hidden></div></div></section><section id="ship-orders" class="card"></section></div><section id="ship-examples" class="card"></section>
             </section>
             <section id="page-fleets" class="page" hidden aria-labelledby="page-title">
-                <div id="fleet-management"></div><div id="fleets-preview" class="preview-slot" hidden></div>
+                <section id="mission-overview" class="card"></section><div id="fleet-management"></div><div id="fleets-preview" class="preview-slot" hidden></div>
+            </section>
+            <section id="page-messages" class="page" hidden aria-labelledby="page-title">
+                <a data-live-message-link class="secondary-link" href="{{ route('messages.index', ['prototype3d' => 1]) }}">{{ $t['live_mailbox'] }} ↗</a>
+                <div id="message-center"></div><div id="messages-preview" hidden></div>
             </section>
         </main>
     </div>
-    <footer><span>◈ {{ $t['local'] }}</span><span>OGameX-3D · V 0.9</span></footer>
+    <footer><span>◈ {{ $t['local'] }}</span><span>OGameX-3D · V 0.10</span></footer>
 </div>
 <script type="application/json" id="prototype-translations">@json($t)</script>
 </body>

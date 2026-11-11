@@ -18,6 +18,17 @@ use Tests\MoonTestCase;
  */
 class MessagesTest extends MoonTestCase
 {
+    public function testOptionalPrototypeThemeKeepsOriginalMessagePageAndRoutes(): void
+    {
+        $this->get('/messages?prototype3d=1')
+            ->assertOk()
+            ->assertSee('prototype-mail-theme')
+            ->assertSee('tabs-nfFleets')
+            ->assertSee('prototype-3d#messages', false);
+
+        $this->get('/messages')->assertOk()->assertDontSee('prototype-mail-theme');
+    }
+
     /**
      * Verify that a new message has been received (as part of account registration).
      */

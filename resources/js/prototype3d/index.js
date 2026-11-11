@@ -16,6 +16,8 @@ import { buildingCatalog, buildingTypes } from './catalog.js'
 import { pages, pageFromHash } from './navigation.js'
 import { buildingGroups, buildingGroup } from './buildingGroups.js'
 import { createFleetManager } from './fleetManagerUi.js'
+import { createMessageUi } from './messageUi.js'
+import { renderMissions, updateMissionProgress } from './missionUi.js'
 import { createPlanetScene } from './scene.js'
 
 const t = JSON.parse(
@@ -60,7 +62,12 @@ let chosenType = 'terraformer',
     selectedShip = 'ship-lightFighter'
 let page = pageFromHash(location.hash),
     planetView = 'colony'
-const previews = { buildings: false, ships: false, fleets: false }
+const previews = {
+    buildings: false,
+    ships: false,
+    fleets: false,
+    messages: false,
+}
 const scenePanel = document.querySelector('.scene-panel')
 const fleetManager = createFleetManager({
     host: document.querySelector('#fleet-management'),
@@ -69,9 +76,20 @@ const fleetManager = createFleetManager({
     t,
     number,
     isBusy: () => busy,
+    planets,
     onChange(snapshot) {
         state = snapshot
         scene?.update(state)
+        renderUi()
+    },
+})
+const messageUi = createMessageUi({
+    host: document.querySelector('#message-center'),
+    getState: () => state,
+    provider,
+    t,
+    onChange(snapshot) {
+        state = snapshot
         renderUi()
     },
 })
@@ -291,6 +309,9 @@ function renderBuilder() {
     builder.append(build)
 }
 function renderUi() {
+    const active = document.activeElement,
+        focusId = active?.id,
+        selection = active?.selectionStart
     renderPlanet()
     list.replaceChildren()
     const summary = document.querySelector('#production-summary')
@@ -446,6 +467,19 @@ function renderUi() {
     renderShipStock()
     renderOrders()
     renderBuilder()
+    messageUi.render()
+    const unread = state.messages.filter((m) => !m.viewed).length,
+        badge = document.querySelector('#message-unread')
+    badge.textContent = String(unread)
+    badge.hidden = !unread
+    if (focusId) {
+        const target = document.getElementById(focusId)
+        if (target && target !== active) {
+            target.focus({ preventScroll: true })
+            if (selection != null && target.setSelectionRange)
+                target.setSelectionRange(selection, selection)
+        }
+    }
 }
 function renderShipyard(parent) {
     const section = element('section', 'shipyard-controls')
@@ -662,6 +696,17 @@ async function enqueueShip() {
 }
 function renderFleet() {
     fleetManager.render()
+    renderMissions(
+        document.querySelector('#mission-overview'),
+        state,
+        t,
+        number,
+        (id) => {
+            const selector = document.querySelector('#planet-select')
+            selector.value = id
+            selector.dispatchEvent(new Event('change', { bubbles: true }))
+        },
+    )
     renderOrbitDetails()
     const panel = document.querySelector('#ship-examples')
     panel.replaceChildren()
@@ -834,6 +879,7 @@ function applyPage(focusHeading = false) {
         button.setAttribute('aria-expanded', String(open))
         button.textContent = t[open ? 'preview_hide' : 'preview_show']
     })
+    if (page === 'messages' && previousPage !== page) messageUi.load()
     if (focusHeading) {
         window.scrollTo(0, 0)
         document.querySelector('#page-title').focus({ preventScroll: true })
@@ -951,6 +997,23 @@ document.querySelector('#reset-demo').addEventListener('click', async () => {
     status.textContent = t.ready
 })
 applyPage()
+async function refreshMissions() {
+    const planet = state.planet.id
+    const snapshot = await provider.advanceMissions()
+    if (snapshot && state.planet.id === planet) {
+        state = snapshot
+        scene?.update(state)
+        renderUi()
+    }
+    updateMissionProgress(document.querySelector('#mission-overview'), state, t)
+}
+const missionTimer = setInterval(refreshMissions, 500)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshMissions()
+})
 window.addEventListener('pagehide', (event) => {
-    if (!event.persisted) scene?.dispose()
+    if (!event.persisted) {
+        clearInterval(missionTimer)
+        scene?.dispose()
+    }
 })

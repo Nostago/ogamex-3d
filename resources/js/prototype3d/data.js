@@ -2,6 +2,9 @@ import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createLayout, chooseSite } from './layout.js'
 import { demoPlanets, initialBuildings } from './planets.js'
 import { shipInventory, validateFleet } from './fleetManagement.js'
+import { createDemoInbox } from './messages.js'
+import { demoFlightMs, maxActiveMissions, missionShips } from './missions.js'
+import { maxManagedFleets } from './fleetManagement.js'
 import { shipCatalog } from './shipCatalog.js'
 import {
     createFormations,
@@ -86,13 +89,19 @@ export function checkShipBuild(state, type, quantity) {
         throw new DemoError('queue_full')
     if (
         !Number.isSafeInteger(
-            fleetTotal(state.fleet) + pendingCount(state.orders) + quantity,
+            fleetTotal(state.fleet) +
+                pendingCount(state.orders) +
+                (state.incomingTotal ?? 0) +
+                quantity,
         )
     )
         throw new DemoError('count_overflow')
 }
 // An authenticated adapter can supply the same DTO; the server remains authoritative.
-export function createDemoProvider() {
+export function createDemoProvider({ now = () => Date.now() } = {}) {
+    const inbox = createDemoInbox()
+    let missions = [],
+        nextMission = 1
     let selectedPlanet = 'medium'
     const states = new Map()
     function fresh(profile) {
@@ -128,6 +137,12 @@ export function createDemoProvider() {
             name: planet.name,
             coordinates: `[1:42:${demoPlanets.indexOf(planet) + 6}]`,
             capacity: getCapacity(planet, buildings),
+            missions: missions.map((m) => ({
+                ...m,
+                ships: m.ships.map((s) => ({ ...s })),
+            })),
+            messages: inbox.snapshot(),
+            incomingTotal: missionShips(missions, selectedPlanet),
             fleet: fleet.map((item) => ({ ...item })),
             orders: orders.map((item) => ({ ...item })),
             fleetSummary: {
@@ -177,6 +192,17 @@ export function createDemoProvider() {
     }
     return {
         async saveFleet(name, counts, id = null) {
+            if (
+                !id &&
+                current().managedFleets.length +
+                    missions.filter(
+                        (m) =>
+                            m.status === 'flying' &&
+                            m.targetId === selectedPlanet,
+                    ).length >=
+                    maxManagedFleets
+            )
+                throw new DemoError('fleet_slots')
             const validated = validateFleet(snapshot(), name, counts, id)
             if (id) Object.assign(requireGroup(id), validated)
             else
@@ -196,14 +222,110 @@ export function createDemoProvider() {
             )
             return snapshot()
         },
-        async setFleetMission(id, active) {
+        async startMission(id, targetId) {
             const group = requireGroup(id)
+            if (group.status !== 'docked')
+                throw new DemoError('fleet_on_mission')
+            if (!states.has(targetId) || targetId === selectedPlanet)
+                throw new DemoError('mission_target')
             if (
-                typeof active !== 'boolean' ||
-                group.status === (active ? 'mission' : 'docked')
+                missions.filter((m) => m.status === 'flying').length >=
+                maxActiveMissions
             )
-                throw new DemoError('fleet_status')
-            group.status = active ? 'mission' : 'docked'
+                throw new DemoError('mission_limit')
+            const target = states.get(targetId)
+            if (
+                target.managedFleets.length +
+                    missions.filter(
+                        (m) => m.status === 'flying' && m.targetId === targetId,
+                    ).length >=
+                maxManagedFleets
+            )
+                throw new DemoError('target_full')
+            const quantity = group.ships.reduce((sum, s) => sum + s.count, 0)
+            if (
+                !Number.isSafeInteger(
+                    fleetTotal(target.fleet) +
+                        pendingCount(target.orders) +
+                        missionShips(missions, targetId) +
+                        quantity,
+                )
+            )
+                throw new DemoError('count_overflow')
+            const startedAt = now()
+            if (
+                !Number.isSafeInteger(startedAt) ||
+                !Number.isSafeInteger(startedAt + demoFlightMs)
+            )
+                throw new DemoError('mission_clock')
+            const mission = {
+                id: `mission-${nextMission++}`,
+                fleetId: id,
+                originId: selectedPlanet,
+                targetId,
+                originName: profile().name,
+                targetName: demoPlanets.find((p) => p.id === targetId).name,
+                name: group.name,
+                ships: group.ships.map((s) => ({ ...s })),
+                status: 'flying',
+                startedAt,
+                arrivesAt: startedAt + demoFlightMs,
+            }
+            group.status = 'mission'
+            group.missionId = mission.id
+            missions = missions
+                .filter((m) => m.status === 'flying')
+                .concat(
+                    missions.filter((m) => m.status === 'arrived').slice(-20),
+                )
+            missions.push(mission)
+            return snapshot()
+        },
+        async advanceMissions() {
+            const time = now()
+            let changed = false
+            for (const mission of missions.filter(
+                (m) => m.status === 'flying' && m.arrivesAt <= time,
+            )) {
+                const source = states.get(mission.originId),
+                    target = states.get(mission.targetId)
+                const group = source.managedFleets.find(
+                    (g) =>
+                        g.id === mission.fleetId && g.missionId === mission.id,
+                )
+                if (!group) continue
+                for (const ship of mission.ships) {
+                    source.fleet.find((s) => s.type === ship.type).count -=
+                        ship.count
+                    target.fleet.find((s) => s.type === ship.type).count +=
+                        ship.count
+                }
+                source.managedFleets = source.managedFleets.filter(
+                    (g) => g !== group,
+                )
+                const destinationFleetId = `fleet-${target.nextFleet++}`
+                target.managedFleets.push({
+                    id: destinationFleetId,
+                    name: group.name,
+                    status: 'docked',
+                    ships: group.ships.map((s) => ({ ...s })),
+                })
+                mission.status = 'arrived'
+                mission.destinationFleetId = destinationFleetId
+                inbox.arrival(mission, mission.arrivesAt)
+                changed = true
+            }
+            return changed ? snapshot() : null
+        },
+        async readMessages(tab, subtab, page = 1) {
+            return {
+                ...snapshot(),
+                messagePage: inbox.page(tab, subtab, page),
+                messages: inbox.snapshot(),
+            }
+        },
+        async deleteMessage(id) {
+            inbox.delete(id)
             return snapshot()
         },
         async listPlanets() {
@@ -236,7 +358,9 @@ export function createDemoProvider() {
             )
             if (
                 !Number.isSafeInteger(
-                    fleetTotal(current().fleet) + order.quantity,
+                    fleetTotal(current().fleet) +
+                        missionShips(missions, selectedPlanet) +
+                        order.quantity,
                 )
             )
                 throw new DemoError('count_overflow')
@@ -256,6 +380,13 @@ export function createDemoProvider() {
             if (!fleet) throw new DemoError('unknown_preset')
             if (current().orders.some((item) => item.status === 'queued'))
                 throw new DemoError('orders_pending')
+            if (
+                missions.some(
+                    (m) =>
+                        m.status === 'flying' && m.targetId === selectedPlanet,
+                )
+            )
+                throw new DemoError('missions_pending')
             if (current().managedFleets.length)
                 throw new DemoError('fleets_exist')
             current().fleet = fleet
@@ -288,6 +419,25 @@ export function createDemoProvider() {
             return snapshot()
         },
         async reset() {
+            for (const mission of missions.filter(
+                (m) =>
+                    m.status === 'flying' &&
+                    (m.originId === selectedPlanet ||
+                        m.targetId === selectedPlanet),
+            )) {
+                const group = states
+                    .get(mission.originId)
+                    .managedFleets.find((g) => g.missionId === mission.id)
+                if (group) {
+                    group.status = 'docked'
+                    delete group.missionId
+                }
+            }
+            missions = missions.filter(
+                (m) =>
+                    m.originId !== selectedPlanet &&
+                    m.targetId !== selectedPlanet,
+            )
             states.set(selectedPlanet, fresh(profile()))
             return snapshot()
         },

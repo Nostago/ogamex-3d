@@ -41,33 +41,6 @@ test('creating, editing and disbanding fleets reserve quantities without changin
     assert.deepEqual(disbanded.fleet, base.fleet);
     assert.equal(disbanded.managedFleets[0].id, b.managedFleets[1].id);
 });
-test('mission lock applies in provider and retains all reservations until disbanded', async () => {
-    const p = createDemoProvider();
-    const saved = await p.saveFleet('Patrol', { lightFighter: 1 });
-    const id = saved.managedFleets[0].id;
-    const away = await p.setFleetMission(id, true);
-    assert.equal(item(away).available, 0);
-    assert.equal(item(away).ready, 0);
-    assert.equal(item(away).onMission, 1);
-    assert.ok(!away.formations.some((f) => f.type === 'lightFighter'));
-    await assert.rejects(
-        p.saveFleet('Rename', { lightFighter: 1 }, id),
-        error('fleet_on_mission'),
-    );
-    await assert.rejects(p.disbandFleet(id), error('fleet_on_mission'));
-    await assert.rejects(p.setFleetMission(id, true), error('fleet_status'));
-    await assert.rejects(
-        p.saveFleet('Duplicate', { lightFighter: 1 }),
-        error('fleet_unavailable'),
-    );
-    assert.deepEqual(await p.load(), away);
-    const returned = await p.setFleetMission(id, false);
-    assert.equal(item(returned).ready, 1);
-    assert.equal(item(returned).available, 0);
-    const free = await p.disbandFleet(id);
-    assert.equal(item(free).available, 1);
-    assert.equal(item(free).completed, 1);
-});
 test('pending production is visible per type but cannot be allocated before completion', async () => {
     const p = createDemoProvider();
     const queued = await p.enqueueShip('lightFighter', 3000);

@@ -1,69 +1,92 @@
-# OGameX-3D 0.9 ausprobieren
+# OGameX-3D 0.10 ausprobieren
 
 ## ZIP-Demo ohne Server
 
-[OGameX-3D-0.9.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.9/downloads/OGameX-3D-0.9.zip),
-entpacken und `OGameX-3D-0.9.html` in Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.10.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.10/downloads/OGameX-3D-0.10.zip),
+entpacken und `OGameX-3D-0.10.html` in Safari, Chrome, Firefox oder Edge öffnen.
 Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
 aktiv sein. Nach dem Download funktioniert die Demo vollständig ohne Internet.
 Die ZIP enthält zusätzlich eine deutsche Anleitung und die HTML-Datei enthält
-die Three.js-Lizenz. Versionen 0.1–0.8 bleiben unter `downloads/` erhalten.
+die Three.js-Lizenz. Versionen 0.1–0.9 bleiben unter `downloads/` erhalten.
 
-## Neu in 0.9: Orbit, Bestände und Flottenverwaltung
+## Neu in 0.10: Verlegungen und Nachrichten
 
-- **Planet:** „Kolonie“ und „Orbit“ schalten die Darstellung innerhalb der
-  Planetenübersicht um. Orbit verlässt die Planeten-Seite nicht. Die linke
-  Navigation „Flotten“ öffnet ausschließlich die Flottenverwaltung.
-- **Gebäude:** keine Suchleiste und kein Kategorienfilter. Drei feste Übersichten
-  heißen **Rohstoffe**, **Schiffe** und **Verteidigung**. Lager und Terraformer
-  gehören zu Rohstoffe; Schiffswerft, Forschung und Fertigungsanlagen zu Schiffe.
-  Details, Ausbauten und automatischer Neubau bleiben verfügbar.
-- **Schiffe:** jedes Typfeld zeigt dynamisch **Bereit**, **In Produktion /
-  beauftragt**, **Frei verfügbar** und bei Bedarf **Auf Mission**. Fertige Schiffe
-  am Planeten können bereits einer Flotte zugewiesen sein; nur der freie Anteil
-  lässt sich einer weiteren Flotte zuteilen. Produktionszahlen enthalten alle
-  offenen Demo-Aufträge, auch noch nicht manuell gestartete.
-- **Flotten:** bestehende Flotten mit Name, Zusammensetzung und Status. „Neue
-  Flotte“ öffnet einen Editor mit frei verfügbaren Mengen je Typ. Speichern legt
-  den Verband an. Bearbeiten kann Namen und Zusammensetzung ändern; Auflösen
-  gibt seine Reservierungen wieder frei. Das erzeugt oder vernichtet keine Schiffe.
+### Demo-Verlegungen
 
-### Flotten ausprobieren
+Unter **Flotten** eine bestehende Flotte zusammenstellen, einen anderen eigenen
+Planeten wählen und „Verlegung bestätigen und starten“ drücken. Zusammensetzung,
+Ziel und feste **15 Sekunden Demo-Flugzeit** sind vor dem Start sichtbar. Die
+Missionsübersicht zeigt Herkunft, Ziel, Fortschritt und Ankunft. Mit „Zielplanet
+öffnen“ lässt sich der empfangende Planet direkt auswählen.
 
-1. Unter **Schiffe** den Beispielbestand mit 1.100.000 Schiffen laden.
-2. Unter **Flotten** „Neue Flotte“ wählen, Namen und Mengen eingeben und speichern.
-   Nicht fertig gebaute Schiffe sind noch nicht verfügbar; zugewiesene Schiffe
-   können nicht gleichzeitig einer zweiten Flotte zugeordnet werden.
-3. „Flotte bearbeiten“ kann auch eigene bisherige Reservierungen wiederverwenden.
-   Beim Verkleinern oder Auflösen werden die entsprechenden Mengen frei.
-4. „Demo-Mission starten“ setzt die Flotte auf Mission. Nun sind Bearbeiten und
-   Auflösen gesperrt. Diese Prüfung erfolgt zusätzlich im Provider und kann nicht
-   allein durch Aktivieren eines Buttons umgangen werden. Die Mengen bleiben
-   reserviert und zählen nicht als bereit am Planeten.
-5. „Demo-Mission beenden“ hebt die Sperre auf. Die Schiffe bleiben bis zum Auflösen
-   oder Bearbeiten ihrer Flotte zugewiesen; sie werden nicht doppelt gutgeschrieben.
+Während des Flugs kann die Flotte weder bearbeitet noch aufgelöst oder erneut
+gestartet werden. Ihre Schiffe bleiben gebunden, zählen nicht als bereit am
+Herkunftsplaneten und sind am Ziel noch nicht verfügbar. Bei Ankunft wird der
+Herkunftsbestand genau einmal vermindert, der Zielbestand genau einmal erhöht
+und die Flotte am Ziel wieder freigegeben. Interne Flotten-IDs werden dort neu
+vergeben, damit bestehende Flotten nicht überschrieben werden. Große Mengen
+werden als Zahlen übertragen, ohne Modelle pro Schiff anzulegen.
 
-Der Missionsschalter demonstriert **nur die Sperre**. Es gibt keine echten Flüge,
-Flugzeiten, Treibstoffkosten, Transporte oder Kämpfe. Die Demo speichert Flotten
-im Arbeitsspeicher der geöffneten Anwendung. Seitenwechsel erhält sie, Reset löscht
-sie nur für den aktuellen Planeten, Neuladen setzt alle Demodaten zurück.
-Höchstens 30 gespeicherte Flotten dienen als Demo-Speichergrenze und stellen keine
-produktive OGame-Regel dar. Beispielbestände lassen sich erst ersetzen, wenn
-bestehende Flotten aufgelöst und offene Bauaufträge abgeschlossen/entfernt sind.
+Die Uhr verwendet Zeitstempel, keinen Fortschrittszähler pro Bild. Seitenwechsel
+und eine geschlossene 3D-Vorschau stoppen Missionen nicht. Nach Rückkehr aus einem
+Hintergrundtab werden fällige Ankünfte nachgeholt. Die kurze Demo-Flugzeit bildet
+keine echte OGame-Flugzeit, Geschwindigkeitsauswahl oder Treibstoffberechnung ab.
+Es gibt weiterhin keine Transport-, Angriffs- oder Kampfmissionen.
 
-Die feste Hauptnavigation bleibt am Desktop links und auf dem Handy unten.
-Gebäude und Schiffe bieten kleine optionale 3D-Vorschauen; die große 3D-Ansicht
-bleibt bei Planet mit Kolonie und Orbit. Die Anwendung teilt weiterhin genau
-einen WebGL-Canvas und pausiert das Rendering, solange dieser nicht sichtbar ist.
-Der Orbit zeigt repräsentative Formationen der am Planeten bereiten Schiffe,
-nicht die auf Demo-Mission gebundenen Mengen. Millionenbestände erzeugen weiterhin
-höchstens zwölf Orbitmodelle.
+Reset eines Zielplaneten bricht seine noch eintreffenden Demo-Missionen ab und
+gibt die Ursprungsflotten wieder frei. Reset des Ursprungs entfernt dessen
+Demodaten und verhindert verspätete Ankünfte. Andere Planetenbestände bleiben
+unverändert. Neuladen setzt die gesamte Offline-Demo zurück.
 
-Laufende Bauten werden durch reine Navigation nicht abgebrochen. „Vorgang
-unterbrechen“, Planetenwechsel und Reset stoppen eine laufende Animation;
-Schiffsaufträge bleiben beim Unterbrechen vorgemerkt. Formulare und ein offener
-Flottenentwurf bleiben bei Seitenwechseln erhalten. Ein Planetenwechsel schließt
-den Entwurf, damit keine Reservierung versehentlich am falschen Planeten entsteht.
+### Nachrichten: Originalstruktur und neue Gestaltung
+
+Die fünfte Hauptseite **Nachrichten** übernimmt die Kategorien aus
+`MessageService::$tabs`: Flotten, Kommunikation, Wirtschaft, Universum, System,
+Favoriten. Bei Flotten gibt es Spionage, Kampfberichte, Expeditionen, Transport
+und Sonstiges; Kommunikation enthält Nachrichten und Informationen.
+
+Die Offline-Demo enthält ausschließlich lokale Beispielnachrichten. Anzeigen,
+Nachrichtendetails, Ungelesenzähler, Löschen und Seiten mit zehn Einträgen sind
+funktionsfähig. Beim Laden einer Liste gelten deren Einträge wie im vorhandenen
+`getMessagesForTab()` als gelesen. Erfolgreiche Demo-Verlegungen erzeugen je
+einen ungelesenen Bericht unter **Flotten → Sonstiges**. Der Posteingang gehört
+wie im Original zum Spieler und ist über alle Planeten hinweg derselbe.
+Nachrichten werden nicht an andere Spieler gesendet. Favoriten bleibt als
+Originalkategorie vorhanden, ohne eine neue Favoriten- oder Sendelogik zu erfinden.
+
+**Das echte Originalpostfach bleibt erhalten.** In Laravel öffnet der Link
+„Originalpostfach öffnen · Anmeldung erforderlich“ die vorhandene Route
+`/messages?prototype3d=1`. Sie verwendet weiterhin den originalen
+`MessagesController`, `MessageService`, `GameMessageFactory`, die Berichtsansichten,
+Berechtigungsprüfungen und AJAX-Aktionen. Eine optionale, auf den Nachrichtenbereich
+begrenzte Gestaltung passt Farben, Karten und Tabs an. Ohne den Parameter bleibt
+auch das bisherige Aussehen unverändert. Der originale Spielrahmen bleibt dabei
+erhalten; es wird keine neue produktive Nachrichten-API eingeführt.
+
+Der Server-Link wird beim ZIP-Export entfernt, da eine lokale HTML-Datei keinen
+angemeldeten Laravel-Server besitzt. Für echte Nachrichten ist eine laufende
+OGameX-Instanz mit Anmeldung nötig. Ausführliche echte Spionage-/Kampfberichte
+werden im Originalpostfach weiterhin von den bestehenden Vorlagen gerendert;
+die Offline-Datei ersetzt diese nicht durch erfundene echte Ergebnisse.
+
+### Erhaltene Arbeitsbereiche
+
+Planet zeigt Kolonie und Orbit; Gebäude bleibt in Rohstoffe, Schiffe und
+Verteidigung gegliedert. Schiffe zeigt Bereit, In Produktion / beauftragt, Frei
+verfügbar und Auf Mission. Flotten verwaltet Namen, Zusammensetzungen und
+Reservierungen. Eine Einheit kann keiner zweiten Flotte gleichzeitig zugewiesen
+werden; Bauaufträge sind vor Abschluss nicht verfügbar. Bearbeiten kann eigene
+Reservierungen wiederverwenden. Auflösen einer Flotte gibt Reservierungen frei,
+erzeugt aber keine neuen Schiffe.
+
+Die feste Navigation steht links, auf dem Handy unten. Die 3D-Ansicht bleibt
+bei Planet; kleine Vorschauen sind optional. Alle Seiten teilen einen Canvas.
+Offene Eingaben und Flottenentwürfe bleiben bei Navigation erhalten. Die neuen
+Missionen und Nachrichten sind wie bisher nur im Arbeitsspeicher der Demo;
+Neuladen setzt sie zurück. Höchstens 30 gespeicherte Flotten, 30 aktive Missionen,
+eine kurze Missionshistorie und 100 Beispielnachrichten begrenzen den Speicher.
+Diese Grenzen sind keine produktiven OGame-Regeln. Historische Berichte bleiben
+bei einem einzelnen Planeten-Reset erhalten.
 
 ## Mengenproduktion und große Flotten
 
@@ -212,8 +235,12 @@ Es werden keine Spielstände, Datenbanken oder produktiven Bauaufträge verände
 Auftragsmengen und begrenzte Formationen und enthält die Beispielbestände;
 `ships.js` baut ihre prozeduralen Modelle. `layout.js` vergibt deterministische, voneinander getrennte Oberflächenpositionen.
 `data.js` verwaltet Zustand und validiert vor jeder Mutation. `fleetManagement.js` prüft Reservierungen und Missionssperren,
-`fleetManagerUi.js` zeichnet Liste und Editor. `buildingGroups.js` ordnet die
-Anlagen den drei Übersichten zu. `navigation.js` definiert die vier Hash-Routen. `scene.js` erhält
+`fleetManagerUi.js` zeichnet Liste und Editor. `missions.js` enthält die kurze
+Demo-Flugzeit und Fortschrittsprojektion, `missionUi.js` die Missionsübersicht.
+`messages.js` hält das lokale Beispielpostfach, `messageUi.js` stellt es dar.
+Ziel-Flottenplätze und Mengen werden vor dem Start reserviert; fällige Ankünfte
+werden im Provider synchron abgeschlossen und sind dadurch idempotent. `buildingGroups.js` ordnet die
+Anlagen den drei Übersichten zu. `navigation.js` definiert die fünf Hash-Routen. `scene.js` erhält
 Snapshots und zeichnet nur; `index.js` verbindet UI, Provider und Animationen.
 Abbruchmarken verhindern, dass verspätete Animationsabschlüsse auf dem falschen
 Planeten angewandt werden.
@@ -234,7 +261,10 @@ await provider.loadFleetExample('armada'); // ohne offene Aufträge oder Flotten
 await provider.saveFleet('Alpha', { lightFighter: 10000 });
 await provider.saveFleet('Alpha II', { lightFighter: 12000 }, fleetId);
 await provider.disbandFleet(fleetId);
-await provider.setFleetMission(fleetId, true); // nur Demo-Sperre, false beendet sie
+await provider.startMission(fleetId, 'small');
+await provider.advanceMissions(); // Snapshot bei Ankunft, sonst null
+await provider.readMessages('fleets', 'other', 1);
+await provider.deleteMessage(messageId);
 await provider.reset();              // nur aktueller Planet
 ```
 
@@ -249,6 +279,9 @@ await provider.reset();              // nur aktueller Planet
   fleet: [{ type, count }], // gesamter fertiggestellter Bestand
   shipInventory: [{ type, completed, ready, available, assigned, onMission, inProduction }],
   managedFleets: [{ id, name, status, ships: [{ type, count }] }], // docked / mission
+  missions: [{ id, fleetId, originId, targetId, ships, startedAt, arrivesAt, status }],
+  messages: [{ id, tab, subtab, key, params, viewed, createdAt }],
+  incomingTotal, // für Zielkapazitäts- und Integerprüfungen reservierte Mengen
   fleetSummary: { total, pending },
   orders: [{ id, type, quantity, status }], // queued, completed, cancelled
   formations: [{ id, type, count, modelCount }], // modelCount <= 4
@@ -311,7 +344,7 @@ sh scripts/codex/compose.sh exec -T ogamex-app composer run rector
 sh scripts/codex/compose.sh exec -T ogamex-app composer run cs
 sh scripts/codex/compose.sh exec -T ogamex-app composer run stan
 sh scripts/codex/compose.sh exec -T ogamex-app composer run tests -- \
-  --processes=2 --filter 'Prototype3dTest|Http200Test|RustFfiTest'
+  --processes=2 --filter 'Prototype3dTest|Http200Test|RustFfiTest|MessagesTest'
 ```
 
 Die Node-Tests prüfen Profile, Feldgrenzen, Terraformer, stabile automatische
@@ -321,30 +354,31 @@ Playwright-/Chromium-Installation außerhalb der Projektabhängigkeiten:
 
 ```sh
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v09-artifacts \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v010-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 
 Andernorts `PLAYWRIGHT_MODULE`, bei Bedarf `CHROMIUM_PATH` und
-`PROTOTYPE_BASE_URL` anpassen. Der Browser-Test prüft Planet/Orbit ohne
-Seitenwechsel, die drei Gebäudeübersichten ohne Filter, dynamische Typbestände,
-Mengenproduktion, nicht verfügbare noch unfertige Schiffe, Flotten anlegen,
-bearbeiten und auflösen, Missionssperren, Freigabe von Reservierungen,
-planetengetrennte Zustände, Reset, Gebäudefelder/Terraformer und Mobilansichten.
-Die Node-Tests prüfen zusätzlich abgewiesene oder manipulierte Eingaben,
-atomare Änderungen, Doppelzuweisung, gesperrte Provider-Aufrufe,
-Speichergrenzen, Snapshot-Kopien und die bisherigen Modelle und Mengenregeln.
-Der Offline-Browser-Test prüft außerdem, dass keine HTTP-Anfragen entstehen.
+`PROTOTYPE_BASE_URL` anpassen. Node-Tests prüfen exakte Schiffsübertragung,
+idempotente Ankunft, Hin-/Rück- und gleichzeitige Flüge, nachgeholte Ankünfte,
+Missionssperren, Zielkapazitätsreservierungen, Reset während eines Flugs,
+Nachrichten-Pagination, Gelesenstatus, Löschung und die bisherigen Bestände,
+Modelle und Baufelder. Browserchecks durchlaufen zwei echte zeitgesteuerte
+Demo-Verlegungen, Nachrichten öffnen/lesen/löschen, Ankunftsberichte,
+Planetenwechsel, Flottenbearbeitung, Mobilansichten und die bestehende Bedienung.
+Der Offline-Test prüft, dass keine HTTP-Anfragen und keine lokalen Server-Links
+im Paket verbleiben. PHP-Tests prüfen auch das Originalnachrichtenmodul und den
+optionalen Theme-Parameter bei ansonsten unveränderter Originalroute.
 
 ## ZIP reproduzieren und offline prüfen
 
 Bei laufender Laravel-Seite und gebauten Assets:
 
 ```sh
-python3 scripts/codex/export-prototype.py --version 0.9 --output /workspace/exports/v0.9
+python3 scripts/codex/export-prototype.py --version 0.10 --output /workspace/exports/v0.10
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.9/OGameX-3D-0.9.html \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v09-artifacts \
+PROTOTYPE_HTML=/workspace/exports/v0.10/OGameX-3D-0.10.html \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v010-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 

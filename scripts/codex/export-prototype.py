@@ -26,6 +26,7 @@ def main():
         page = response.read().decode('utf-8')
     if f'OGameX-3D · {args.version}' not in page:
         raise RuntimeError('The running page does not match the requested version')
+    page = re.sub(r'<a\b[^>]*data-live-message-link[^>]*>.*?</a>', '', page, flags=re.S)
     page = re.sub(r'<link\b[^>]*>', '', page)
     page = re.sub(r'<script\b[^>]*\bsrc=[^>]*></script>', '', page)
     css = '\n'.join((root / 'public/build' / path).read_text() for path in entry['css'])
@@ -64,18 +65,26 @@ Flotten: Bestehende Verbände mit Name, Zusammensetzung und Status.
 Neue Flotte: Name und verfügbare Schiffe wählen, dann speichern.
 Bearbeiten ändert die Zusammensetzung; Auflösen gibt reservierte Schiffe frei.
 Noch nicht fertig gebaute oder anderen Flotten zugewiesene Schiffe sind nicht verfügbar.
-Demo-Mission starten sperrt Bearbeiten und Auflösen; Demo-Mission beenden hebt die Sperre auf.
-Das demonstriert nur die Sperre: keine echten Flüge, Kosten oder Kämpfe.
+Bei einer Flotte Zielplanet wählen und „Verlegung bestätigen und starten“ drücken.
+15 Sekunden Demo-Flugzeit, Fortschritt und Ankunft in der Missionsübersicht.
+Unterwegs sind Bearbeiten und Auflösen gesperrt. Am Ziel wird die Flotte wieder frei.
+Die Schiffe werden genau einmal vom Ursprung zum Ziel übertragen.
+Nachrichten: Kategorien wie im Original, Ungelesenzähler, Details und Löschen.
+Flotten → Sonstiges enthält die Ankunftsberichte deiner Demo-Verlegungen.
+Die Offline-Datei enthält Beispielpost, keine echte Post oder Sendefunktion.
+Das angemeldete Originalpostfach kann im Laravel-Projekt mit neuem Theme geöffnet werden.
+Keine echten OGame-Flugzeiten, Kosten oder Kämpfe.
 Flotten werden in dieser geöffneten Demo gespeichert; Neuladen setzt die Demo zurück.
 Unter Schiffe den Beispielbestand Großflotte wählen: 1.100.000 Schiffe.
 Vor dem Ersetzen offene Aufträge abschließen/entfernen und bestehende Flotten auflösen.
 Höchstens zwölf repräsentative Orbitmodelle stehen für den ganzen Bestand.
 Auf Unterseiten ist die kleine 3D-Vorschau optional; Listen und Eingaben stehen im Mittelpunkt.
-Formulare, Suche und Auswahl bleiben beim Navigieren erhalten.
+Formulare und Auswahl bleiben beim Navigieren erhalten.
 Die Hauptnavigation unterbricht laufende Demo-Vorgänge nicht.
 „Vorgang unterbrechen“ stoppt die Animation; ein Schiffsauftrag bleibt vorgemerkt.
 „Auftrag entfernen“ verwirft einen offenen Auftrag ausdrücklich.
-Planetenwechsel oder Reset unterbricht laufende Vorgänge.
+Planetenwechsel unterbricht Bauanimationen, aber keine laufenden Flüge.
+Reset stoppt betroffene Demo-Missionen und verhindert verspätete Ankünfte.
 Reset betrifft nur den aktuellen Planeten, Neuladen alle.
 Die Demo erlaubt Mengen von 1 bis 1.000.000.000 und höchstens 20 offene Aufträge.
 Diese Grenzen sind keine OGame-Flottenlimits. Keine produktiven Missionen oder Kämpfe.

@@ -189,6 +189,7 @@ try {
     assert.equal(await stock('lightFighter', 'available'), '736.000');
     assert.equal(await page.locator('#load-fleet-preset').isDisabled(), true);
     await nav('fleets');
+    await page.locator('[data-target="fleet-1"]').selectOption('small');
     await group('fleet-1').locator('[data-action="mission"]').click();
     assert.equal(
         await group('fleet-1').locator('[data-action="edit"]').isDisabled(),
@@ -198,19 +199,60 @@ try {
         await group('fleet-1').locator('[data-action="disband"]').isDisabled(),
         true,
     );
-    assert.match(await group('fleet-1').textContent(), /Auf Mission/);
+    await page.waitForFunction(
+        () => document.querySelector('[data-mission-progress]')?.value > 0.02,
+    );
     await page.screenshot({
-        path: `${artifacts}/fleet-mission-lock.png`,
+        path: `${artifacts}/mission-flying.png`,
         fullPage: true,
     });
     await nav('ships');
-    assert.equal(await stock('lightFighter', 'ready'), '741.000');
     assert.equal(await stock('lightFighter', 'on_mission'), '12.000');
-    assert.equal(await stock('lightFighter', 'available'), '736.000');
+    await nav('messages');
+    assert.equal(await page.locator('[data-mail-tab]').count(), 6);
+    assert.equal(await page.locator('[data-message-id]').count(), 1);
+    await page.locator('[data-message-id]').click();
+    assert.match(await text('#message-body'), /Beispielbericht/);
+    await page.locator('[data-mail-tab="system"]').click();
+    await page.locator('[data-message-id]').click();
+    assert.match(await text('#message-body'), /Serververbindung/);
+    await page.waitForFunction(() =>
+        document
+            .querySelector('[data-mission="mission-1"] h3')
+            ?.textContent.includes('Angekommen'),
+    );
+    await page.locator('[data-mail-tab="fleets"]').click();
+    await page.locator('[data-mail-subtab="other"]').click();
+    await page.locator('[data-message-id]').click();
+    assert.match(await text('#message-body'), /Alpha II/);
+    assert.match(await text('#message-body'), /Aster/);
+    await page.screenshot({
+        path: `${artifacts}/arrival-message.png`,
+        fullPage: true,
+    });
+    await page.locator('#delete-message').click();
+    await page.waitForFunction(
+        () => !document.querySelector('[data-message-id]'),
+    );
     await nav('fleets');
+    await page.locator('[data-mission="mission-1"] button').click();
+    await units(12003);
+    assert.equal(await page.locator('#planet-select').inputValue(), 'small');
+    assert.match(await group('fleet-1').textContent(), /Alpha II/);
+    assert.equal(
+        await group('fleet-1').locator('[data-action="edit"]').isDisabled(),
+        false,
+    );
+    await page.locator('[data-target="fleet-1"]').selectOption('medium');
     await group('fleet-1').locator('[data-action="mission"]').click();
-    await group('fleet-1').locator('[data-action="disband"]').click();
-    assert.equal(await page.locator('[data-fleet]').count(), 1);
+    await page.waitForFunction(() =>
+        document
+            .querySelector('[data-mission="mission-2"] h3')
+            ?.textContent.includes('Angekommen'),
+    );
+    await page.locator('[data-mission="mission-2"] button').click();
+    await units(1103000);
+    await group('fleet-3').locator('[data-action="disband"]').click();
     await nav('ships');
     assert.equal(await stock('lightFighter', 'available'), '748.000');
     await nav('fleets');
@@ -260,11 +302,11 @@ try {
     await level(1);
     assert.equal(await text('#fields-used'), '16 / 21');
     console.log(
-        'PASS local Planet/Orbit, three building overviews, live per-type completed/production/free counts, no use of pending ships, create/edit/disband, mission lock, reservation release, per-planet isolation/reset and existing fields',
+        'PASS local Planet/Orbit, three building overviews, live per-type completed/production/free counts, no use of pending ships, create/edit/disband, real timed deployments, exact round-trip conservation, inbox categories/read/delete and arrival reports, reservation release, per-planet isolation/reset and existing fields',
     );
     await load('ships');
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const name of ['planet', 'buildings', 'ships', 'fleets']) {
+    for (const name of ['planet', 'buildings', 'ships', 'fleets', 'messages']) {
         await nav(name);
         assert.equal(
             await page.evaluate(
@@ -278,6 +320,7 @@ try {
             fullPage: true,
         });
     }
+    await nav('fleets');
     await create('Mobilflotte', { lightFighter: 1 });
     assert.equal(await page.locator('[data-fleet]').count(), 1);
     await page.screenshot({
@@ -288,7 +331,10 @@ try {
     assert.equal(await stock('lightFighter', 'available'), '0');
     assert.equal(await page.locator('canvas').count(), 1);
     assert.deepEqual(errors, []);
-    if (standalone) assert.deepEqual(network, []);
+    if (standalone) {
+        assert.deepEqual(network, []);
+        assert.equal(await page.locator('[data-live-message-link]').count(), 0);
+    }
     console.log(
         'PASS mobile sections and fleet editor, deep link, one shared canvas, no page errors and no offline HTTP requests',
     );
