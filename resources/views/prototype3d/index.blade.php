@@ -9,13 +9,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OGameX-3D · 0.10</title>
+    <title>OGameX-3D · 0.11</title>
     {{ $prototypeVite('resources/js/prototype3d/index.js') }}
 </head>
 <body class="prototype-3d">
 <div id="prototype" data-mode="colony" data-page="planet">
     <header class="topbar">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.10</small></a>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.11</small></a>
         <span class="demo-tag">{{ $t['demo'] }}</span>
         <div class="planet-context"><label for="planet-select">{{ $t['choose_planet'] }}</label><select id="planet-select"></select><span id="context-fields"></span></div>
         <button id="reset-demo" class="text-button">↺ {{ $t['reset'] }}</button>
@@ -72,7 +72,7 @@
             </section>
         </main>
     </div>
-    <footer><span>◈ {{ $t['local'] }}</span><span>OGameX-3D · V 0.10</span></footer>
+    <footer><span>◈ {{ $t['local'] }}</span><span>OGameX-3D · V 0.11</span></footer>
 </div>
 <script type="application/json" id="prototype-translations">@json($t)</script>
 </body>

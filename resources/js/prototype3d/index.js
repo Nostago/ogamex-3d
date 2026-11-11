@@ -1,3 +1,4 @@
+import { createOrderRunner } from './orderRunner.js'
 import '../../css/prototype3d.css'
 import {
     createDemoProvider,
@@ -68,6 +69,7 @@ const previews = {
     fleets: false,
     messages: false,
 }
+const orderRunner = createOrderRunner()
 const scenePanel = document.querySelector('.scene-panel')
 const fleetManager = createFleetManager({
     host: document.querySelector('#fleet-management'),
@@ -668,9 +670,16 @@ function renderOrders() {
     if (!queued.length) panel.append(element('p', 'builder-note', t.no_orders))
     const start = element('button', 'upgrade-button', t.start_order)
     start.id = 'start-ship-order'
-    start.disabled = busy || !queued.length
+    start.disabled = busy || orderRunner.running || !queued.length
     start.addEventListener('click', () => performShip(queued[0].id))
     panel.append(start)
+    const all = element('button', 'upgrade-button', t.run_all_orders)
+    all.id = 'run-all-ship-orders'
+    all.disabled = busy || orderRunner.running || !queued.length
+    all.addEventListener('click', runAllOrders)
+    panel.append(all)
+    if (orderRunner.running)
+        panel.append(element('p', 'builder-note', t.queue_running))
     for (const order of state.orders
         .filter((item) => item.status !== 'queued')
         .slice(-5)) {
@@ -746,14 +755,14 @@ function renderFleet() {
     )
     panel.append(controls)
 }
-async function performShip(orderId) {
-    if (busy) return
+async function performShip(orderId, navigateOnStart = true) {
+    if (busy) return false
     const order = state.orders.find(
         (item) => item.id === orderId && item.status === 'queued',
     )
-    if (!order) return
+    if (!order) return false
     const yard = state.buildings.find((item) => item.type === 'shipyard')
-    navigate('ships')
+    if (navigateOnStart) navigate('ships')
     placing = false
     const token = ++operation,
         planetId = state.planet.id,
@@ -768,7 +777,7 @@ async function performShip(orderId) {
     try {
         const complete = scene ? await scene.animateShip(type, yard.id) : true
         if (!complete || token !== operation || state.planet.id !== planetId)
-            return
+            return false
         const snapshot = await provider.completeShipOrder(orderId)
         if (token !== operation) return
         state = snapshot
@@ -776,6 +785,7 @@ async function performShip(orderId) {
         busy = false
         delete root.dataset.building
         status.textContent = t.ship_built
+        return true
     } catch (error) {
         if (token === operation) status.textContent = message(error)
     } finally {
@@ -786,6 +796,16 @@ async function performShip(orderId) {
             renderUi()
         }
     }
+    return false
+}
+async function runAllOrders() {
+    if (busy || orderRunner.running) return
+    navigate('ships')
+    await orderRunner.run(
+        () => state.orders.find((item) => item.status === 'queued')?.id,
+        (id) => performShip(id, false),
+    )
+    renderUi()
 }
 renderUi()
 try {
@@ -809,6 +829,7 @@ function stopRotation() {
     document.querySelector('#rotate').setAttribute('aria-pressed', 'false')
 }
 function cancelUpgrade() {
+    orderRunner.stop()
     activeOrder = null
     ++operation
     scene?.cancelConstruction()

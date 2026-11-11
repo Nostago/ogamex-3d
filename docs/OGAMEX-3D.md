@@ -1,15 +1,27 @@
-# OGameX-3D 0.10 ausprobieren
+# OGameX-3D 0.11 ausprobieren
 
 ## ZIP-Demo ohne Server
 
-[OGameX-3D-0.10.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.10/downloads/OGameX-3D-0.10.zip),
-entpacken und `OGameX-3D-0.10.html` in Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.11.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.11/downloads/OGameX-3D-0.11.zip),
+entpacken und `OGameX-3D-0.11.html` in Safari, Chrome, Firefox oder Edge öffnen.
 Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
 aktiv sein. Nach dem Download funktioniert die Demo vollständig ohne Internet.
 Die ZIP enthält zusätzlich eine deutsche Anleitung und die HTML-Datei enthält
-die Three.js-Lizenz. Versionen 0.1–0.9 bleiben unter `downloads/` erhalten.
+die Three.js-Lizenz. Versionen 0.1–0.10 bleiben unter `downloads/` erhalten.
 
-## Neu in 0.10: Verlegungen und Nachrichten
+## Neu in 0.11: Aufträge automatisch abarbeiten
+
+Unter **Schiffe** mehrere Mengenaufträge vormerken und **Alle Aufträge abarbeiten**
+drücken. Die Liste wird in ihrer Reihenfolge verarbeitet, ein Auftrag nach dem
+anderen. Auch bei geschlossener 3D-Vorschau und Wechsel in andere Menüs läuft sie
+weiter. Pro abgeschlossenen Auftrag wird die Stückzahl genau einmal gutgeschrieben.
+**Unterbrechen** stoppt den aktuellen Auftrag und die automatische Verarbeitung;
+alle noch offenen Aufträge bleiben vorgemerkt. Der Button setzt die Liste später
+fort. Ein Planetenwechsel stoppt ebenfalls, Reset verwirft die lokalen Demodaten.
+Es gibt weiterhin keine echten Bauzeiten, Kosten oder Hintergrundverarbeitung
+nach dem Schließen der HTML-Datei. Der Einzelauftrag-Button bleibt verfügbar.
+
+## Seit 0.10: Verlegungen und Nachrichten
 
 ### Demo-Verlegungen
 
@@ -347,6 +359,10 @@ sh scripts/codex/compose.sh exec -T ogamex-app composer run tests -- \
   --processes=2 --filter 'Prototype3dTest|Http200Test|RustFfiTest|MessagesTest'
 ```
 
+Die Node-Tests prüfen außerdem serielle Auftragsverarbeitung, Mehrfachstart,
+Abbruch während einer Animation und Neustart ohne Fortsetzen alter Läufe.
+Die Browserprüfung testet die komplette Liste, Menüwechsel, Unterbrechen und
+Fortsetzen sowie Planetenwechsel und Reset ohne doppelte Gutschriften.
 Die Node-Tests prüfen Profile, Feldgrenzen, Terraformer, stabile automatische
 Positionen, mehrfache Verteidigung, getrennte Grafikgrenzen, Planetenwechsel,
 Reset und Geometriebudgets. Der optionale Browser-Test benötigt eine vorhandene
@@ -354,7 +370,7 @@ Playwright-/Chromium-Installation außerhalb der Projektabhängigkeiten:
 
 ```sh
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v010-artifacts \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v011-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 
@@ -375,10 +391,10 @@ optionalen Theme-Parameter bei ansonsten unveränderter Originalroute.
 Bei laufender Laravel-Seite und gebauten Assets:
 
 ```sh
-python3 scripts/codex/export-prototype.py --version 0.10 --output /workspace/exports/v0.10
+python3 scripts/codex/export-prototype.py --version 0.11 --output /workspace/exports/v0.11
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.10/OGameX-3D-0.10.html \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v010-artifacts \
+PROTOTYPE_HTML=/workspace/exports/v0.11/OGameX-3D-0.11.html \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v011-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 

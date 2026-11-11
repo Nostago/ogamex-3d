@@ -1,13 +1,21 @@
 # OGameX-3D als lokale Demo
 
-## Aktuelle Version 0.10
+## Aktuelle Version 0.11
 
-[OGameX-3D-0.10.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.10/downloads/OGameX-3D-0.10.zip),
-entpacken und `OGameX-3D-0.10.html` mit Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.11.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.11/downloads/OGameX-3D-0.11.zip),
+entpacken und `OGameX-3D-0.11.html` mit Safari, Chrome, Firefox oder Edge öffnen.
 Kein Server und keine Installation nötig. JavaScript und WebGL müssen aktiv sein.
 Nach dem Download funktioniert die Demo ohne Internet.
 
-Neu in 0.10:
+Neu in 0.11:
+
+- **Alle Aufträge abarbeiten:** unter Schiffe die gesamte Liste in ihrer
+  Reihenfolge ausführen. Die Verarbeitung läuft bei Menüwechsel weiter.
+- **Sicher stoppen:** Unterbrechen und Planetenwechsel stoppen den Lauf.
+  Offene Aufträge bleiben für später erhalten; Reset verwirft sie.
+  Fertige Schiffe werden pro Auftrag genau einmal gutgeschrieben.
+
+Seit 0.10:
 
 - **Verlegungsmissionen:** bestehende Flotte und Zielplanet wählen, Zusammensetzung
   und Demo-Flugzeit prüfen und starten. Fortschritt und Ankunft stehen unter Flotten.
@@ -43,12 +51,14 @@ ist im Offline-Export entfernt. Abhängigkeiten und Lockfiles bleiben unverände
 SHA-256:
 
 ```text
-b69a2e88b029588faa68e89650523df5d15cfa06a9744f1c7ea3533cbb7401e2
+37c88c976942a282c64bce75906d57b06b20320343516a3e9db43b42ec1027a6
 ```
 
 [Dokumentation und Testbefehle](../docs/OGAMEX-3D.md).
 
 ## Frühere Versionen
+
+- [Version 0.10](OGameX-3D-0.10.zip)
 
 - [Version 0.9](OGameX-3D-0.9.zip)
 - [Version 0.8](OGameX-3D-0.8.zip)

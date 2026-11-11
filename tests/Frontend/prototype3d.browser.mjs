@@ -330,6 +330,52 @@ try {
     await nav('ships');
     assert.equal(await stock('lightFighter', 'available'), '0');
     assert.equal(await page.locator('canvas').count(), 1);
+    // FIFO completion, navigation persistence and interruption/resume.
+    await page.locator('#reset-demo').click();
+    await queue('lightFighter', 10);
+    await queue('smallCargo', 20);
+    await queue('probe', 30);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.locator('#run-all-ship-orders').click();
+    await progress();
+    assert.equal(await page.locator('#run-all-ship-orders').isDisabled(), true);
+    await page.locator('#cancel-operation').click();
+    assert.equal(await page.locator('[data-order]').count(), 3);
+    assert.equal(await stock('lightFighter', 'ready'), '1');
+    await page.locator('#run-all-ship-orders').click();
+    await progress();
+    await nav('messages');
+    await units(63);
+    assert.equal(
+        await page.locator('#prototype').getAttribute('data-page'),
+        'messages',
+    );
+    await nav('ships');
+    assert.equal(await stock('lightFighter', 'ready'), '11');
+    assert.equal(await stock('smallCargo', 'ready'), '21');
+    assert.equal(await stock('probe', 'ready'), '31');
+    assert.equal(await page.locator('[data-order]').count(), 0);
+    assert.equal(await page.locator('#run-all-ship-orders').isDisabled(), true);
+    await queue('lightFighter', 40);
+    await queue('probe', 50);
+    await page.locator('#run-all-ship-orders').click();
+    await progress();
+    const currentPlanet = await page.locator('#planet-select').inputValue();
+    await page
+        .locator('#planet-select')
+        .selectOption(currentPlanet === 'medium' ? 'small' : 'medium');
+    await page.locator('#planet-select').selectOption(currentPlanet);
+    assert.equal(await page.locator('[data-order]').count(), 2);
+    assert.equal(await stock('lightFighter', 'ready'), '11');
+    await page.locator('#run-all-ship-orders').click();
+    await progress();
+    await page.locator('#reset-demo').click();
+    await page.waitForTimeout(3500);
+    assert.equal(await page.locator('[data-order]').count(), 0);
+    assert.equal(await stock('lightFighter', 'ready'), '1');
+    console.log(
+        'PASS FIFO queue, interruption/resume, navigation, planet switch and reset without duplicate ships',
+    );
     assert.deepEqual(errors, []);
     if (standalone) {
         assert.deepEqual(network, []);

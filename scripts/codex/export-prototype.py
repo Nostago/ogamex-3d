@@ -59,7 +59,9 @@ Baumenü: Typ wählen und Demo errichten. Der Standort wird automatisch vergeben
 Terraformer erweitert die Baufelder, nicht den Planetendurchmesser.
 Jede Gebäudestufe braucht ein Feld; Verteidigungsmodelle brauchen keine Felder.
 Schiffe: Je Typ werden Bereit, In Produktion / beauftragt und Frei verfügbar aktualisiert.
-Typ und Stückzahl eingeben, Mengenauftrag vormerken, dann nächsten Auftrag ausführen.
+Typ und Stückzahl eingeben, Mengenauftrag vormerken, dann einen Auftrag oder „Alle Aufträge abarbeiten“ ausführen.
+Alle Aufträge laufen nacheinander, auch beim Menüwechsel. Unterbrechen oder
+Planetenwechsel stoppt die Verarbeitung; offene Aufträge bleiben vorgemerkt.
 Die kurze Montage-/Startanimation steht für den gesamten Mengenauftrag.
 Flotten: Bestehende Verbände mit Name, Zusammensetzung und Status.
 Neue Flotte: Name und verfügbare Schiffe wählen, dann speichern.
