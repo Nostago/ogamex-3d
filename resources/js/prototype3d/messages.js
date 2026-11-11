@@ -66,6 +66,34 @@ export function createDemoInbox() {
     }
     return {
         snapshot,
+        restore(items) {
+            if (
+                !Array.isArray(items) ||
+                items.length > 100 ||
+                !items.every(
+                    (m) =>
+                        typeof m.id === 'string' &&
+                        Object.hasOwn(messageTabs, m.tab) &&
+                        messageTabs[m.tab].includes(m.subtab) &&
+                        typeof m.key === 'string' &&
+                        m.params &&
+                        typeof m.params === 'object',
+                )
+            )
+                throw new Error('save_messages')
+            messages = items
+            nextId =
+                Math.max(
+                    0,
+                    ...items.map(
+                        (m) => Number(m.id.replace('message-', '')) || 0,
+                    ),
+                ) + 1
+        },
+        reset() {
+            messages = []
+            nextId = 1
+        },
         page,
         delete(id) {
             const found = messages.find((item) => item.id === id)

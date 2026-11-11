@@ -1,55 +1,61 @@
 # OGameX-3D als lokale Demo
 
-## Aktuelle Version 0.12
+## Aktuelle Version 0.13
 
-[OGameX-3D-0.12.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.12/downloads/OGameX-3D-0.12.zip),
-entpacken und `OGameX-3D-0.12.html` mit Safari, Chrome, Firefox oder Edge öffnen.
-Kein Server und keine Installation nötig. JavaScript und WebGL müssen aktiv sein.
-Nach dem Download funktioniert die Demo ohne Internet.
+[OGameX-3D-0.13.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.13/downloads/OGameX-3D-0.13.zip),
+entpacken und `OGameX-3D-0.13.html` im Browser öffnen. Kein Server und keine
+Installation nötig. Nach dem Download vollständig offline nutzbar.
+JavaScript und WebGL müssen aktiv sein.
 
-Neu in 0.12:
+Neu in 0.13:
 
-- **Galaxie:** eigener Navigationsbereich mit Galaxie-/Systemwahl, Systempfeilen,
-  Positionen 1–15 und Expeditionsplatz 16. Eigene Kolonien öffnen oder direkt als
-  Transportziel übernehmen. Fremde Planeten sind gekennzeichnete Beispieldaten.
-- **Rohstoffe:** Metall, Kristall und Deuterium pro Planet, immer oben sichtbar.
-- **Transport:** verfügbaren Verband und Zielkolonie auswählen, Ladung eingeben,
-  Kapazität und Bestände prüfen und starten. Beim Start abgebucht, nach 15 s
-  zugestellt, nach weiteren 15 s kehren die Schiffe leer zurück. Bis zur Rückkehr
-  ist die Flotte gesperrt. Keine doppelt gezählten Schiffe oder Rohstoffe.
-- **Berichte:** Zustellung und Rückkehr unter Nachrichten → Flotten → Transport.
-- **Erhalten:** vollständige Auftragsliste automatisch abarbeiten, Flottenverwaltung,
-  Verlegungen, Nachrichten und die bisherigen Gebäude-/Orbitansichten.
+- **Produktion nach OGameX-Formeln:** 1× Wirtschaft mit Grundproduktion,
+  Temperatur, Positionsbonus, Energiequote und Lagergrenzen. Kepler IX startet
+  mit 253 Metall / 95 Kristall / 31 Deuterium pro Stunde.
+- **Bezahlte Zeitaufträge:** Kosten, Voraussetzungen und Bauzeit für neue Gebäude,
+  Ausbau und Schiffe. Schiffe werden schrittweise fertig. „Alle Aufträge
+  abarbeiten“ startet die Warteliste; Pausieren und Fortsetzen sind möglich.
+- **Forschung:** eigener Menüpunkt, sechs Technologien mit Freischaltungen,
+  gemeinsam für alle Kolonien. Ein Forschungsauftrag gleichzeitig.
+- **Lokaler Spielstand:** automatische Speicherung im Browser, wenn verfügbar,
+  einschließlich Produktion und fälliger Aufträge nach erneutem Öffnen.
+- **Demozeit vorspulen:** +1 Minute / +1 Stunde für die gesamte Simulation,
+  ohne die angezeigten Produktionsmengen bei 1× zu verändern.
 
-Ausprobieren: Unter Flotten einen Verband mit einem Kleinen Transporter anlegen.
-Unter Galaxie im eigenen System `[1:42]` Position 6 wählen, „Transport planen“
-drücken und 3.000 Metall, 1.000 Kristall sowie 500 Deuterium einladen. Starten,
-Zielbestand und Bericht prüfen, danach die Rückkehr abwarten.
+Ausprobieren: Gebäude → Metallmine ausbauen, dann Demozeit vorspulen.
+Forschung → Energietechnik 1, danach Verbrennungstriebwerk 1. Unter Schiffe einen
+Leichten Jäger vormerken und die Auftragsliste starten. Pausieren, neu öffnen
+und fortsetzen. Bestand und Produktionswerte oben bzw. unter Planet prüfen.
 
-Startbestand je Planet: 100.000 Metall / 50.000 Kristall / 25.000 Deuterium.
-Basis-Laderaum: Kleiner Transporter 5.000, Leichter Jäger 50, Spionagesonde 0.
-Keine automatische Produktion, Baukosten, Forschungsboni, Treibstoffkosten oder
-originalgetreuen Flugzeiten. Transporte sind auf eigene Beispielkolonien begrenzt;
-Angriffe, Spionage, Expeditionen und Kolonisation sind noch nicht verfügbar.
+Startbestände und Kolonien bleiben Beispieldaten (je 5.000 Metall, 5.000 Kristall,
+2.000 Deuterium). Keine Offiziers-/Klassen-/Itemboni. Gebäude maximal Stufe 8,
+Forschung maximal Stufe 12. Hohe Voraussetzungen sind teilweise noch unerreichbar.
+Die kostenlose Großflotten-Modellprobe bleibt ein ausdrücklich separater
+Beispielbestand. Flugzeiten von Verlegungen/Transporten bleiben kurze Demowerte;
+Forschungsboni auf Antriebe und Laderaum sowie Kampf folgen später.
 
-Menüwechsel stoppen laufende Aufträge und Missionen nicht. Hintergrundtabs holen
-fällige Missionen beim Rückwechsel nach. Reset stoppt betroffene Demo-Flüge und
-verwirft lokale Demodaten. Bei Zielreset wird noch unzugestellte Ladung an den
-Ursprung erstattet; bereits zugestellte Ladung wird nicht rückwirkend erstattet.
-Neuladen setzt die gesamte Demo zurück. Es wird keine Post an andere Spieler gesendet.
+Der Speicherhinweis zeigt, ob Fortschritt gesichert werden kann. Browser
+behandeln lokale Dateien unterschiedlich: denselben Dateipfad und Browser
+verwenden. Privatmodus, Umbenennen oder Verschieben kann einen anderen Speicher
+verwenden. Ohne Browserspeicher gilt der Fortschritt nur für diese Sitzung.
+„Gesamte Demo zurücksetzen“ beginnt nach Bestätigung neu. Frühere ZIP-Versionen
+hatten keinen kompatiblen Wirtschaftsspielstand und werden nicht importiert.
 
-Die ZIP enthält die deutsche Anleitung und eine HTML-Datei mit Three.js-MIT-Lizenz.
-Keine echten Spielstände. Abhängigkeiten und Lockfiles bleiben unverändert.
+Die ZIP enthält eine deutsche Anleitung und die HTML-Datei mit Three.js-MIT-Lizenz.
+Keine Verbindung zu echten Spielständen. Hauptbranch, Abhängigkeiten und Lockfiles
+bleiben unverändert.
 
 SHA-256:
 
 ```text
-34e2541bc476dabaf27309c38e3922a2d45448c5d99ba7279066307280708d0a
+77473b168bd6e658175562a6bf294d474c6c2a75ba5d006f1675adddaa3acea7
 ```
 
-[Dokumentation und Testbefehle](../docs/OGAMEX-3D.md).
+[Formeln, Einschränkungen, Architektur und Testbefehle](../docs/OGAMEX-3D.md).
 
 ## Frühere Versionen
+
+- [Version 0.12](OGameX-3D-0.12.zip)
 
 - [Version 0.11](OGameX-3D-0.11.zip)
 

@@ -1399,7 +1399,7 @@ footer {
 }
 @media (max-width: 850px) {
     .main-nav {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(7, minmax(0, 1fr));
     }
     .main-nav a {
         font-size: 9px;
@@ -1526,7 +1526,7 @@ footer {
 }
 @media (max-width: 680px) {
     .main-nav {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(7, minmax(0, 1fr));
     }
     .main-nav a {
         min-width: 0;
@@ -1543,5 +1543,59 @@ footer {
     }
     .transport-form {
         grid-template-columns: 1fr;
+    }
+}
+
+.economy-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: #8fafc7;
+    font-size: 11px;
+    border-bottom: 1px solid #254459;
+}
+.economy-toolbar button {
+    font-size: 11px;
+}
+#economy-jobs {
+    flex-basis: 100%;
+    text-align: center;
+    color: #8de2ff;
+}
+#economy-jobs:empty {
+    display: none;
+}
+#economy-jobs p {
+    display: inline-block;
+    margin: 5px 12px;
+}
+.research-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+.research-grid p {
+    color: #93b3c9;
+    font-size: 12px;
+    line-height: 1.8;
+}
+#production-summary {
+    display: block;
+    color: #95c8e5;
+    font-size: 12px;
+    line-height: 1.8;
+}
+@media (max-width: 680px) {
+    .research-grid {
+        grid-template-columns: 1fr;
+    }
+    .main-nav a {
+        font-size: 7px;
+    }
+    .main-nav a > span:first-child {
+        font-size: 17px;
     }
 }

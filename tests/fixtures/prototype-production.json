@@ -1,0 +1,322 @@
+[
+    {
+        "type": "metal_mine",
+        "level": 1,
+        "metal": 33,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -11
+    },
+    {
+        "type": "metal_mine",
+        "level": 2,
+        "metal": 72.60000000000001,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -24.200000000000003
+    },
+    {
+        "type": "metal_mine",
+        "level": 3,
+        "metal": 119.79000000000003,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -39.930000000000014
+    },
+    {
+        "type": "metal_mine",
+        "level": 4,
+        "metal": 175.69200000000004,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -58.564000000000014
+    },
+    {
+        "type": "metal_mine",
+        "level": 5,
+        "metal": 241.5765000000001,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -80.52550000000002
+    },
+    {
+        "type": "metal_mine",
+        "level": 6,
+        "metal": 318.88098000000014,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -106.29366000000005
+    },
+    {
+        "type": "metal_mine",
+        "level": 7,
+        "metal": 409.23059100000023,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -136.4101970000001
+    },
+    {
+        "type": "metal_mine",
+        "level": 8,
+        "metal": 514.4613144000003,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": -171.4871048000001
+    },
+    {
+        "type": "crystal_mine",
+        "level": 1,
+        "metal": 0,
+        "crystal": 22,
+        "deuterium": 0,
+        "energy": -11
+    },
+    {
+        "type": "crystal_mine",
+        "level": 2,
+        "metal": 0,
+        "crystal": 48.400000000000006,
+        "deuterium": 0,
+        "energy": -24.200000000000003
+    },
+    {
+        "type": "crystal_mine",
+        "level": 3,
+        "metal": 0,
+        "crystal": 79.86000000000003,
+        "deuterium": 0,
+        "energy": -39.930000000000014
+    },
+    {
+        "type": "crystal_mine",
+        "level": 4,
+        "metal": 0,
+        "crystal": 117.12800000000003,
+        "deuterium": 0,
+        "energy": -58.564000000000014
+    },
+    {
+        "type": "crystal_mine",
+        "level": 5,
+        "metal": 0,
+        "crystal": 161.05100000000004,
+        "deuterium": 0,
+        "energy": -80.52550000000002
+    },
+    {
+        "type": "crystal_mine",
+        "level": 6,
+        "metal": 0,
+        "crystal": 212.5873200000001,
+        "deuterium": 0,
+        "energy": -106.29366000000005
+    },
+    {
+        "type": "crystal_mine",
+        "level": 7,
+        "metal": 0,
+        "crystal": 272.8203940000002,
+        "deuterium": 0,
+        "energy": -136.4101970000001
+    },
+    {
+        "type": "crystal_mine",
+        "level": 8,
+        "metal": 0,
+        "crystal": 342.9742096000002,
+        "deuterium": 0,
+        "energy": -171.4871048000001
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 1,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 14.08,
+        "energy": -22
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 2,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 30.976000000000003,
+        "energy": -48.400000000000006
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 3,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 51.11040000000002,
+        "energy": -79.86000000000003
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 4,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 74.96192000000002,
+        "energy": -117.12800000000003
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 5,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 103.07264000000004,
+        "energy": -161.05100000000004
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 6,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 136.05588480000006,
+        "energy": -212.5873200000001
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 7,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 174.60505216000013,
+        "energy": -272.8203940000002
+    },
+    {
+        "type": "deuterium_synthesizer",
+        "level": 8,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 219.50349414400014,
+        "energy": -342.9742096000002
+    },
+    {
+        "type": "solar_plant",
+        "level": 1,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 22
+    },
+    {
+        "type": "solar_plant",
+        "level": 2,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 48.400000000000006
+    },
+    {
+        "type": "solar_plant",
+        "level": 3,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 79.86000000000003
+    },
+    {
+        "type": "solar_plant",
+        "level": 4,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 117.12800000000003
+    },
+    {
+        "type": "solar_plant",
+        "level": 5,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 161.05100000000004
+    },
+    {
+        "type": "solar_plant",
+        "level": 6,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 212.5873200000001
+    },
+    {
+        "type": "solar_plant",
+        "level": 7,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 272.8203940000002
+    },
+    {
+        "type": "solar_plant",
+        "level": 8,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": 0,
+        "energy": 342.9742096000002
+    },
+    {
+        "type": "fusion_plant",
+        "level": 1,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -11,
+        "energy": 31.5
+    },
+    {
+        "type": "fusion_plant",
+        "level": 2,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -24.200000000000003,
+        "energy": 66.15
+    },
+    {
+        "type": "fusion_plant",
+        "level": 3,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -39.930000000000014,
+        "energy": 104.18625000000002
+    },
+    {
+        "type": "fusion_plant",
+        "level": 4,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -58.564000000000014,
+        "energy": 145.86075000000002
+    },
+    {
+        "type": "fusion_plant",
+        "level": 5,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -80.52550000000002,
+        "energy": 191.44223437500006
+    },
+    {
+        "type": "fusion_plant",
+        "level": 6,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -106.29366000000005,
+        "energy": 241.2172153125001
+    },
+    {
+        "type": "fusion_plant",
+        "level": 7,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -136.4101970000001,
+        "energy": 295.4910887578126
+    },
+    {
+        "type": "fusion_plant",
+        "level": 8,
+        "metal": 0,
+        "crystal": 0,
+        "deuterium": -171.4871048000001,
+        "energy": 354.58930650937515
+    }
+]

@@ -9,13 +9,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OGameX-3D · 0.12</title>
+    <title>OGameX-3D · 0.13</title>
     {{ $prototypeVite('resources/js/prototype3d/index.js') }}
 </head>
 <body class="prototype-3d">
 <div id="prototype" data-mode="colony" data-page="planet">
     <header class="topbar">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.12</small></a>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.13</small></a>
         <span class="demo-tag">{{ $t['demo'] }}</span>
         <div class="planet-context"><label for="planet-select">{{ $t['choose_planet'] }}</label><select id="planet-select"></select><span id="context-fields"></span></div>
         <button id="reset-demo" class="text-button">↺ {{ $t['reset'] }}</button>
@@ -23,10 +23,11 @@
     </header>
     <div class="activity-bar"><p id="render-status" role="status">{{ $t['loading'] }}</p><button id="cancel-operation" hidden>{{ $t['interrupt'] }}</button></div>
     <div id="resource-balances" class="resource-balances" aria-label="{{ $t['resource_balances'] }}"></div>
+    <div class="economy-toolbar"><span>{{ $t['economy_settings'] }}</span><span id="save-status" role="status"></span><button data-advance-time="60">{{ $t['advance_minute'] }}</button><button data-advance-time="3600">{{ $t['advance_hour'] }}</button><button id="reset-all">{{ $t['reset_all'] }}</button><div id="economy-jobs" aria-live="polite"></div></div>
     <div class="app-shell">
         <nav class="main-nav" aria-label="{{ $t['main_navigation'] }}">
             <span class="eyebrow nav-caption">{{ $t['command'] }}</span>
-            @foreach (['planet' => '◉', 'buildings' => '▥', 'ships' => '◇', 'fleets' => '⌁', 'galaxy' => '✧', 'messages' => '✉'] as $page => $icon)
+            @foreach (['planet' => '◉', 'buildings' => '▥', 'research' => '⌬', 'ships' => '◇', 'fleets' => '⌁', 'galaxy' => '✧', 'messages' => '✉'] as $page => $icon)
                 <a href="#{{ $page }}" data-page-link="{{ $page }}"><span aria-hidden="true">{{ $icon }}</span><span>{{ $t['nav_' . $page] }}</span>@if($page === 'messages')<b id="message-unread" class="unread-badge" hidden></b>@endif</a>
             @endforeach
             <p class="nav-note">{{ $t['note'] }}</p>
@@ -61,6 +62,7 @@
                     <aside class="detail-column"><section id="building-info" class="card" aria-live="polite"></section><button data-preview="buildings" aria-controls="buildings-preview" aria-expanded="false">{{ $t['preview_show'] }}</button><div id="buildings-preview" class="preview-slot" hidden></div></aside>
                 </div>
             </section>
+            <section id="page-research" class="page" hidden aria-labelledby="page-title"><div id="research-center"></div><div id="research-preview" hidden></div></section>
             <section id="page-ships" class="page" hidden aria-labelledby="page-title">
                 <div class="equal-layout"><section class="card"><div id="ship-stock"></div><div id="shipyard-summary"></div><div id="ship-builder"></div><button id="open-shipyard-building" class="text-button">{{ $t['shipyard_details'] }} →</button><div class="preview-area"><button data-preview="ships" aria-controls="ships-preview" aria-expanded="false">{{ $t['preview_show'] }}</button><div id="ships-preview" class="preview-slot" hidden></div></div></section><section id="ship-orders" class="card"></section></div><section id="ship-examples" class="card"></section>
             </section>
@@ -74,7 +76,7 @@
             </section>
         </main>
     </div>
-    <footer><span>◈ {{ $t['local'] }}</span><span>OGameX-3D · V 0.12</span></footer>
+    <footer><span>◈ {{ $t['local'] }}</span><span>OGameX-3D · V 0.13</span></footer>
 </div>
 <script type="application/json" id="prototype-translations">@json($t)</script>
 </body>

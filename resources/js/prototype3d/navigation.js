@@ -1,6 +1,7 @@
 export const pages = Object.freeze([
     'planet',
     'buildings',
+    'research',
     'ships',
     'fleets',
     'galaxy',

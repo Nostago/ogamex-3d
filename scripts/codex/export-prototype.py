@@ -43,74 +43,65 @@ def main():
     (output / name).write_text(page)
     instructions = f'''OGameX-3D {args.version} — eigenständige lokale Demo
 
-ZIP entpacken und {name} mit Safari, Chrome, Firefox oder Edge öffnen.
-Kein Server und keine Installation nötig. JavaScript und WebGL müssen aktiv sein.
+ZIP entpacken und {name} in Safari, Chrome, Firefox oder Edge öffnen.
+Kein Server und keine Installation. JavaScript und WebGL müssen aktiv sein.
 Nach dem Download funktioniert die Demo ohne Internet.
 
-Hauptnavigation: Planet / Gebäude / Schiffe / Flotten / Galaxie / Nachrichten. Auf dem Handy unten.
-Planet und Reset sind oben auf allen Seiten erreichbar.
-Planet: Kolonie und Orbit sind zwei Ansichten desselben Planeten.
-Orbit bleibt hier; die linke Navigation Flotten öffnet die Flottenverwaltung.
-Maus ziehen: drehen. Mausrad oder +/−: zoomen. Übersicht: Kamera zurücksetzen.
-Ein Gebäude auf dem Planeten anklicken öffnet seine Gebäudeseite.
-Gebäude: drei Übersichten Rohstoffe, Schiffe und Verteidigung.
-Keine Suchleiste oder Kategorienfilter. Details und Demo-Ausbau bis Stufe 8.
-Baumenü: Typ wählen und Demo errichten. Der Standort wird automatisch vergeben.
-Terraformer erweitert die Baufelder, nicht den Planetendurchmesser.
-Jede Gebäudestufe braucht ein Feld; Verteidigungsmodelle brauchen keine Felder.
-Schiffe: Je Typ werden Bereit, In Produktion / beauftragt und Frei verfügbar aktualisiert.
-Typ und Stückzahl eingeben, Mengenauftrag vormerken, dann einen Auftrag oder „Alle Aufträge abarbeiten“ ausführen.
-Alle Aufträge laufen nacheinander, auch beim Menüwechsel. Unterbrechen oder
-Planetenwechsel stoppt die Verarbeitung; offene Aufträge bleiben vorgemerkt.
-Die kurze Montage-/Startanimation steht für den gesamten Mengenauftrag.
-Flotten: Bestehende Verbände mit Name, Zusammensetzung und Status.
-Neue Flotte: Name und verfügbare Schiffe wählen, dann speichern.
-Bearbeiten ändert die Zusammensetzung; Auflösen gibt reservierte Schiffe frei.
-Noch nicht fertig gebaute oder anderen Flotten zugewiesene Schiffe sind nicht verfügbar.
-Bei einer Flotte Zielplanet wählen und „Verlegung bestätigen und starten“ drücken.
-15 Sekunden Demo-Flugzeit, Fortschritt und Ankunft in der Missionsübersicht.
-Unterwegs sind Bearbeiten und Auflösen gesperrt. Am Ziel wird die Flotte wieder frei.
-Die Schiffe werden genau einmal vom Ursprung zum Ziel übertragen.
-Nachrichten: Kategorien wie im Original, Ungelesenzähler, Details und Löschen.
-Flotten → Sonstiges enthält die Ankunftsberichte deiner Demo-Verlegungen.
-Die Offline-Datei enthält Beispielpost, keine echte Post oder Sendefunktion.
-Das angemeldete Originalpostfach kann im Laravel-Projekt mit neuem Theme geöffnet werden.
-Galaxie: Galaxie/System eingeben oder mit den Systempfeilen navigieren.
-Eigenes System zeigt [1:42] mit den eigenen Kolonien auf Position 6, 7 und 8.
-Eine Position auswählen, dann Kolonie öffnen oder Transport planen.
-Fremde Planeten, freie Positionen und Expeditionsraum sind noch ohne Missionen.
-Transport planen: verfügbare Flotte, eigene Zielkolonie und Rohstoffmengen wählen.
-Kapazität: Kleiner Transporter 5.000, Leichter Jäger 50, Spionagesonde 0.
-Die Ladung wird beim Start vom Rohstoffbestand oben abgezogen.
-Nach 15 Sekunden zugestellt, nach weiteren 15 Sekunden kehrt die Flotte leer zurück.
-Berichte dazu stehen unter Nachrichten → Flotten → Transport.
-Startbestand je Planet: 100.000 Metall, 50.000 Kristall, 25.000 Deuterium.
-Keine passive Rohstoffproduktion, Baukosten, Boni oder Treibstoffkosten.
-Reset verwirft lokale Bestände; bei Zielreset wird unzugestellte Ladung erstattet.
-Bereits zugestellte Ladung wird bei Zielreset nicht rückwirkend erstattet.
-Keine echten OGame-Flugzeiten, Kosten oder Kämpfe.
-Flotten werden in dieser geöffneten Demo gespeichert; Neuladen setzt die Demo zurück.
-Unter Schiffe den Beispielbestand Großflotte wählen: 1.100.000 Schiffe.
-Vor dem Ersetzen offene Aufträge abschließen/entfernen und bestehende Flotten auflösen.
-Höchstens zwölf repräsentative Orbitmodelle stehen für den ganzen Bestand.
-Auf Unterseiten ist die kleine 3D-Vorschau optional; Listen und Eingaben stehen im Mittelpunkt.
-Formulare und Auswahl bleiben beim Navigieren erhalten.
-Die Hauptnavigation unterbricht laufende Demo-Vorgänge nicht.
-„Vorgang unterbrechen“ stoppt die Animation; ein Schiffsauftrag bleibt vorgemerkt.
-„Auftrag entfernen“ verwirft einen offenen Auftrag ausdrücklich.
-Planetenwechsel unterbricht Bauanimationen, aber keine laufenden Flüge.
-Reset stoppt betroffene Demo-Missionen und verhindert verspätete Ankünfte.
-Reset betrifft nur den aktuellen Planeten, Neuladen alle.
-Die Demo erlaubt Mengen von 1 bis 1.000.000.000 und höchstens 20 offene Aufträge.
-Diese Grenzen sind keine OGame-Flottenlimits. Keine produktiven Missionen oder Kämpfe.
+Neu: Wirtschaft, bezahlte Zeitaufträge, Forschung und lokale Speicherung.
+Wirtschaft 1×, Forschung 1×, keine Klassen-, Offiziers- oder Itemboni.
+Produktionsformeln, Grundproduktion, Positionsboni, Rundung, Energiebedarf,
+Lagergrenzen, Kosten und Bauzeiten sind dem vorhandenen OGameX-Code entnommen.
+Planeten, Startausbau und Anfangsbestände bleiben Beispieldaten:
+5.000 Metall, 5.000 Kristall und 2.000 Deuterium je Kolonie.
+Temperaturmittel Aster 80 °C, Kepler IX 40 °C, Titan Prime −40 °C.
+Kepler IX produziert anfangs 253 Metall, 95 Kristall und 31 Deuterium je Stunde.
+Volle Lager stoppen den weiteren Zuwachs; Lieferungen dürfen Lager überfüllen.
+Energieknappheit senkt Minenproduktion, nicht die Grundproduktion.
 
-Alle Werte sind Beispieldaten; keine Verbindung zu einem echten Spielstand.
-„Diesen Planeten zurücksetzen“ setzt nur den ausgewählten Planeten zurück.
-Neuladen setzt alle Planeten zurück. Ein Planetenwechsel bricht laufende Bauten ab.
-Demo-Kosten, Forschungsvoraussetzungen und echte Bauzeiten werden nicht simuliert.
-Betriebsanimationen und Kamerafahrten beachten die Systemeinstellung
-„Bewegung reduzieren“. Der optionale Projekt-Link benötigt Internet.
-Three.js-MIT-Lizenz ist im Quelltext der HTML-Datei enthalten.
+Planet: Kolonie und Orbit, Maus ziehen zum Drehen, Mausrad zum Zoomen.
+Gebäude: Kosten, Voraussetzungen und Bauzeit ansehen, Auftrag starten.
+Pro Planet ein Gebäudeauftrag. Modell verändert sich nach Fertigstellung.
+Forschung: sechs Technologien, global für alle Kolonien, ein Auftrag gleichzeitig.
+Zuerst Energietechnik 1, danach Verbrennungstriebwerk 1 für neue Leichte Jäger.
+Kosten werden beim Start abgebucht. Forschungslabor kann während der dortigen
+Forschung nicht ausgebaut werden und umgekehrt.
+Schiffe: Kosten werden beim Vormerken bezahlt. Auftragsliste einzeln oder mit
+„Alle Aufträge abarbeiten“ starten. Schiffe werden nach ihrer Einzelbauzeit
+nach und nach fertig. Pausieren hält Fortschritt; fortsetzen ist möglich.
+Entfernen erstattet nur den noch nicht gebauten Teil eines Auftrags.
+Planeten- und Menüwechsel stoppen Zeitaufträge nicht.
+Die Buttons „Demozeit +1 Minute“ und „Demozeit +1 Stunde“ spulen alle Planeten,
+Aufträge und Flüge gemeinsam vor. Die angezeigten Produktionsraten bleiben 1×.
+„Bewegung reduzieren“ überspringt keine Bauzeit.
+
+Flotten: verfügbare Schiffe zu Verbänden zusammenstellen, bearbeiten, auflösen.
+Galaxie: Galaxie/System wählen, eigene Kolonien auf [1:42:6–8] öffnen oder als
+Transportziel wählen. Fremde Planeten und Expeditionen bleiben Platzhalter.
+Transporte: Ladung prüfen, beim Start abbuchen, nach 15 s zustellen und nach
+weiteren 15 s leer zurückkehren. Verlegungen dauern 15 s und verschieben Schiffe.
+Diese kurzen Flugzeiten sind frei gewählte Demowerte, keine OGame-Flugformeln.
+Nachrichten enthalten Beispielpost sowie Zustell- und Rückkehrberichte.
+Keine echten Kämpfe, Spionage, Spielerpost oder Verbindung zu Spielständen.
+Große Bestände bleiben Zahlen mit höchstens zwölf repräsentativen Orbitmodellen.
+Der kostenlose Großflotten-Modelltest ersetzt ausdrücklich nur Beispielschiffe.
+
+Speichern: Automatisch im Browserspeicher, falls verfügbar. Erneutes Öffnen am
+selben Ort im selben Browser übernimmt den Spielstand und holt fällige Aufträge
+und Produktion nach. Die Speicheranzeige zeigt, ob das funktioniert. File-URLs
+werden je nach Browser unterschiedlich behandelt; Privatmodus, Verschieben oder
+Umbenennen der HTML-Datei kann den Speicher unzugänglich machen. Ohne Speicher
+funktioniert die Demo nur für diese Sitzung. Alte ZIP-Spielstände werden nicht
+importiert. Ohne Browserfreigabe wird nichts an einen Server gesendet.
+„Diesen Planeten zurücksetzen“ betrifft die lokale Kolonie; globale bereits
+fertige Forschung bleibt. „Gesamte Demo zurücksetzen“ löscht den lokalen
+Fortschritt nach Bestätigung. Vor einem Zielreset nicht zugestellte Ladung wird
+erstattet, bereits zugestellte Ladung nicht rückwirkend zurückgebucht.
+
+Ausbau bleibt auf Stufe 8, Forschung auf Stufe 12 begrenzt. Hohe Voraussetzungen
+z. B. der Nanitenfabrik sind deshalb in dieser Demo noch nicht erreichbar.
+Defensive Stufen sind symbolische Modelle, keine vollständige Verteidigungslogik.
+Forschungsboni auf Schiffsantriebe, Ladekapazität und echte Flugzeiten folgen später.
+Three.js-MIT-Lizenz steht im HTML-Quelltext. Der Projekt-Link benötigt Internet.
 '''
     archive = output / f'OGameX-3D-{args.version}.zip'
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:

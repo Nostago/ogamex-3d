@@ -1,3 +1,5 @@
+import { browserStorage } from './demoStorage.js'
+import { createEconomyUi, economicQuote } from './economyUi.js'
 import { createGalaxyUi } from './galaxyUi.js'
 import { createTransportUi } from './transportUi.js'
 import { createOrderRunner } from './orderRunner.js'
@@ -26,7 +28,10 @@ import { createPlanetScene } from './scene.js'
 const t = JSON.parse(
     document.querySelector('#prototype-translations').textContent,
 )
-const provider = createDemoProvider()
+const provider = createDemoProvider({
+    economyMode: true,
+    storage: browserStorage(),
+})
 const root = document.querySelector('#prototype'),
     status = document.querySelector('#render-status')
 const list = document.querySelector('#building-list'),
@@ -60,7 +65,7 @@ let selected = 'metal',
     placing = false
 let chosenType = 'terraformer',
     chosenShip = 'lightFighter',
-    chosenQuantity = '10000',
+    chosenQuantity = '1',
     activeOrder = null,
     selectedShip = 'ship-lightFighter'
 let page = pageFromHash(location.hash),
@@ -71,8 +76,14 @@ const previews = {
     fleets: false,
     messages: false,
     galaxy: false,
+    research: false,
 }
 const orderRunner = createOrderRunner()
+const economyUi = createEconomyUi({
+    t,
+    getState: () => state,
+    onAction: economyAction,
+})
 const scenePanel = document.querySelector('.scene-panel')
 const fleetManager = createFleetManager({
     host: document.querySelector('#fleet-management'),
@@ -178,6 +189,12 @@ function message(error) {
 }
 async function perform(action, id, type) {
     if (busy) return
+    if (state.economy) {
+        await economyAction('startBuilding', type, id)
+        placing = false
+        renderUi()
+        return
+    }
     let plan
     try {
         plan =
@@ -321,6 +338,11 @@ function renderBuilder() {
     } catch (error) {
         reason = message(error)
     }
+    if (state.economy && chosenType) {
+        const quote = economicQuote(state, t, chosenType)
+        builder.append(element('p', 'muted', economyUi.quoteText(quote)))
+        reason ||= state.buildingJob ? t.error_economy_busy : quote.reason
+    }
     builder.append(element('p', 'builder-note', t.auto_layout))
     if (chosenType)
         builder.append(
@@ -460,6 +482,18 @@ function renderUi() {
     } catch (error) {
         blocked = message(error)
     }
+    if (state.economy) {
+        const quote = economicQuote(
+            state,
+            t,
+            building.type,
+            ['rocket', 'laser'].includes(building.type)
+                ? 1
+                : building.level + 1,
+        )
+        info.append(element('p', 'muted', economyUi.quoteText(quote)))
+        blocked ||= state.buildingJob ? t.error_economy_busy : quote.reason
+    }
     if (blocked && building.level < 8)
         info.append(element('p', 'capacity-warning', blocked))
     const upgrade = element(
@@ -520,6 +554,7 @@ function renderUi() {
     )
     renderBuilder()
     messageUi.render()
+    economyUi.render()
     const unread = state.messages.filter((m) => !m.viewed).length,
         badge = document.querySelector('#message-unread')
     badge.textContent = String(unread)
@@ -551,7 +586,7 @@ function renderShipyard(parent) {
     chooser.value = chosenShip
     chooser.addEventListener('change', () => {
         chosenShip = chooser.value
-        renderShipStock()
+        renderUi()
     })
     label.append(chooser)
     section.append(label)
@@ -572,9 +607,26 @@ function renderShipyard(parent) {
     let reason
     try {
         checkShipBuild(state, chosenShip, Number(chosenQuantity))
+        if (state.economy)
+            reason = economicQuote(
+                state,
+                t,
+                chosenShip,
+                1,
+                Number(chosenQuantity),
+            ).reason
     } catch (error) {
         reason = message(error)
     }
+    const quoteLine = element('p', 'muted')
+    const updateQuote = () => {
+        if (state.economy)
+            quoteLine.textContent = economyUi.quoteText(
+                economicQuote(state, t, chosenShip, 1, Number(chosenQuantity)),
+            )
+    }
+    updateQuote()
+    section.append(quoteLine)
     const button = element('button', 'upgrade-button', t.build_ship)
     button.id = 'build-ship'
     button.disabled = busy || !!reason
@@ -587,10 +639,14 @@ function renderShipyard(parent) {
         chosenQuantity = quantity.value
         try {
             checkShipBuild(state, chosenShip, Number(chosenQuantity))
-            reason = null
+            reason = state.economy
+                ? economicQuote(state, t, chosenShip, 1, Number(chosenQuantity))
+                      .reason
+                : null
         } catch (error) {
             reason = message(error)
         }
+        updateQuote()
         warning.textContent = reason || ''
         warning.hidden = !reason
         button.disabled = busy || !!reason
@@ -670,6 +726,7 @@ function renderShipStock() {
     host.append(cards, element('p', 'muted', t.stock_note))
 }
 function renderOrders() {
+    if (state.economy) activeOrder = state.shipJob?.orderId ?? null
     const panel = document.querySelector('#ship-orders')
     panel.replaceChildren()
     panel.hidden = false
@@ -697,7 +754,11 @@ function renderOrders() {
             element(
                 'small',
                 '',
-                order.id === activeOrder ? t.ship_working : t.order_queued,
+                order.id === activeOrder
+                    ? state.shipJob?.paused != null
+                        ? t.job_paused
+                        : t.ship_working
+                    : t.order_queued,
             ),
         )
         if (order.id === activeOrder) {
@@ -709,10 +770,12 @@ function renderOrders() {
             row.append(progress)
         }
         const cancel = element('button', 'text-button', t.cancel_order)
-        cancel.disabled = busy
+        cancel.disabled =
+            busy ||
+            (state.shipJob?.orderId === order.id &&
+                state.shipJob.paused == null)
         cancel.addEventListener('click', async () => {
-            state = await provider.cancelShipOrder(order.id)
-            renderUi()
+            await economyAction('cancelShipOrder', order.id)
         })
         row.append(cancel)
         panel.append(row)
@@ -720,15 +783,23 @@ function renderOrders() {
     if (!queued.length) panel.append(element('p', 'builder-note', t.no_orders))
     const start = element('button', 'upgrade-button', t.start_order)
     start.id = 'start-ship-order'
-    start.disabled = busy || orderRunner.running || !queued.length
+    start.disabled =
+        busy ||
+        orderRunner.running ||
+        (state.shipJob && state.shipJob.paused == null) ||
+        !queued.length
     start.addEventListener('click', () => performShip(queued[0].id))
     panel.append(start)
     const all = element('button', 'upgrade-button', t.run_all_orders)
     all.id = 'run-all-ship-orders'
-    all.disabled = busy || orderRunner.running || !queued.length
+    all.disabled =
+        busy ||
+        orderRunner.running ||
+        (state.shipJob && state.shipJob.paused == null) ||
+        !queued.length
     all.addEventListener('click', runAllOrders)
     panel.append(all)
-    if (orderRunner.running)
+    if (orderRunner.running || state.autoOrders)
         panel.append(element('p', 'builder-note', t.queue_running))
     for (const order of state.orders
         .filter((item) => item.status !== 'queued')
@@ -806,6 +877,7 @@ function renderFleet() {
     panel.append(controls)
 }
 async function performShip(orderId, navigateOnStart = true) {
+    if (state.economy) return economyAction('startShipOrder', orderId)
     if (busy) return false
     const order = state.orders.find(
         (item) => item.id === orderId && item.status === 'queued',
@@ -849,6 +921,7 @@ async function performShip(orderId, navigateOnStart = true) {
     return false
 }
 async function runAllOrders() {
+    if (state.economy) return economyAction('startAllShipOrders')
     if (busy || orderRunner.running) return
     navigate('ships')
     await orderRunner.run(
@@ -1072,9 +1145,13 @@ async function refreshMissions() {
     const planet = state.planet.id
     const snapshot = await provider.advanceMissions()
     if (snapshot && state.planet.id === planet) {
+        const changed = snapshot.worldRevision !== state.worldRevision
         state = snapshot
-        scene?.update(state)
-        renderUi()
+        if (changed) {
+            scene?.update(state)
+            renderUi()
+        } else if (['buildings', 'ships', 'research'].includes(page)) renderUi()
+        else economyUi.update()
     }
     updateMissionProgress(document.querySelector('#mission-overview'), state, t)
 }
@@ -1086,5 +1163,39 @@ window.addEventListener('pagehide', (event) => {
     if (!event.persisted) {
         clearInterval(missionTimer)
         scene?.dispose()
+    }
+})
+
+async function economyAction(method, ...args) {
+    try {
+        state = await provider[method](...args)
+        if (method === 'resetAll') {
+            fleetManager.reset()
+            selected = state.buildings[0].id
+            chosenShip = 'lightFighter'
+            chosenQuantity = '1'
+            placing = false
+        }
+        if (!state.buildings.some((item) => item.id === selected))
+            selected = state.buildings[0].id
+        scene?.update(state)
+        renderUi()
+        return true
+    } catch (error) {
+        status.textContent = message(error)
+        return false
+    }
+}
+document
+    .querySelectorAll('[data-advance-time]')
+    .forEach((button) =>
+        button.addEventListener('click', () =>
+            economyAction('advanceTime', Number(button.dataset.advanceTime)),
+        ),
+    )
+document.querySelector('#reset-all').addEventListener('click', () => {
+    if (window.confirm(t.reset_all_confirm)) {
+        cancelUpgrade()
+        economyAction('resetAll')
     }
 })
