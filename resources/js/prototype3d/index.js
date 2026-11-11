@@ -13,6 +13,7 @@ import {
     pendingCount,
 } from './fleet.js'
 import { buildingCatalog, buildingTypes } from './catalog.js'
+import { pages, pageFromHash } from './navigation.js'
 import { createPlanetScene } from './scene.js'
 
 const t = JSON.parse(
@@ -55,6 +56,11 @@ let chosenType = 'terraformer',
     chosenQuantity = '10000',
     activeOrder = null,
     selectedShip = 'ship-lightFighter'
+let page = pageFromHash(location.hash),
+    search = '',
+    category = 'all'
+const previews = { buildings: false, ships: false, fleets: false }
+const scenePanel = document.querySelector('.scene-panel')
 function element(tag, className, text) {
     const node = document.createElement(tag)
     if (className) node.className = className
@@ -73,17 +79,23 @@ function metric(building) {
     }
     return `${number.format(building.value)} ${suffix[building.metric]}`
 }
-function select(id) {
+function select(id, fromScene = false) {
     if (busy) return
     if (state.formations.some((ship) => ship.id === id)) {
-        showShip(id)
+        showShip(id, fromScene)
         return
     }
-    if (root.dataset.mode === 'orbit') setView('colony')
+    if (fromScene) {
+        search = ''
+        category = 'all'
+        document.querySelector('#building-search').value = ''
+        document.querySelector('#building-category').value = 'all'
+    }
     stopRotation()
     selected = id
     placing = false
     scene?.select(id)
+    navigate('buildings', fromScene)
     scene?.focus(id)
     renderUi()
 }
@@ -141,6 +153,10 @@ async function perform(action, id, type) {
                 (building) => building.siteId === plan.siteId,
             ).id
             placing = false
+            search = ''
+            category = 'all'
+            document.querySelector('#building-search').value = ''
+            document.querySelector('#building-category').value = 'all'
         }
         scene?.update(state)
         scene?.select(selected)
@@ -170,6 +186,17 @@ function renderPlanet() {
         }
     }
     selector.value = state.planet.id
+    document.querySelector('#context-name').textContent =
+        `${state.name} · ${state.coordinates}`
+    document.querySelector('#context-fields').textContent =
+        `${state.capacity.field_current} / ${state.capacity.effective_max} ${t.fields_unit}`
+    document.querySelector('#overview-fleet').textContent = number.format(
+        state.fleetSummary.total,
+    )
+    document.querySelector('#overview-pending').textContent = number.format(
+        state.fleetSummary.pending,
+    )
+    document.querySelector('#cancel-operation').hidden = !busy
     document.querySelector('#planet-name').textContent = state.name
     document.querySelector('#planet-coordinates').textContent =
         state.coordinates
@@ -264,39 +291,52 @@ function renderUi() {
     list.replaceChildren()
     const summary = document.querySelector('#production-summary')
     summary.replaceChildren()
-    for (const category of ['economy', 'facilities', 'storage', 'defense']) {
-        const entries = state.buildings.filter(
-            (item) => buildingCatalog[item.type].category === category,
+    for (const building of state.buildings.filter((item) =>
+        buildingTypes.includes(item.type),
+    )) {
+        const card = element('div', `resource ${building.type}`)
+        card.append(
+            element(
+                'span',
+                'resource-name',
+                `${icons[building.type]} ${t[building.type]}`,
+            ),
+            element('strong', '', number.format(building.value)),
+            element(
+                'small',
+                '',
+                building.type === 'solar' ? t.energy : t.per_hour,
+            ),
+        )
+        summary.append(card)
+    }
+    const matches = state.buildings.filter(
+        (item) =>
+            (category === 'all' ||
+                buildingCatalog[item.type].category === category) &&
+            t[item.type]
+                .toLocaleLowerCase('de-DE')
+                .includes(search.toLocaleLowerCase('de-DE')),
+    )
+    if (
+        matches.length &&
+        !matches.some((item) => item.id === selected) &&
+        !busy
+    ) {
+        selected = matches[0].id
+        scene?.select(selected)
+    }
+    for (const kind of ['economy', 'facilities', 'storage', 'defense']) {
+        const entries = matches.filter(
+            (item) => buildingCatalog[item.type].category === kind,
         )
         if (!entries.length) continue
         const section = element('section', 'building-category')
-        section.dataset.category = category
-        const title = element(
-            'h4',
-            'category-title',
-            `${t[category]} · ${entries.length}`,
+        section.dataset.category = kind
+        section.append(
+            element('h2', 'category-title', `${t[kind]} · ${entries.length}`),
         )
-        section.append(title)
-        list.append(section)
         for (const building of entries) {
-            const type = building.type
-            if (buildingTypes.includes(type)) {
-                const card = element('div', `resource ${type}`)
-                card.append(
-                    element(
-                        'span',
-                        'resource-name',
-                        `${icons[type]} ${t[type]}`,
-                    ),
-                    element('strong', '', number.format(building.value)),
-                    element(
-                        'small',
-                        '',
-                        type === 'solar' ? t.energy : t.per_hour,
-                    ),
-                )
-                summary.append(card)
-            }
             const button = element(
                 'button',
                 `building-item ${building.id === selected ? 'selected' : ''}`,
@@ -309,24 +349,34 @@ function renderUi() {
             )
             const name = element('span', 'building-name')
             name.append(
-                element('strong', '', t[type]),
+                element('strong', '', t[building.type]),
                 element('small', '', metric(building)),
             )
             button.append(
-                element('span', `building-icon ${type}`, icons[type]),
+                element(
+                    'span',
+                    `building-icon ${building.type}`,
+                    icons[building.type],
+                ),
                 name,
                 element('span', 'level-badge', `${t.level} ${building.level}`),
             )
             button.addEventListener('click', () => select(building.id))
             section.append(button)
         }
+        list.append(section)
+    }
+    if (!matches.length) {
+        const empty = element('p', 'muted', t.no_building_results)
+        empty.id = 'empty-buildings'
+        list.append(empty)
     }
     document.querySelector('#structure-count').textContent = String(
         state.buildings.length,
     ).padStart(2, '0')
     const building = state.buildings.find((item) => item.id === selected)
     info.replaceChildren()
-    info.hidden = placing || root.dataset.mode === 'orbit'
+    info.hidden = false
     info.append(
         element('span', 'eyebrow', t.selected),
         element('h3', '', t[building.type]),
@@ -376,7 +426,29 @@ function renderUi() {
     upgrade.disabled = busy || !!blocked
     upgrade.addEventListener('click', () => perform('upgrade', selected))
     info.append(upgrade)
-    if (building.type === 'shipyard') renderShipyard(info)
+    if (building.type === 'shipyard') {
+        const link = element(
+            'a',
+            'secondary-link',
+            t.to_ship_construction + ' →',
+        )
+        link.href = '#ships'
+        info.append(link)
+    }
+    const shipBuilder = document.querySelector('#ship-builder')
+    shipBuilder.replaceChildren()
+    renderShipyard(shipBuilder)
+    const yard = state.buildings.find((item) => item.type === 'shipyard')
+    const yardSummary = document.querySelector('#shipyard-summary')
+    yardSummary.replaceChildren()
+    yardSummary.append(
+        element('h2', '', t.shipyard),
+        element(
+            'span',
+            '',
+            yard ? `${t.level} ${yard.level}` : t.error_shipyard_required,
+        ),
+    )
     renderFleet()
     renderOrders()
     renderBuilder()
@@ -444,22 +516,18 @@ function renderShipyard(parent) {
     })
     parent.append(section)
 }
-function showShip(id) {
+function showShip(id, fromScene = false) {
     if (busy) return
-    if (root.dataset.mode !== 'orbit') setView('orbit')
     selectedShip = id
     stopRotation()
-    scene?.focusShip(id)
+    navigate('fleets', fromScene)
+    if (previews.fleets) scene?.focusShip(id)
     renderFleet()
 }
 function renderOrders() {
     const panel = document.querySelector('#ship-orders')
     panel.replaceChildren()
-    panel.hidden =
-        placing ||
-        (root.dataset.mode !== 'orbit' &&
-            state.buildings.find((item) => item.id === selected)?.type !==
-                'shipyard')
+    panel.hidden = false
     panel.append(
         element('h3', '', t.ship_orders),
         element('p', 'builder-note', t.order_note),
@@ -538,13 +606,13 @@ function renderFleet() {
     panel.replaceChildren()
     panel.append(
         element('span', 'eyebrow', t.orbit_network),
-        element('h3', '', t.station),
-        element('p', '', t.orbit_description),
+        element('h2', '', t.fleet_inventory),
+        element('p', 'muted', t.fleet_inventory_note),
     )
     const count = element(
         'h4',
         'category-title',
-        `${t.demo_fleet} · ${number.format(state.fleetSummary.total)}`,
+        `${number.format(state.fleetSummary.total)} ${t.nav_ships}`,
     )
     count.id = 'fleet-count'
     panel.append(count)
@@ -557,24 +625,46 @@ function renderFleet() {
     panel.append(budget)
     if (!state.formations.some((item) => item.id === selectedShip))
         selectedShip = state.formations[0]?.id
+    const wrapper = element('div', 'table-scroll'),
+        table = element('table', 'fleet-table'),
+        head = element('thead'),
+        headings = element('tr'),
+        body = element('tbody')
+    const labels = [t.ship_type, t.actual_count, t.pending_type, t.details]
+    for (const title of labels) {
+        const cell = element('th', '', title)
+        cell.scope = 'col'
+        headings.append(cell)
+    }
+    head.append(headings)
+    table.append(head)
     for (const ship of state.formations) {
-        const button = element(
-            'button',
-            'fleet-item',
-            `${t[ship.type]} × ${number.format(ship.count)}`,
-        )
+        const row = element('tr', ship.id === selectedShip ? 'selected' : '')
+        for (const [index, value] of [
+            t[ship.type],
+            number.format(ship.count),
+            number.format(pendingCount(state.orders, ship.type)),
+        ].entries()) {
+            const cell = element('td', '', value)
+            cell.dataset.label = labels[index]
+            row.append(cell)
+        }
+        const cell = element('td'),
+            button = element('button', '', t.details)
         button.dataset.ship = ship.id
         button.disabled = busy
+        button.setAttribute('aria-label', `${t.details}: ${t[ship.type]}`)
         button.setAttribute('aria-pressed', String(ship.id === selectedShip))
         button.addEventListener('click', () => showShip(ship.id))
-        panel.append(button)
-        const pending = element(
-            'small',
-            'fleet-pending',
-            `${t.pending_type}: ${number.format(pendingCount(state.orders, ship.type))}`,
-        )
-        panel.append(pending)
+        cell.append(button)
+        row.append(cell)
+        body.append(row)
     }
+    table.append(body)
+    wrapper.append(table)
+    panel.append(wrapper)
+    const detailPanel = document.querySelector('#fleet-details')
+    detailPanel.replaceChildren()
     const ship = state.formations.find((item) => item.id === selectedShip)
     if (ship) {
         const detail = element('div', 'ship-details')
@@ -592,8 +682,9 @@ function renderFleet() {
             element('p', 'builder-note', t.representative_note),
             element('p', 'builder-note', t.ship_focus_note),
         )
-        panel.append(detail)
+        detailPanel.append(detail)
     }
+    const controls = element('div', 'preset-controls')
     const label = element('label', 'preset-label', t.fleet_example),
         selector = element('select')
     selector.id = 'fleet-preset'
@@ -605,7 +696,7 @@ function renderFleet() {
     }
     selector.value = 'armada'
     label.append(selector)
-    panel.append(label)
+    controls.append(label)
     const load = element('button', 'upgrade-button', t.load_fleet_example)
     load.id = 'load-fleet-preset'
     load.disabled = selector.disabled
@@ -621,7 +712,11 @@ function renderFleet() {
             status.textContent = message(error)
         }
     })
-    panel.append(load, element('p', 'builder-note', t.preset_note))
+    controls.append(
+        load,
+        element('p', 'builder-note preset-note', t.preset_note),
+    )
+    panel.append(controls)
 }
 async function performShip(orderId) {
     if (busy) return
@@ -630,8 +725,7 @@ async function performShip(orderId) {
     )
     if (!order) return
     const yard = state.buildings.find((item) => item.type === 'shipyard')
-    if (root.dataset.mode !== 'colony') setView('colony')
-    selected = yard.id
+    navigate('ships')
     placing = false
     const token = ++operation,
         planetId = state.planet.id,
@@ -653,8 +747,6 @@ async function performShip(orderId) {
         scene?.update(state)
         busy = false
         delete root.dataset.building
-        setView('orbit')
-        showShip(`ship-${type}`)
         status.textContent = t.ship_built
     } catch (error) {
         if (token === operation) status.textContent = message(error)
@@ -672,7 +764,7 @@ try {
     scene = createPlanetScene(
         document.querySelector('#scene'),
         document.querySelector('#scene-labels'),
-        select,
+        (id) => select(id, true),
         t,
     )
     scene.update(state)
@@ -707,37 +799,138 @@ document.querySelector('#scene').addEventListener('scene-error', () => {
     status.textContent = t.error
     status.classList.add('render-error')
 })
-function setView(mode) {
-    if (busy) {
-        cancelUpgrade()
-        status.textContent = t.cancelled
+function applyPage(focusHeading = false) {
+    const previousPage = root.dataset.page
+    root.dataset.page = page
+    for (const name of pages)
+        document.querySelector(`#page-${name}`).hidden = name !== page
+    document.querySelectorAll('[data-page-link]').forEach((link) => {
+        if (link.dataset.pageLink === page)
+            link.setAttribute('aria-current', 'page')
+        else link.removeAttribute('aria-current')
+    })
+    document.querySelector('#page-title').textContent = t[`nav_${page}`]
+    document.querySelector('#page-description').textContent =
+        t[`page_${page}_description`]
+    const mode = page === 'fleets' ? 'orbit' : 'colony'
+    if (root.dataset.mode !== mode) {
+        root.dataset.mode = mode
+        stopRotation()
+        scene?.setMode(mode)
     }
-    placing = false
-    stopRotation()
-    root.dataset.mode = mode
-    scene?.setMode(mode)
-    document
-        .querySelector('#colony-view')
-        .setAttribute('aria-pressed', String(mode === 'colony'))
-    document
-        .querySelector('#orbit-view')
-        .setAttribute('aria-pressed', String(mode === 'orbit'))
-    document.querySelector('#panel-title').textContent = t[mode]
-    document.querySelector('#orbit-info').hidden = mode !== 'orbit'
-    renderUi()
+    const slot = document.querySelector(
+        page === 'planet' ? '#planet-scene-slot' : `#${page}-preview`,
+    )
+    if (page !== 'planet') slot.hidden = !previews[page]
+    if (scenePanel.parentElement !== slot) slot.append(scenePanel)
+    if (previousPage !== page) {
+        if (page === 'planet') {
+            stopRotation()
+            scene?.resetCamera()
+        } else if (previews[page] && !busy) {
+            if (page === 'fleets') scene?.focusShip(selectedShip)
+            else
+                scene?.focus(
+                    page === 'ships'
+                        ? state.buildings.find(
+                              (item) => item.type === 'shipyard',
+                          )?.id
+                        : selected,
+                )
+        }
+    }
+    document.querySelectorAll('[data-preview]').forEach((button) => {
+        const open = previews[button.dataset.preview]
+        button.setAttribute('aria-expanded', String(open))
+        button.textContent = t[open ? 'preview_hide' : 'preview_show']
+    })
+    if (focusHeading) {
+        window.scrollTo(0, 0)
+        document.querySelector('#page-title').focus({ preventScroll: true })
+    }
 }
-document.querySelector('#toggle-build').addEventListener('click', () => {
-    if (busy) return
-    if (root.dataset.mode === 'orbit') setView('colony')
-    placing = !placing
+function navigate(name, preview = false, focusHeading = false) {
+    page = pages.includes(name) ? name : 'planet'
+    if (preview && page !== 'planet') previews[page] = true
+    if (location.hash !== `#${page}`) location.hash = page
+    applyPage(focusHeading)
+}
+window.addEventListener('hashchange', () => {
+    page = pageFromHash(location.hash)
+    applyPage()
+})
+document.querySelectorAll('[data-page-link]').forEach((link) =>
+    link.addEventListener('click', (event) => {
+        event.preventDefault()
+        navigate(link.dataset.pageLink, false, true)
+    }),
+)
+document.querySelectorAll('[data-preview]').forEach((button) =>
+    button.addEventListener('click', () => {
+        const name = button.dataset.preview
+        previews[name] = !previews[name]
+        applyPage()
+        if (previews[name]) {
+            if (name === 'fleets') scene?.focusShip(selectedShip)
+            else
+                scene?.focus(
+                    name === 'ships'
+                        ? state.buildings.find(
+                              (item) => item.type === 'shipyard',
+                          )?.id
+                        : selected,
+                )
+        }
+    }),
+)
+document.querySelector('#cancel-operation').addEventListener('click', () => {
+    cancelUpgrade()
+    status.textContent = t.interrupted
     renderUi()
 })
 document
-    .querySelector('#colony-view')
-    .addEventListener('click', () => setView('colony'))
+    .querySelector('#building-search')
+    .addEventListener('input', (event) => {
+        search = event.target.value
+        renderUi()
+    })
 document
-    .querySelector('#orbit-view')
-    .addEventListener('click', () => setView('orbit'))
+    .querySelector('#building-category')
+    .addEventListener('change', (event) => {
+        category = event.target.value
+        renderUi()
+    })
+document
+    .querySelector('#clear-building-filter')
+    .addEventListener('click', () => {
+        search = ''
+        category = 'all'
+        document.querySelector('#building-search').value = ''
+        document.querySelector('#building-category').value = 'all'
+        renderUi()
+    })
+document
+    .querySelector('#open-shipyard-building')
+    .addEventListener('click', () =>
+        select(
+            state.buildings.find((item) => item.type === 'shipyard').id,
+            true,
+        ),
+    )
+document.querySelector('#toggle-build').addEventListener('click', () => {
+    if (!busy) {
+        placing = !placing
+        renderUi()
+    }
+})
+document.querySelector('#colony-view').addEventListener('click', () => {
+    stopRotation()
+    scene?.resetCamera()
+})
+document.querySelector('#orbit-view').addEventListener('click', () => {
+    navigate('fleets', true, true)
+    scene?.resetCamera()
+})
 document
     .querySelector('#zoom-in')
     .addEventListener('click', () => scene?.zoom(-2))
@@ -765,9 +958,14 @@ document
         state = snapshot
         selected = state.buildings[0].id
         chosenType = 'terraformer'
+        search = ''
+        category = 'all'
+        document.querySelector('#building-search').value = ''
+        document.querySelector('#building-category').value = 'all'
         scene?.update(state)
         scene?.select(selected)
-        setView('colony')
+        applyPage()
+        renderUi()
         status.textContent = t.ready
     })
 document.querySelector('#reset-demo').addEventListener('click', async () => {
@@ -777,12 +975,17 @@ document.querySelector('#reset-demo').addEventListener('click', async () => {
     state = await provider.reset()
     selected = 'metal'
     chosenType = 'terraformer'
+    search = ''
+    category = 'all'
+    document.querySelector('#building-search').value = ''
+    document.querySelector('#building-category').value = 'all'
     scene?.select(selected)
     scene?.update(state)
     scene?.resetCamera()
     renderUi()
     status.textContent = t.ready
 })
+applyPage()
 window.addEventListener('pagehide', (event) => {
     if (!event.persisted) scene?.dispose()
 })

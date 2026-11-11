@@ -9,58 +9,66 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OGameX-3D · 0.7</title>
+    <title>OGameX-3D · 0.8</title>
     {{ $prototypeVite('resources/js/prototype3d/index.js') }}
 </head>
 <body class="prototype-3d">
-<div id="prototype" data-mode="colony">
+<div id="prototype" data-mode="colony" data-page="planet">
     <header class="topbar">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.7</small></a>
-        <span class="demo-tag"><i></i>{{ $t['demo'] }}</span>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.8</small></a>
+        <span class="demo-tag">{{ $t['demo'] }}</span>
+        <div class="planet-context"><label for="planet-select">{{ $t['choose_planet'] }}</label><select id="planet-select"></select><span id="context-fields"></span></div>
+        <button id="reset-demo" class="text-button">↺ {{ $t['reset'] }}</button>
         <a class="back-link" href="{{ url('/') }}">{{ $t['back'] }} ↗</a>
     </header>
-    <main>
-        <section class="scene-panel" aria-label="{{ $t['scene'] }}">
-            <div class="scene-title"><span class="eyebrow">{{ $t['sector'] }} · 01</span><h1 id="planet-name">Kepler IX</h1><p><span id="planet-coordinates">[1:42:8]</span> <span> / </span> {{ $t['class'] }}</p></div>
-            <div class="view-switch" role="group" aria-label="{{ $t['view'] }}">
-                <button id="colony-view" aria-pressed="true">◉ {{ $t['colony'] }}</button>
-                <button id="orbit-view" aria-pressed="false">◎ {{ $t['orbit'] }}</button>
-            </div>
-            <div id="scene" tabindex="0" aria-label="{{ $t['controls'] }}"></div>
-            <div id="scene-labels" aria-hidden="true"></div>
-            <p id="render-status" role="status">{{ $t['loading'] }}</p>
-            <div class="scene-tools">
-                <button id="zoom-in" aria-label="{{ $t['zoom_in'] }}">+</button>
-                <button id="zoom-out" aria-label="{{ $t['zoom_out'] }}">−</button>
-                <button id="rotate" aria-pressed="false">↻ <span>{{ $t['rotate'] }}</span></button>
-                <button id="reset-camera">⌖ <span>{{ $t['camera'] }}</span></button>
-            </div>
-            <div class="scene-caption"><span class="signal">▥</span> {{ $t['controls'] }}</div>
-            <div class="coordinates">KEPLER SYSTEM <span> / </span> 01.042.008</div>
-        </section>
-        <aside class="colony-panel">
-            <div class="panel-heading"><div><span class="eyebrow">{{ $t['command'] }}</span><h2 id="panel-title">{{ $t['colony'] }}</h2></div><span class="online-dot"></span></div>
-            <section class="planet-capacity" aria-label="{{ $t['planet_state'] }}">
-                <label for="planet-select">{{ $t['choose_planet'] }}</label>
-                <select id="planet-select"></select>
-                <div class="capacity-stats"><span>{{ $t['diameter'] }}</span><strong id="planet-diameter"></strong><span>{{ $t['fields_used'] }}</span><strong id="fields-used"></strong><span>{{ $t['fields_free'] }}</span><strong id="fields-free"></strong></div>
-                <progress id="capacity-meter" aria-label="{{ $t['fields_used'] }}"></progress>
-                <p id="terraformer-effect"></p><p>{{ $t['planet_demo'] }}</p>
+    <div class="activity-bar"><p id="render-status" role="status">{{ $t['loading'] }}</p><button id="cancel-operation" hidden>{{ $t['interrupt'] }}</button></div>
+    <div class="app-shell">
+        <nav class="main-nav" aria-label="{{ $t['main_navigation'] }}">
+            <span class="eyebrow nav-caption">{{ $t['command'] }}</span>
+            @foreach (['planet' => '◉', 'buildings' => '▥', 'ships' => '◇', 'fleets' => '⌁'] as $page => $icon)
+                <a href="#{{ $page }}" data-page-link="{{ $page }}"><span aria-hidden="true">{{ $icon }}</span><span>{{ $t['nav_' . $page] }}</span></a>
+            @endforeach
+            <p class="nav-note">{{ $t['note'] }}</p>
+        </nav>
+        <main class="workspace">
+            <header class="workspace-heading"><div><span class="eyebrow" id="context-name"></span><h1 id="page-title" tabindex="-1">{{ $t['nav_planet'] }}</h1><p id="page-description"></p></div></header>
+            <section id="page-planet" class="page" aria-labelledby="page-title">
+                <div class="planet-layout">
+                    <div id="planet-scene-slot">
+                        <section class="scene-panel" aria-label="{{ $t['scene'] }}">
+                            <div class="scene-title"><span class="eyebrow">{{ $t['sector'] }} · 01</span><h2 id="planet-name">Kepler IX</h2><p id="planet-coordinates">[1:42:8]</p></div>
+                            <div class="view-switch" role="group" aria-label="{{ $t['view'] }}"><button id="colony-view" aria-pressed="true">◉ {{ $t['colony'] }}</button><button id="orbit-view">◎ {{ $t['nav_fleets'] }}</button></div>
+                            <div id="scene" tabindex="0" aria-label="{{ $t['controls'] }}"></div><div id="scene-labels" aria-hidden="true"></div>
+                            <div class="scene-tools"><button id="zoom-in" aria-label="{{ $t['zoom_in'] }}">+</button><button id="zoom-out" aria-label="{{ $t['zoom_out'] }}">−</button><button id="rotate" aria-pressed="false">↻ <span>{{ $t['rotate'] }}</span></button><button id="reset-camera">⌖ <span>{{ $t['camera'] }}</span></button></div>
+                            <div class="scene-caption">{{ $t['controls'] }}</div>
+                        </section>
+                    </div>
+                    <div class="overview-cards">
+                        <section class="card planet-capacity" aria-label="{{ $t['planet_state'] }}"><h2>{{ $t['planet_state'] }}</h2><div class="capacity-stats"><span>{{ $t['diameter'] }}</span><strong id="planet-diameter"></strong><span>{{ $t['fields_used'] }}</span><strong id="fields-used"></strong><span>{{ $t['fields_free'] }}</span><strong id="fields-free"></strong></div><progress id="capacity-meter" aria-label="{{ $t['fields_used'] }}"></progress><p id="terraformer-effect" class="muted"></p><p class="muted">{{ $t['planet_demo'] }}</p></section>
+                        <section class="card"><h2>{{ $t['demo_stats'] }}</h2><div id="production-summary" class="production-summary"></div></section>
+                        <section class="card quick-links"><h2>{{ $t['quick_access'] }}</h2><a href="#buildings">{{ $t['nav_buildings'] }} <strong id="structure-count">09</strong></a><a href="#ships">{{ $t['nav_ships'] }} <strong id="overview-pending">0</strong></a><a href="#fleets">{{ $t['nav_fleets'] }} <strong id="overview-fleet">3</strong></a></section>
+                    </div>
+                </div>
             </section>
-            <div id="production-summary" class="production-summary"></div>
-            <div class="section-heading"><h3>{{ $t['structures'] }}</h3><span id="structure-count">04</span></div>
-            <div id="building-list"></div>
-            <p id="plot-summary" class="plot-summary" aria-live="polite"></p>
-            <button id="toggle-build" class="upgrade-button" aria-expanded="false" aria-controls="builder">+ {{ $t['build_menu'] }}</button>
-            <section id="builder" hidden></section>
-            <section id="building-info" aria-live="polite"></section>
-            <section id="ship-orders" hidden></section>
-            <section id="orbit-info" hidden></section>
-            <div class="demo-note"><span>◈</span><p>{{ $t['note'] }}</p></div>
-            <button id="reset-demo" class="text-button">↺ {{ $t['reset'] }}</button>
-        </aside>
-    </main>
-    <footer><span><i></i>{{ $t['local'] }}</span><span>OGameX-3D <b> / </b> {{ $t['prototype'] }}</span></footer>
+            <section id="page-buildings" class="page" hidden aria-labelledby="page-title">
+                <div class="split-layout">
+                    <section class="card catalog-panel"><div class="section-heading"><h2>{{ $t['building_catalog'] }}</h2><button id="toggle-build" aria-expanded="false" aria-controls="builder">+ {{ $t['build_menu'] }}</button></div>
+                        <section id="builder" hidden></section>
+                        <div class="filters"><label>{{ $t['search_buildings'] }}<input id="building-search" type="search" autocomplete="off"></label><label>{{ $t['category'] }}<select id="building-category"><option value="all">{{ $t['all_categories'] }}</option>@foreach (['economy', 'facilities', 'storage', 'defense'] as $category)<option value="{{ $category }}">{{ $t[$category] }}</option>@endforeach</select></label><button id="clear-building-filter">{{ $t['clear_filter'] }}</button></div>
+                        <p id="plot-summary" class="muted" aria-live="polite"></p><div id="building-list"></div>
+                    </section>
+                    <aside class="detail-column"><section id="building-info" class="card" aria-live="polite"></section><button data-preview="buildings" aria-controls="buildings-preview" aria-expanded="false">{{ $t['preview_show'] }}</button><div id="buildings-preview" class="preview-slot" hidden></div></aside>
+                </div>
+            </section>
+            <section id="page-ships" class="page" hidden aria-labelledby="page-title">
+                <div class="equal-layout"><section class="card"><div id="shipyard-summary"></div><div id="ship-builder"></div><button id="open-shipyard-building" class="text-button">{{ $t['shipyard_details'] }} →</button><div class="preview-area"><button data-preview="ships" aria-controls="ships-preview" aria-expanded="false">{{ $t['preview_show'] }}</button><div id="ships-preview" class="preview-slot" hidden></div></div></section><section id="ship-orders" class="card"></section></div>
+            </section>
+            <section id="page-fleets" class="page" hidden aria-labelledby="page-title">
+                <div class="split-layout"><section id="orbit-info" class="card"></section><aside class="detail-column"><section id="fleet-details" class="card"></section><a href="#ships" class="secondary-link">{{ $t['to_ship_construction'] }} →</a><button data-preview="fleets" aria-controls="fleets-preview" aria-expanded="false">{{ $t['preview_show'] }}</button><div id="fleets-preview" class="preview-slot" hidden></div></aside></div>
+            </section>
+        </main>
+    </div>
+    <footer><span>◈ {{ $t['local'] }}</span><span>OGameX-3D · V 0.8</span></footer>
 </div>
 <script type="application/json" id="prototype-translations">@json($t)</script>
 </body>

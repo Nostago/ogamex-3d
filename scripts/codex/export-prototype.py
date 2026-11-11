@@ -46,35 +46,30 @@ ZIP entpacken und {name} mit Safari, Chrome, Firefox oder Edge öffnen.
 Kein Server und keine Installation nötig. JavaScript und WebGL müssen aktiv sein.
 Nach dem Download funktioniert die Demo ohne Internet.
 
-Maus ziehen: drehen. Mausrad oder +/−: zoomen.
-Gebäude anklicken: Details und sanfter Kamerafokus.
-Übersicht: zurück zum Planeten. Rotation: automatische Kameradrehung.
-Planetenauswahl: Aster (klein), Kepler IX (mittel), Titan Prime (groß).
-Durchmesser, belegte/maximale Baufelder und freie Kapazität stehen in der Kopfzeile.
-Baumenü: Anlagentyp wählen, dann „Demo errichten“. Standort wird automatisch vergeben.
-Jede Gebäudestufe benötigt ein Feld, Verteidigungsmodelle benötigen keine Felder.
-Terraformer: erweitert die Feldkapazität, nicht den Planetendurchmesser.
-Sein eigener Bau/Ausbau benötigt zunächst ein freies Feld.
-Vorhandene Anlagen lassen sich über die scrollbare Gebäudeliste auswählen.
-Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle auch mehrfach.
-Schiffswerft anklicken: Schiffstyp und Stückzahl wählen, „Mengenauftrag vormerken“.
-Unter den Aufträgen „Nächsten Demo-Auftrag ausführen“ wählen.
-Die kurze Animation steht für den gesamten Mengenauftrag, unabhängig von der Stückzahl.
-Unterbrechen lässt den Auftrag vorgemerkt. „Auftrag entfernen“ verwirft ihn.
-Leichter Jäger, Kleiner Transporter oder Spionagesonde: Montage, Start und Orbit.
-Formationen im Orbit oder in der Flottenliste anklicken: Bestand und Kamerafokus.
-Schiffsauswahl pausiert den Orbitverkehr; „Übersicht“ setzt ihn fort.
-Bestand, offene Aufträge und sichtbare Modelle sind getrennte Größen.
-Im Orbit „Großflotte“ wählen und „Demo-Bestand ersetzen“: 1.100.000 Schiffe.
-Offene Aufträge müssen vor dem Ersetzen abgeschlossen oder entfernt sein.
-Höchstens zwölf Modelle vertreten den gesamten Bestand, ohne echtes Flottenlimit.
-Die Eingabegrenze 1 bis 1.000.000.000 und 20 offene Aufträge sind Demogrenzen.
-Nanitenfabrik und Fusionskraftwerk sind ebenfalls im Baumenü verfügbar.
-Die Gebäudeliste ist nach Ressourcen, Einrichtungen, Lagern und Verteidigung gegliedert.
-Keine produktive Schiffsproduktion, Flugmissionen, Forschung, Transporte oder Kämpfe.
-Demo-Ausbau: Bauanimation, danach neue Stufe und Gebäudemodell (maximal Stufe 8).
-Während des Baus: Reset, Planetenwechsel oder Orbit bricht Gebäude- und Schiffsbau ab.
-Orbit: Station und die Demo-Flotte des ausgewählten Planeten. Kamera kann jederzeit per Maus bewegt werden.
+Hauptnavigation: Planet / Gebäude / Schiffe / Flotten. Auf dem Handy unten.
+Planet und Reset sind oben auf allen Seiten erreichbar.
+Planet: große 3D-Übersicht, Baufelder und Beispielproduktion.
+Maus ziehen: drehen. Mausrad oder +/−: zoomen. Übersicht: Kamera zurücksetzen.
+Ein Gebäude auf dem Planeten anklicken öffnet seine Gebäudeseite.
+Gebäude: Suche und Kategorien, Details und Demo-Ausbau bis Stufe 8.
+Baumenü: Typ wählen und Demo errichten. Der Standort wird automatisch vergeben.
+Terraformer erweitert die Baufelder, nicht den Planetendurchmesser.
+Jede Gebäudestufe braucht ein Feld; Verteidigungsmodelle brauchen keine Felder.
+Schiffe: Typ und Stückzahl eingeben, Mengenauftrag vormerken, dann nächsten Auftrag ausführen.
+Die kurze Montage-/Startanimation steht für den gesamten Mengenauftrag.
+Flotten: Tabelle mit fertigem Bestand und zusätzlich vorgemerkten Mengen.
+Großflotte wählen und Demo-Bestand ersetzen: 1.100.000 Schiffe.
+Offene Aufträge vor dem Ersetzen abschließen oder entfernen.
+Höchstens zwölf repräsentative Orbitmodelle stehen für den ganzen Bestand.
+Auf Unterseiten ist die kleine 3D-Vorschau optional; Listen und Eingaben stehen im Mittelpunkt.
+Formulare, Suche und Auswahl bleiben beim Navigieren erhalten.
+Die Hauptnavigation unterbricht laufende Demo-Vorgänge nicht.
+„Vorgang unterbrechen“ stoppt die Animation; ein Schiffsauftrag bleibt vorgemerkt.
+„Auftrag entfernen“ verwirft einen offenen Auftrag ausdrücklich.
+Planetenwechsel oder Reset unterbricht laufende Vorgänge.
+Reset betrifft nur den aktuellen Planeten, Neuladen alle.
+Die Demo erlaubt Mengen von 1 bis 1.000.000.000 und höchstens 20 offene Aufträge.
+Diese Grenzen sind keine OGame-Flottenlimits. Keine produktiven Missionen oder Kämpfe.
 
 Alle Werte sind Beispieldaten; keine Verbindung zu einem echten Spielstand.
 „Diesen Planeten zurücksetzen“ setzt nur den ausgewählten Planeten zurück.

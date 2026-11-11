@@ -607,9 +607,13 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     renderer.domElement.addEventListener('lostpointercapture', cancel)
     renderer.domElement.addEventListener('wheel', wheel, { passive: false })
     host.addEventListener('keydown', key)
+    let viewportVisible = false
     const resize = new ResizeObserver(() => {
         const { width, height } = host.getBoundingClientRect()
-        renderer.setSize(width, height)
+        viewportVisible = width > 0 && height > 0
+        host.dataset.rendering = viewportVisible ? 'active' : 'paused'
+        if (!viewportVisible) return
+        renderer.setSize(width, height, false)
         camera.aspect = width / Math.max(1, height)
         camera.updateProjectionMatrix()
     })
@@ -679,6 +683,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                 completed.resolve(true)
             }
         }
+        if (!viewportVisible) return
         const framedDistance = distance * (camera.aspect < 0.85 ? 1.55 : 1)
         camera.position
             .set(

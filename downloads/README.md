@@ -1,54 +1,54 @@
 # OGameX-3D als lokale Demo
 
-## Aktuelle Version 0.7
+## Aktuelle Version 0.8
 
-[OGameX-3D-0.7.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.7/downloads/OGameX-3D-0.7.zip),
-entpacken und `OGameX-3D-0.7.html` mit Safari, Chrome, Firefox oder Edge öffnen.
-Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
-aktiv sein. Nach dem Download funktioniert die Demo ohne Internet.
+[OGameX-3D-0.8.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.8/downloads/OGameX-3D-0.8.zip),
+entpacken und `OGameX-3D-0.8.html` in Safari, Chrome, Firefox oder Edge öffnen.
+Keine Installation, kein Server, keine Laufzeit-Downloads. JavaScript und WebGL
+müssen aktiv sein; nach dem Download funktioniert die Demo offline.
 
-Neu: Mengenaufträge und repräsentative Großflotten. Der Schiffbestand ist eine
-Stückzahl je Typ, keine Sammlung einzelner 3D-Modelle. Drei Formationen mit
-höchstens zwölf Modellen vertreten auch Millionen Schiffe. Die Darstellung
-nennt den tatsächlichen fertigen Bestand und zusätzlich vorgemerkte Mengen.
+Neu ist die getrennte Navigation mit vier Arbeitsbereichen:
 
-Ausprobieren:
+- **Planet:** große 3D-Kolonie, Baufelder, Beispielproduktion und Direktzugriff.
+- **Gebäude:** Suche und Kategorien, Details, Ausbau und automatischer Neubau.
+- **Schiffe:** Schiffstyp und Stückzahl, Mengenaufträge und Baufortschritt.
+- **Flotten:** Bestandstabelle, vorgemerkte Mengen, Details und Beispielbestände.
 
-1. Schiffswerft anklicken, Schiffstyp und Stückzahl wählen, etwa 10.000 Leichte
-   Jäger. „Mengenauftrag vormerken“ drücken; mehrere Aufträge sind möglich.
-2. „Nächsten Demo-Auftrag ausführen“ zeigt Montage und wenige symbolische Starts.
-   Die Animationsdauer ist unabhängig von der Menge. Erst danach wird die ganze
-   Stückzahl genau einmal zum Bestand addiert.
-3. Formationen im Orbit oder in der Liste auswählen. „Übersicht“ beendet den
-   Fokus und setzt den pausierten Orbitverkehr fort.
-4. Im Orbit „Großflotte · 1.100.000 Schiffe“ auswählen und „Demo-Bestand ersetzen“:
-   750.000 Jäger, 250.000 Transporter und 100.000 Sonden, mit zwölf Orbitmodellen.
-   Offene Aufträge vorher abschließen oder entfernen.
+Die Hauptnavigation steht links, auf kleinen Bildschirmen fest unten. Die große
+3D-Ansicht gehört zur Planetenübersicht. Auf Unterseiten lässt sich eine kleine
+3D-Vorschau öffnen und schließen; Formulare und Tabellen haben Vorrang.
+Gebäudeklicks auf dem Planeten öffnen die passende Gebäudeseite samt Vorschau.
+Dieselbe WebGL-Szene bleibt erhalten; geschlossenes Rendering pausiert.
 
-Planeten- und Orbitwechsel unterbrechen eine Animation; ihr Auftrag bleibt
-vorgemerkt. „Auftrag entfernen“ verwirft einen offenen Auftrag. Reset betrifft
-nur den aktuellen Planeten, Neuladen alle. Die Demo-Warteliste wird manuell
-fortgesetzt, ohne echte Kosten, Bauzeiten oder Forschungsvoraussetzungen.
-Eingaben von 1 bis 1.000.000.000 und höchstens 20 offene Aufträge sind technische
-Demogrenzen; zwölf Modelle sind ein Grafikbudget, kein OGame-Flottenlimit.
+Eingaben, Suche und Auswahl bleiben beim Navigieren erhalten. Laufende Vorgänge
+laufen beim Seitenwechsel weiter, ohne am Ende automatisch die Seite zu wechseln.
+„Vorgang unterbrechen“ stoppt ausdrücklich; ein Schiffsauftrag bleibt vorgemerkt.
+Planetenwechsel und Reset unterbrechen ebenfalls. Reset betrifft nur den aktuellen
+Planeten, Neuladen alle. Die vier Seiten sind per URL-Fragment und Zurück/Vorwärts
+erreichbar, z. B. `#ships`.
 
-Drei Planetengrößen, 15 Anlagentypen, automatische Standorte, Baufelder,
-Terraformer, Infrastruktur, Fahrzeuge, Betriebsanimationen und reduzierte
-Bewegung bleiben verfügbar. Kein Zugriff auf echte Spielstände; keine
-Flugmissionen, Transporte, Spionage oder Kämpfe. Die HTML-Datei enthält die
-Three.js-MIT-Lizenz, die ZIP eine Anleitung. Keine Laufzeit-Downloads.
+Unter **Schiffe** Typ und Menge eingeben, „Mengenauftrag vormerken“ und danach
+„Nächsten Demo-Auftrag ausführen“ wählen. Unter **Flotten** kann die Großflotte
+mit 1.100.000 Schiffen geladen werden. Maximal zwölf Orbitmodelle stehen für den
+gesamten Bestand. Drei Planeten, 15 Gebäudetypen, Terraformer, Betriebsanimationen,
+Verteidigung, Infrastruktur und die bisherigen Mengenaufträge bleiben erhalten.
+
+Weiterhin Beispieldaten, ohne produktive Kosten, Bauzeiten, Missionen oder Kämpfe.
+Keine Verbindung zu echten Spielständen. Die ZIP enthält eine Anleitung, die HTML
+enthält die Three.js-MIT-Lizenz. Produktive Spiellogik und Abhängigkeiten bleiben
+unverändert.
 
 SHA-256:
 
 ```text
-062d884339412006cedbea1b922de358361e58c3d80a9182106cc14fb41c81da
+7296a5cd0d2210c8a7971fd5a7588dc81b83ac204cd0f849b385d58a175bd75e
 ```
 
-Bedienung, Provider-Vertrag und Testbefehle:
-[Dokumentation](../docs/OGAMEX-3D.md).
+Weitere Details: [Dokumentation](../docs/OGAMEX-3D.md).
 
 ## Frühere Versionen
 
+- [Version 0.7](OGameX-3D-0.7.zip)
 - [Version 0.6](OGameX-3D-0.6.zip)
 - [Version 0.5](OGameX-3D-0.5.zip)
 - [Version 0.4](OGameX-3D-0.4.zip)

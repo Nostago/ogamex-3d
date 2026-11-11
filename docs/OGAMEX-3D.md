@@ -1,15 +1,48 @@
-# OGameX-3D 0.7 ausprobieren
+# OGameX-3D 0.8 ausprobieren
 
 ## ZIP-Demo ohne Server
 
-[OGameX-3D-0.7.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.7/downloads/OGameX-3D-0.7.zip),
-entpacken und `OGameX-3D-0.7.html` in Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.8.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.8/downloads/OGameX-3D-0.8.zip),
+entpacken und `OGameX-3D-0.8.html` in Safari, Chrome, Firefox oder Edge öffnen.
 Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
 aktiv sein. Nach dem Download funktioniert die Demo vollständig ohne Internet.
 Die ZIP enthält zusätzlich eine deutsche Anleitung und die HTML-Datei enthält
-die Three.js-Lizenz. Versionen 0.1–0.6 bleiben unter `downloads/` erhalten.
+die Three.js-Lizenz. Versionen 0.1–0.7 bleiben unter `downloads/` erhalten.
 
-## Neu in 0.7: Mengenproduktion und große Flotten
+## Neu in 0.8: vier klare Arbeitsbereiche
+
+Die große 3D-Ansicht gehört zur **Planetenübersicht**. Die Unterseiten stellen
+Listen, Tabellen und Eingaben in den Mittelpunkt, mit einer kleinen optionalen
+3D-Vorschau. Die bisherige gemeinsame rechte Scrollleiste entfällt.
+
+| Bereich | Inhalt |
+|---|---|
+| Planet | Große 3D-Kolonie, Durchmesser, Baufelder, Beispielproduktion, Direktzugriff |
+| Gebäude | Kategorien und Suche, vorhandene Anlagen, Details, Ausbau und Neubau |
+| Schiffe | Schiffstyp, Stückzahl, vorgemerkte Aufträge und Baufortschritt |
+| Flotten | Tabelle mit fertigen und vorgemerkten Mengen, Formationsdetails und Beispielbestände |
+
+Die Hauptnavigation steht am Desktop links, auf schmalen Bildschirmen fest unten.
+Planetenauswahl, Status und Reset sind auf jeder Seite oben erreichbar.
+Gebäude auf dem Planeten anzuklicken öffnet ihre Gebäudeseite samt Vorschau.
+Auf den Unterseiten öffnet „3D-Vorschau anzeigen“ nur einen kleinen Bildausschnitt;
+„3D-Vorschau schließen“ gibt den Platz wieder frei. Der WebGL-Renderer wird dabei
+nicht neu erzeugt. Ohne sichtbare Vorschau pausiert das Rendering, der aktive
+Demo-Auftrag kann trotzdem weiterlaufen.
+
+Suche, Kategorie, ausgewähltes Gebäude, Schiffstyp, Stückzahl und Vorschauzustand
+bleiben beim Navigieren erhalten. Die URL-Fragmente `#planet`, `#buildings`,
+`#ships` und `#fleets` funktionieren auch offline sowie mit Zurück/Vorwärts.
+Unbekannte Fragmente öffnen die Planetenübersicht.
+
+**Seitenwechsel unterbrechen keinen laufenden Vorgang.** Ein gestarteter Ausbau
+oder Mengenauftrag bleibt aktiv und übernimmt seine Daten nach Abschluss genau
+einmal. Auch der Abschluss wechselt die aktuelle Seite nicht automatisch.
+„Vorgang unterbrechen“ in der Statusleiste stoppt bewusst; Schiffsaufträge bleiben
+dann vorgemerkt. Planetenwechsel und Reset unterbrechen weiterhin, damit kein
+Auftrag auf dem falschen Planeten abgeschlossen wird.
+
+## Mengenproduktion und große Flotten
 
 **Bestand, Bauaufträge und 3D-Modelle sind getrennte Größen.** Die Oberfläche
 zeigt exakte fertige Stückzahlen je Typ sowie zusätzlich vorgemerkte Mengen.
@@ -20,23 +53,23 @@ enthält. Der Renderer durchläuft niemals die tatsächliche Stückzahl.
 
 ### Ausprobieren
 
-1. Schiffswerft auswählen. Unter den Gebäudedetails Schiffstyp und Stückzahl
+1. Den Bereich **Schiffe** öffnen. Schiffstyp und Stückzahl
    eingeben, z. B. **10.000 Leichte Jäger**. „Mengenauftrag vormerken“ legt einen
    Auftrag an. Mehrere Aufträge können vor dem Start vorgemerkt werden.
 2. Unter „Schiffsbau-Aufträge“ **Nächsten Demo-Auftrag ausführen** wählen.
    Eine kurze Montage-/Startanimation steht für den gesamten Auftrag. Die Dauer
    ist unabhängig von der Menge. Fertiger Bestand und Formation ändern sich
    erst nach vollständigem Abschluss, genau einmal um die bestellte Stückzahl.
-3. Im Orbit eine Formation oder ihren Listeneintrag wählen. Die Detailansicht
+3. Unter **Flotten** die Details eines Schiffstyps wählen. Die optionale Vorschau zeigt die Formation. Die Detailansicht
    zeigt den gesamten fertigen Bestand, nicht die Zahl sichtbarer Modelle.
    Die Auswahl pausiert den Verkehr; „Übersicht“ setzt ihn fort.
-4. Im Orbit „Großflotte · 1.100.000 Schiffe“ auswählen und **Demo-Bestand ersetzen**
+4. Unter **Flotten** „Großflotte · 1.100.000 Schiffe“ auswählen und **Demo-Bestand ersetzen**
    drücken: 750.000 Leichte Jäger, 250.000 Kleine Transporter, 100.000 Sonden.
    Das ersetzt nur die fertige Flotte des ausgewählten Planeten. Offene Aufträge
    müssen vorher abgeschlossen oder entfernt werden. „Patrouille“ stellt drei
    Beispielschiffe ein. Weitere Mengenaufträge addieren sich auf den Bestand.
 
-Planeten-/Orbitwechsel unterbrechen die laufende Demoanimation; der Auftrag
+Planetenwechsel oder „Vorgang unterbrechen“ stoppen die laufende Demoanimation; der Auftrag
 bleibt **vorgemerkt** und kann erneut gestartet werden. „Auftrag entfernen“
 verwirft einen offenen Auftrag ausdrücklich, ohne fertige Schiffe zu verändern.
 Reset löscht Flotte und Aufträge des aktuellen Planeten; Neuladen setzt alle
@@ -92,15 +125,15 @@ Die Anzeige trennt Basisfelder, Terraformer-Bonus und verbleibende Kapazität.
   Planeten zurück; Neuladen setzt alle drei zurück.
 - Maus ziehen: drehen; Mausrad oder +/−: zoomen. Touch unterstützt Ziehen und
   Zoom-Schaltflächen. In der fokussierten Szene funktionieren Pfeiltasten und +/−.
-- Gebäude auf dem Planeten oder in der scrollbaren Gebäudeliste anklicken:
-  Detailinformationen und Kamerafokus. „Übersicht“ führt zurück zum Planeten.
-- „Baumenü“ öffnen, Typ wählen, „Demo errichten“. Der Standort wird automatisch
+- Gebäude auf dem Planeten oder im Bereich Gebäude anklicken:
+  Detailinformationen und optionaler Kamerafokus. Die Hauptnavigation führt zurück zum Planeten.
+- Unter Gebäude „Baumenü“ öffnen, Typ wählen, „Demo errichten“. Der Standort wird automatisch
   vergeben. Ausbau und Neubau zeigen zunächst Gerüst und Fortschritt. Erst bei
   Abschluss ändern sich Stufe, Felder und Modell. Demo-Maximum ist Stufe 8.
-- Planetenwechsel, Reset oder Orbitwechsel brechen laufende Gebäudeanimationen ab,
+- Planetenwechsel, Reset oder „Vorgang unterbrechen“ brechen laufende Gebäudeanimationen ab,
   ohne Felder oder Stufen zu verändern. Unterbrochene Schiffsaufträge bleiben vorgemerkt. Manuelle Kameraeingaben unterbrechen
   Kamerafahrten, ohne den Bau abzubrechen.
-- „Orbit“ zeigt Raumstation und drei Beispielschiffe. „Rotation“ aktiviert die
+- Die Flottenvorschau zeigt Raumstation und repräsentative Formationen. „Rotation“ aktiviert die
   Kameradrehung. „Bewegung reduzieren“ in den Systemeinstellungen stoppt
   Betriebsanimationen und macht Kamerafokus und Bauen unmittelbar.
 
@@ -155,7 +188,7 @@ Es werden keine Spielstände, Datenbanken oder produktiven Bauaufträge verände
 `shipCatalog.js` enthält die Demo-Schiffstypen; `fleet.js` trennt Bestände,
 Auftragsmengen und begrenzte Formationen und enthält die Beispielbestände;
 `ships.js` baut ihre prozeduralen Modelle. `layout.js` vergibt deterministische, voneinander getrennte Oberflächenpositionen.
-`data.js` verwaltet Zustand und validiert vor jeder Mutation. `scene.js` erhält
+`data.js` verwaltet Zustand und validiert vor jeder Mutation. `navigation.js` definiert die vier Hash-Routen. `scene.js` erhält
 Snapshots und zeichnet nur; `index.js` verbindet UI, Provider und Animationen.
 Abbruchmarken verhindern, dass verspätete Animationsabschlüsse auf dem falschen
 Planeten angewandt werden.
@@ -257,29 +290,29 @@ Playwright-/Chromium-Installation außerhalb der Projektabhängigkeiten:
 
 ```sh
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v05-artifacts \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v08-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 
 Andernorts `PLAYWRIGHT_MODULE`, bei Bedarf `CHROMIUM_PATH` und
-`PROTOTYPE_BASE_URL` anpassen. Browserchecks umfassen echte WebGL-Ausgabe, die
-drei Profile, Bauanimation und verzögerte Mutation, volle Felder, Verteidigung,
-Terraformer, unabhängige Zustände, Abbruch bei Planeten-/Orbitwechsel und Reset,
-Kamera, Maus, Mobilansicht, reduzierte Bewegung und Neuladen. Zusätzlich werden
-Mengenvalidierung, mehrere vorgemerkte Aufträge, Montage/Start, exakte Mengenübernahme,
-Unterbrechen/Entfernen/Reset, Formationsauswahl, die neuen Anlagen und Bestände
-von 1,1 bzw. 2,1 Millionen Schiffen bei höchstens zwölf Orbitmodellen geprüft. Screenshots werden
-im angegebenen Verzeichnis abgelegt.
+`PROTOTYPE_BASE_URL` anpassen. Der Browser-Test prüft echte WebGL-Ausgabe,
+direkte Gebäudeauswahl, die vier getrennten Seiten, Suche/Kategorien,
+persistente Eingaben, kleine optionale Vorschauen, genau einen geteilten Canvas,
+pausiertes Rendering bei geschlossener Vorschau, laufende Vorgänge trotz
+Navigation, explizites Unterbrechen, Planetenwechsel, Reset, Baufeldgrenzen,
+Terraformer, Mengenaufträge, eine Millionenflotte, Mobilansichten,
+Hash-Direktlinks, Zurück/Vorwärts und reduzierte Bewegung. Der Offline-Test
+prüft zusätzlich, dass keine HTTP-Anfragen entstehen, und speichert Screenshots.
 
 ## ZIP reproduzieren und offline prüfen
 
 Bei laufender Laravel-Seite und gebauten Assets:
 
 ```sh
-python3 scripts/codex/export-prototype.py --version 0.7 --output /workspace/exports/v0.7
+python3 scripts/codex/export-prototype.py --version 0.8 --output /workspace/exports/v0.8
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.7/OGameX-3D-0.7.html \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v05-artifacts \
+PROTOTYPE_HTML=/workspace/exports/v0.8/OGameX-3D-0.8.html \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v08-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 
