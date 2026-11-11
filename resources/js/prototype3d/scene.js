@@ -1,4 +1,6 @@
 import * as THREE from './vendor/three.module.min.js'
+import { createColonyMaterials } from './materials.js'
+import { createBuilding } from './buildings.js'
 
 // Procedural scene only. No remote textures, models, game services or mutations.
 export function createPlanetScene(host, labelsHost, onSelect, names) {
@@ -6,34 +8,45 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 160)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     renderer.setClearColor(0x040b16, 0)
     renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.1
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    // Cache static building shadows; animated machinery does not regenerate the atlas.
+    renderer.shadowMap.autoUpdate = false
+    renderer.shadowMap.needsUpdate = true
+    const materials = createColonyMaterials()
+    scene.environment = materials.environment
     host.append(renderer.domElement)
     renderer.domElement.setAttribute('aria-label', names.scene)
-    scene.add(new THREE.HemisphereLight(0x92dfff, 0x13222e, 2.5))
-    const sun = new THREE.DirectionalLight(0xffecd0, 3.8)
+    scene.add(new THREE.HemisphereLight(0xcedbe5, 0x37322b, 1.05))
+    const sun = new THREE.DirectionalLight(0xffe5c7, 3.4)
     sun.position.set(-12, 22, 18)
+    sun.target.position.set(0, 6, 0)
+    scene.add(sun.target)
+    sun.castShadow = true
+    sun.shadow.mapSize.set(1024, 1024)
+    Object.assign(sun.shadow.camera, {
+        left: -9,
+        right: 9,
+        top: 9,
+        bottom: -9,
+        near: 1,
+        far: 55,
+    })
+    sun.shadow.bias = -0.00025
+    sun.shadow.normalBias = 0.025
+    sun.shadow.radius = 2
     scene.add(sun)
-    const rim = new THREE.DirectionalLight(0x168cff, 3)
+    const rim = new THREE.DirectionalLight(0x99bce2, 0.9)
     rim.position.set(8, 2, -12)
     scene.add(rim)
     const world = new THREE.Group()
     scene.add(world)
-    const material = (color, emissive = 0) =>
-        new THREE.MeshStandardMaterial({
-            color,
-            roughness: 0.65,
-            metalness: 0.35,
-            emissive,
-            emissiveIntensity: 0.75,
-        })
-    const steel = material(0x7b98a5),
-        dark = material(0x223a4b),
-        cyan = material(0x60deff, 0x137dba),
-        gold = material(0xd4ae65)
-    const panel = material(0x17467b, 0x082750),
-        purple = material(0x9483ef, 0x453694)
+    const { steel, dark, cyan, gold, panel } = materials.palette
     const mesh = (geometry, mat, parent, x = 0, y = 0, z = 0) => {
         const object = new THREE.Mesh(geometry, mat)
         object.position.set(x, y, z)
@@ -78,6 +91,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         }),
         world,
     )
+    globe.receiveShadow = true
     const atmosphere = mesh(
         new THREE.SphereGeometry(8.22, 64, 48),
         new THREE.ShaderMaterial({
@@ -127,7 +141,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     const selectionMat = new THREE.MeshBasicMaterial({
         color: 0x70e1ff,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.45,
         side: THREE.DoubleSide,
     })
     function buildModel(data, index) {
@@ -143,215 +157,24 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         group.position.copy(normal).multiplyScalar(8.02)
         group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
         colony.add(group)
-        cylinder(group, dark, 0, 0.1, 0, 1.38, 0.2, 6)
+        const model = createBuilding(data.id, data.level, materials.palette)
+        group.add(model.group)
         const ring = mesh(
-            new THREE.TorusGeometry(1.35, 0.035, 5, 36),
+            new THREE.TorusGeometry(1.4, 0.016, 5, 48),
             selectionMat,
             group,
             0,
-            0.23,
+            0.22,
             0,
         )
         ring.rotation.x = Math.PI / 2
         ring.visible = data.id === selected
-        const model = new THREE.Group()
-        const motion = []
-        group.add(model)
-        const height = 0.4 + data.level * 0.13
-        if (data.id === 'metal') {
-            box(model, steel, 0, height / 2 + 0.2, 0, 1.1, height, 1.05)
-            for (let floor = 0; floor < data.level; floor++) {
-                box(
-                    model,
-                    cyan,
-                    0,
-                    0.35 + floor * 0.13,
-                    0.535,
-                    0.8,
-                    0.035,
-                    0.03,
-                )
-            }
-            for (let side of [-1, 1]) {
-                cylinder(model, dark, side * 0.85, 0.7, 0, 0.22, 1)
-                cylinder(model, gold, side * 0.85, 1.22, 0, 0.15, 0.08)
-            }
-            const drill = mesh(
-                new THREE.ConeGeometry(0.38, 0.8, 6),
-                steel,
-                model,
-                0,
-                height + 0.55,
-                0,
-            )
-            drill.rotation.z = Math.PI
-            // Working drill, overhead gantry and moving ore conveyor.
-            motion.push((time) => {
-                drill.rotation.y = time * 0.85
-            })
-            for (const side of [-1, 1]) {
-                box(
-                    model,
-                    gold,
-                    side * 0.58,
-                    height + 0.5,
-                    -0.5,
-                    0.09,
-                    1.1,
-                    0.09,
-                )
-            }
-            box(model, gold, 0, height + 1.05, -0.5, 1.3, 0.09, 0.1)
-            box(model, dark, 0, 0.32, 0.9, 1.55, 0.18, 0.35)
-            for (let i = 0; i < 3; i++) {
-                const ore = box(model, gold, 0, 0.5, 0.9, 0.17, 0.14, 0.16)
-                motion.push((time) => {
-                    ore.position.x = (((time * 0.22 + i / 3) % 1) - 0.5) * 1.35
-                })
-            }
-        } else if (data.id === 'crystal') {
-            cylinder(model, steel, 0, 0.35, 0, 0.82, 0.35)
-            for (let i = 0; i < data.level + 2; i++) {
-                const angle = i * 2.4,
-                    radius = i ? 0.65 : 0
-                const crystal = mesh(
-                    new THREE.ConeGeometry(0.25, height + (i % 3) * 0.25, 5),
-                    i % 2 ? purple : cyan,
-                    model,
-                    Math.cos(angle) * radius,
-                    0.6 + height / 2,
-                    Math.sin(angle) * radius,
-                )
-                crystal.rotation.z = Math.cos(angle) * 0.18
-                const restY = crystal.position.y
-                motion.push((time) => {
-                    crystal.position.y =
-                        restY + Math.sin(time * 1.2 + i) * 0.045
-                })
-            }
-            const collector = mesh(
-                new THREE.TorusGeometry(0.94, 0.055, 6, 32),
-                gold,
-                model,
-                0,
-                0.64,
-                0,
-            )
-            collector.rotation.x = Math.PI / 2
-            for (let i = 0; i < 4; i++) {
-                const a = (i * Math.PI) / 2
-                box(
-                    model,
-                    steel,
-                    Math.cos(a),
-                    0.6,
-                    Math.sin(a),
-                    0.13,
-                    0.9,
-                    0.13,
-                )
-                mesh(
-                    new THREE.SphereGeometry(0.09, 8, 6),
-                    cyan,
-                    collector,
-                    Math.cos(a) * 0.94,
-                    Math.sin(a) * 0.94,
-                    0,
-                )
-            }
-            motion.push((time) => {
-                collector.rotation.z = time * 0.25
-            })
-        } else if (data.id === 'deuterium') {
-            for (let i = 0; i < 2 + Math.floor(data.level / 3); i++) {
-                const angle =
-                    (i * Math.PI * 2) / (2 + Math.floor(data.level / 3))
-                const x = Math.cos(angle) * 0.65,
-                    z = Math.sin(angle) * 0.65
-                cylinder(model, steel, x, height / 2 + 0.2, z, 0.36, height)
-                mesh(
-                    new THREE.SphereGeometry(0.36, 12, 8),
-                    cyan,
-                    model,
-                    x,
-                    height + 0.2,
-                    z,
-                ).scale.y = 0.4
-                cylinder(model, cyan, x, 0.35, z, 0.38, 0.06)
-            }
-            box(model, dark, 0, 0.4, 0, 1.4, 0.2, 0.15)
-            const pump = mesh(
-                new THREE.TorusGeometry(0.35, 0.085, 8, 20),
-                gold,
-                model,
-                0,
-                0.75,
-                0.45,
-            )
-            box(pump, steel, 0, 0, 0, 0.65, 0.07, 0.09)
-            motion.push((time) => {
-                pump.rotation.z = time * 0.7
-            })
-            for (let i = 0; i < 3; i++) {
-                const pipe = cylinder(
-                    model,
-                    dark,
-                    -0.9 + i * 0.16,
-                    0.45,
-                    -0.65,
-                    0.045,
-                    0.8,
-                )
-                pipe.rotation.z = Math.PI / 2
-            }
-        } else {
-            cylinder(model, steel, 0, 0.65, 0, 0.15, 1.05)
-            for (let i = 0; i < 2 + Math.floor(data.level / 2); i++) {
-                const array = new THREE.Group()
-                array.position.set(
-                    ((i % 2) - 0.5) * 1.1,
-                    0.8 + Math.floor(i / 2) * 0.23,
-                    (Math.floor(i / 2) - 1) * 0.65,
-                )
-                array.rotation.x = -0.3
-                motion.push((time) => {
-                    array.rotation.x = -0.3 + Math.sin(time * 0.25) * 0.1
-                })
-                model.add(array)
-                box(array, gold, 0, 0, 0, 1.03, 0.08, 0.58)
-                box(array, panel, 0, 0.05, 0, 0.94, 0.025, 0.5)
-                for (let line = -1; line <= 1; line++)
-                    box(array, cyan, line * 0.25, 0.07, 0, 0.012, 0.01, 0.49)
-            }
-        }
-        // Lit control cabin and landing-pad hazard strips, shared by every facility.
-        box(model, steel, -0.65, 0.42, -0.6, 0.42, 0.42, 0.38)
-        box(model, cyan, -0.65, 0.47, -0.395, 0.3, 0.13, 0.025)
-        for (let i = 0; i < 5; i++) {
-            const stripe = box(
-                model,
-                gold,
-                -0.5 + i * 0.25,
-                0.22,
-                1.12,
-                0.12,
-                0.025,
-                0.2,
-            )
-            stripe.rotation.y = 0.35
-        }
-        for (const side of [-1, 1]) {
-            cylinder(model, steel, side * 1.1, 0.4, -0.8, 0.045, 0.4, 6)
-            mesh(
-                new THREE.SphereGeometry(0.075, 8, 6),
-                cyan,
-                model,
-                side * 1.1,
-                0.63,
-                -0.8,
-            )
-        }
-        buildings.set(data.id, { group, ring, motion })
+        buildings.set(data.id, {
+            group,
+            ring,
+            motion: model.motion,
+            labelHeight: model.labelHeight,
+        })
         const label = document.createElement('span')
         label.className = 'building-label'
         label.textContent = `${names[data.id]} · ${data.level}`
@@ -368,6 +191,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         labels.forEach((label) => label.remove())
         labels.clear()
         data.buildings.forEach(buildModel)
+        renderer.shadowMap.needsUpdate = true
     }
     let construction = null
     function cancelConstruction() {
@@ -720,13 +544,13 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                 )
                 ship.rotation.y = -a
             })
-        buildings.forEach(({ group, motion }, id) => {
+        buildings.forEach(({ group, motion, labelHeight }, id) => {
             if (!reducedMotion.matches)
                 motion.forEach((animate) => animate(time / 1000))
             group.getWorldPosition(worldPosition)
             projected
                 .copy(worldPosition)
-                .addScaledVector(worldPosition.clone().normalize(), 2.1)
+                .addScaledVector(worldPosition.clone().normalize(), labelHeight)
                 .project(camera)
             const label = labels.get(id)
             towardCamera.subVectors(camera.position, worldPosition)
@@ -766,17 +590,10 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             scene.traverse((object) => {
                 object.geometry?.dispose()
             })
-            ;[
-                steel,
-                dark,
-                cyan,
-                gold,
-                panel,
-                purple,
-                selectionMat,
-                globe.material,
-                atmosphere.material,
-            ].forEach((mat) => mat.dispose())
+            ;[selectionMat, globe.material, atmosphere.material].forEach(
+                (mat) => mat.dispose(),
+            )
+            materials.dispose()
             renderer.dispose()
         },
     }

@@ -1,17 +1,32 @@
-# OGameX-3D 0.2 ausprobieren
+# OGameX-3D 0.3 ausprobieren
 
 ## Lokale Demo ohne Server
 
-Die fertige ZIP-Datei liegt unter [`downloads/OGameX-3D-0.2.zip`](../downloads/OGameX-3D-0.2.zip).
-Auf GitHub „Download raw file“ wählen, entpacken und `OGameX-3D-0.2.html`
+Die fertige ZIP-Datei liegt unter [`downloads/OGameX-3D-0.3.zip`](../downloads/OGameX-3D-0.3.zip).
+Auf GitHub „Download raw file“ wählen, entpacken und `OGameX-3D-0.3.html`
 mit Safari, Chrome, Firefox oder Edge öffnen. Es ist kein Server und keine
-Installation erforderlich. Version 0.1 bleibt separat erhalten.
+Installation erforderlich. Version 0.1 und 0.2 bleiben separat erhalten.
 
-Neu in 0.2:
+Neu in 0.3:
 
-- Förderband und rotierender Bohrer, schwebende Kristalle mit Kollektor,
-  Pumpenrad und langsam nachgeführte Solarfelder. Zusätzliche Kontrollkabinen,
-  beleuchtete Fenster, Positionsleuchten und Bodenmarkierungen.
+- Alle vier Anlagen wurden als technische Baugruppen neu modelliert: Schachtanlage
+  mit Fachwerkträgern, Seilrollen und Förderband; Kristall-Verarbeitungsanlage;
+  isolierte Tanks mit Rohrbögen und Armaturen; Solarfelder auf Stahlstützen.
+- Gemeinsam genutzte prozedurale Metall-, Beton- und Solarzellentexturen,
+  unterschiedliche Rauheit und Reliefstruktur, getrennte Glas- und Isolationsmaterialien.
+  Diese Texturen werden lokal erzeugt und benötigen keine Downloads.
+- Neutralere Umgebungsbeleuchtung, weich gefilterte Richtungsschatten und
+  Kontaktschatten an den Fundamenten. Statische Schatten werden beim Neuaufbau
+  der Gebäude aktualisiert und anschließend zwischengespeichert. Die Schatten
+  kleiner beweglicher Bauteile sind bewusst angenähert.
+- Begrenzte Renderauflösung (maximal 1,5-fache Pixeldichte), gemeinsam genutzte
+  Materialien und kleine Geometrien. Die Tests prüfen für alle Stufen ein Budget
+  von höchstens 130 Meshes und unter 20.000 Dreiecken pro Gebäudetyp.
+
+Aus 0.2 bleiben erhalten:
+
+- Betriebsanimationen an Förderband, Seilrolle, Kollektor, Pumpen und langsam
+  nachgeführten Solarfeldern sowie beleuchtete Kontrollkabinen und Bodenmarkierungen.
 - Sanfter Kamerafokus bei Auswahl eines Gebäudes; „Übersicht“ führt zurück.
   Maussteuerung unterbricht eine Kamerafahrt jederzeit.
 - Ausbau mit Gerüst, aufsteigendem Scanring und Fortschrittsanzeige. Erst nach
@@ -102,7 +117,7 @@ Aktualisierungen Modul und Lizenz aus derselben verifizierten Paketversion erset
 ## Prüfen
 
 ```sh
-node --test tests/Frontend/Prototype3d.test.mjs
+node --test tests/Frontend/*.test.mjs
 sh scripts/codex/compose.sh exec -T ogamex-app composer run rector
 sh scripts/codex/compose.sh exec -T ogamex-app composer run cs
 sh scripts/codex/compose.sh exec -T ogamex-app composer run stan
@@ -130,7 +145,7 @@ Die Laravel-Seite muss laufen und die Assets müssen gebaut sein:
 
 ```sh
 (umask 022; npm run build)
-python3 scripts/codex/export-prototype.py --version 0.2 --output /workspace/exports/v0.2
+python3 scripts/codex/export-prototype.py --version 0.3 --output /workspace/exports/v0.3
 ```
 
 Der Export enthält CSS, JavaScript, Übersetzungen und die Three.js-Lizenz in
@@ -141,8 +156,8 @@ Den gesamten Browser-Test gegen genau diese Datei ohne Netzwerk ausführen:
 
 ```sh
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.2/OGameX-3D-0.2.html \
-ARTIFACT_DIR=/workspace/ogamex-cloud/v02-artifacts \
+PROTOTYPE_HTML=/workspace/exports/v0.3/OGameX-3D-0.3.html \
+ARTIFACT_DIR=/workspace/ogamex-cloud/v03-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```
 
