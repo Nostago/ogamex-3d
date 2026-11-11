@@ -1,15 +1,48 @@
-# OGameX-3D 0.5 ausprobieren
+# OGameX-3D 0.6 ausprobieren
 
 ## ZIP-Demo ohne Server
 
-[OGameX-3D-0.5.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.5/downloads/OGameX-3D-0.5.zip),
-entpacken und `OGameX-3D-0.5.html` in Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.6.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.6/downloads/OGameX-3D-0.6.zip),
+entpacken und `OGameX-3D-0.6.html` in Safari, Chrome, Firefox oder Edge öffnen.
 Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
 aktiv sein. Nach dem Download funktioniert die Demo vollständig ohne Internet.
 Die ZIP enthält zusätzlich eine deutsche Anleitung und die HTML-Datei enthält
-die Three.js-Lizenz. Versionen 0.1–0.4 bleiben unter `downloads/` erhalten.
+die Three.js-Lizenz. Versionen 0.1–0.5 bleiben unter `downloads/` erhalten.
 
-## Neu in 0.5
+## Neu in 0.6: Schiffswerft und Orbitflotte
+
+- Detailliertere Schiffswerft mit offener Montageplattform, Andockarmen,
+  Hallenrippen, Kontrollfenstern, Lüftern und Kran. Raketenwerfer und Laser
+  besitzen zusätzliche Sockel, Abstützungen, Kühlrippen und Sensoren.
+- Nanitenfabrik und Fusionskraftwerk: zwei zusätzliche, automatisch platzierte
+  Anlagen mit eigenen Betriebsanimationen und stufenabhängigen Modellen.
+  Insgesamt 15 Gebäudetypen. Keine Simulation der echten Naniten-Zeitverkürzung
+  oder des Deuteriumverbrauchs eines Fusionskraftwerks.
+- Die Gebäudeliste ist in Ressourcen, Einrichtungen, Lager und Verteidigung
+  gegliedert. Jeder Eintrag bleibt einzeln auswählbar.
+- Schiffswerft auswählen, unter den Gebäudedetails einen **Leichten Jäger**,
+  **Kleinen Transporter** oder eine **Spionagesonde** wählen und „Demo-Schiff
+  bauen und starten“ drücken. Die Schiffswerft montiert ein sichtbares Modell,
+  anschließend steigt es von der Plattform auf. Erst nach Abschluss erscheint
+  es als zusätzliche Instanz im Orbit. Die Ansicht wechselt zur neuen Einheit.
+- Im Orbit Schiffe direkt oder in der Flottenliste anklicken: Kamerafokus,
+  Modellinformationen und Herkunft (anfängliches Beispiel oder neu gebaut).
+  Die Auswahl pausiert den Orbitverkehr zum Betrachten; „Übersicht“ setzt ihn fort.
+- Drei anfängliche Beispielschiffe pro Planet, höchstens zwölf sichtbare Schiffe
+  pro Planet als **Darstellungsbudget**, kein produktives Flottenlimit.
+  Fertige Schiffe bleiben beim Planetenwechsel erhalten. Reset betrifft nur den
+  aktuellen Planeten; Neuladen setzt alle Flotten und Kolonien zurück.
+
+Es gibt einen Demo-Bauvorgang gleichzeitig (Gebäude oder Schiff). Planetenwechsel,
+Orbitwechsel oder Reset brechen laufende Vorgänge ab, bevor Daten übernommen
+werden. Manuelle Kamerabewegung unterbricht nur die Kamerafahrt. Bei „Bewegung
+reduzieren“ werden Schiffsmontage und Start unmittelbar abgeschlossen.
+Die Demo belastet keine Rohstoffe und prüft keine echten Forschungsvoraussetzungen
+oder Bauzeiten. Schiffsbau setzt hier nur eine vorhandene Schiffswerft voraus.
+Schiffe verbrauchen keine Gebäude-Baufelder. Keine Flugmissionen, Transporte,
+Spionageaktionen, Forschung oder Kämpfe; sämtliche Angaben bleiben Demodaten.
+
+## Planeten und automatische Bebauung
 
 Drei unabhängig bearbeitbare Demo-Planeten mit unterschiedlicher physischer
 Größe, Koloniedichte und Infrastruktur:
@@ -32,7 +65,7 @@ bevorzugt nahe am Koloniekern, Verteidigung weiter außen. Bestehende Standorte
 bleiben beim Ausbau und Neubau unverändert. Einzigartige Gebäude sind einmal
 baubar, Raketenwerfer und leichte Laser auch mehrfach.
 
-Der Terraformer ist der dreizehnte Anlagentyp, mit rotierendem Ring und
+Der Terraformer ist ein eigenständiger Anlagentyp, mit rotierendem Ring und
 stufenabhängigem Modell. Er erhöht die nutzbaren Felder, **nicht** den Durchmesser.
 Die Anzeige trennt Basisfelder, Terraformer-Bonus und verbleibende Kapazität.
 
@@ -93,8 +126,8 @@ die Demo-Profile ersetzen diese nicht. Keine dieser produktiven Dateien wird
 für den Prototyp geändert.
 
 Kosten, echte Bauzeiten, Forschungsvoraussetzungen, Energiehaushalt und
-Rohstoffproduktion bleiben unverbundene Beispielwerte. Keine Schiffsproduktion,
-Forschung oder Kämpfe. Die Verteidigungs-„Stufe“ ist ein grafischer Demo-Ausbau,
+Rohstoffproduktion bleiben unverbundene Beispielwerte. Keine produktive Schiffsproduktion,
+Forschung oder Kämpfe; der neue Schiffsbau ist ausschließlich eine Demoanimation. Die Verteidigungs-„Stufe“ ist ein grafischer Demo-Ausbau,
 kein produktives Verteidigungsstufensystem. Das separat gemeldete Grafiklimit
 begrenzt gezeichnete Modelle, auch wenn logisch noch Felder frei sind.
 Es werden keine Spielstände, Datenbanken oder produktiven Bauaufträge verändert.
@@ -103,7 +136,8 @@ Es werden keine Spielstände, Datenbanken oder produktiven Bauaufträge verände
 
 `planets.js` enthält ausschließlich Demo-Profile und Ausgangskolonien.
 `catalog.js` beschreibt Typen, Kategorien, Wiederholbarkeit und Feldverbrauch.
-`layout.js` vergibt deterministische, voneinander getrennte Oberflächenpositionen.
+`shipCatalog.js` enthält die Demo-Schiffstypen und das Darstellungsbudget;
+`ships.js` baut ihre prozeduralen Modelle. `layout.js` vergibt deterministische, voneinander getrennte Oberflächenpositionen.
 `data.js` verwaltet Zustand und validiert vor jeder Mutation. `scene.js` erhält
 Snapshots und zeichnet nur; `index.js` verbindet UI, Provider und Animationen.
 Abbruchmarken verhindern, dass verspätete Animationsabschlüsse auf dem falschen
@@ -112,10 +146,12 @@ Planeten angewandt werden.
 Provider-Vertrag (alle Methoden asynchron, Rückgabe jeweils vollständiger Snapshot):
 
 ```js
+await provider.listPlanets();        // kopierte Planeten-Metadaten
 await provider.load();
 await provider.selectPlanet('small');
 await provider.build('terraformer'); // kein Standortargument
 await provider.upgrade(instanceId);
+await provider.buildShip('smallCargo'); // sofortige Demo-Mutation nach Animation
 await provider.reset();              // nur aktueller Planet
 ```
 
@@ -127,6 +163,7 @@ await provider.reset();              // nur aktueller Planet
     field_current, field_max, terraformer,
     terraformer_bonus, effective_max, remaining
   },
+  ships: [{ id, type, origin }], // origin: 'example' oder 'built'
   layout: [{ id, normal: [x, y, z] }],
   buildings: [{ id, type, siteId, level, metric, value, production }]
 }
@@ -135,7 +172,11 @@ await provider.reset();              // nur aktueller Planet
 `field_current` ist hier aus den Gebäudestufen abgeleitet; `field_max` meint
 Basisfelder, `effective_max` die einschließlich Terraformer. `siteId` ist ein
 rein grafischer Standort. Neue Instanz-IDs enthalten Typ und Standort, z. B.
-`laser-site-012`; ursprüngliche IDs wie `metal` bleiben erhalten. Snapshots sind
+`laser-site-012`; ursprüngliche IDs wie `metal` bleiben erhalten. Die drei Schiffstypen besitzen planetenlokale Instanz-IDs wie `ship-4`.
+`checkShipBuild()` validiert Typ, Schiffswerft und Grafiklimit vor jeder Mutation.
+Der Provider startet keine Hintergrundtimer oder produktiven Aufträge: erst nach
+erfolgreicher Animation ruft das UI `buildShip()` auf. Abbruchmarken verhindern
+den Aufruf nach Planetenwechsel oder Reset. Snapshots sind
 kopiert, sodass UI-Mutationen den Provider nicht verändern.
 
 Ein späterer authentifizierter HTTP-Adapter liefert echte Planetendaten und
@@ -194,7 +235,9 @@ Andernorts `PLAYWRIGHT_MODULE`, bei Bedarf `CHROMIUM_PATH` und
 `PROTOTYPE_BASE_URL` anpassen. Browserchecks umfassen echte WebGL-Ausgabe, die
 drei Profile, Bauanimation und verzögerte Mutation, volle Felder, Verteidigung,
 Terraformer, unabhängige Zustände, Abbruch bei Planeten-/Orbitwechsel und Reset,
-Kamera, Maus, Mobilansicht, reduzierte Bewegung und Neuladen. Screenshots werden
+Kamera, Maus, Mobilansicht, reduzierte Bewegung und Neuladen. Zusätzlich werden
+Schiffsmontage und sichtbarer Start, verzögerter Flottenzuwachs, Schiffsauswahl,
+Bauabbruch an allen drei Grenzen und die neuen Anlagen geprüft. Screenshots werden
 im angegebenen Verzeichnis abgelegt.
 
 ## ZIP reproduzieren und offline prüfen
@@ -202,9 +245,9 @@ im angegebenen Verzeichnis abgelegt.
 Bei laufender Laravel-Seite und gebauten Assets:
 
 ```sh
-python3 scripts/codex/export-prototype.py --version 0.5 --output /workspace/exports/v0.5
+python3 scripts/codex/export-prototype.py --version 0.6 --output /workspace/exports/v0.6
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.5/OGameX-3D-0.5.html \
+PROTOTYPE_HTML=/workspace/exports/v0.6/OGameX-3D-0.6.html \
 ARTIFACT_DIR=/workspace/ogamex-cloud/v05-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```

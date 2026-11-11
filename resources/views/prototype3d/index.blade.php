@@ -9,13 +9,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OGameX-3D · 0.5</title>
+    <title>OGameX-3D · 0.6</title>
     {{ $prototypeVite('resources/js/prototype3d/index.js') }}
 </head>
 <body class="prototype-3d">
 <div id="prototype" data-mode="colony">
     <header class="topbar">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.5</small></a>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-icon">◈</span> OGameX<span class="brand-3d">3D</span><small>V 0.6</small></a>
         <span class="demo-tag"><i></i>{{ $t['demo'] }}</span>
         <a class="back-link" href="{{ url('/') }}">{{ $t['back'] }} ↗</a>
     </header>
@@ -54,7 +54,7 @@
             <button id="toggle-build" class="upgrade-button" aria-expanded="false" aria-controls="builder">+ {{ $t['build_menu'] }}</button>
             <section id="builder" hidden></section>
             <section id="building-info" aria-live="polite"></section>
-            <section id="orbit-info" hidden><span class="eyebrow">{{ $t['orbit_network'] }}</span><h3>{{ $t['station'] }}</h3><p>{{ $t['orbit_description'] }}</p><div class="fleet-row">◁ <span>{{ $t['scout'] }}</span><b>02</b></div><div class="fleet-row">◇ <span>{{ $t['transport'] }}</span><b>01</b></div></section>
+            <section id="orbit-info" hidden></section>
             <div class="demo-note"><span>◈</span><p>{{ $t['note'] }}</p></div>
             <button id="reset-demo" class="text-button">↺ {{ $t['reset'] }}</button>
         </aside>

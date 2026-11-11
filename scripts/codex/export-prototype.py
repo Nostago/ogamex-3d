@@ -57,10 +57,17 @@ Terraformer: erweitert die Feldkapazität, nicht den Planetendurchmesser.
 Sein eigener Bau/Ausbau benötigt zunächst ein freies Feld.
 Vorhandene Anlagen lassen sich über die scrollbare Gebäudeliste auswählen.
 Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle auch mehrfach.
-Schiffswerft und Verteidigung sind Modelle: keine Schiffsproduktion oder Kämpfe.
+Schiffswerft anklicken: Unter den Details Schiffstyp wählen und Demo-Schiff bauen.
+Leichter Jäger, Kleiner Transporter oder Spionagesonde: Montage, Start und Orbit.
+Schiffe im Orbit oder in der Flottenliste anklicken: Informationen und Kamerafokus.
+Schiffsauswahl pausiert den Orbitverkehr; „Übersicht“ setzt ihn fort.
+Drei Beispielschiffe anfangs, maximal zwölf sichtbare Schiffe pro Planet.
+Nanitenfabrik und Fusionskraftwerk sind ebenfalls im Baumenü verfügbar.
+Die Gebäudeliste ist nach Ressourcen, Einrichtungen, Lagern und Verteidigung gegliedert.
+Keine produktive Schiffsproduktion, Flugmissionen, Forschung, Transporte oder Kämpfe.
 Demo-Ausbau: Bauanimation, danach neue Stufe und Gebäudemodell (maximal Stufe 8).
-Während des Baus: Demo zurücksetzen oder Orbit wählen bricht den Ausbau ab.
-Orbit: Station und drei Beispielschiffe. Kamera kann jederzeit per Maus bewegt werden.
+Während des Baus: Reset, Planetenwechsel oder Orbit bricht Gebäude- und Schiffsbau ab.
+Orbit: Station und die Demo-Flotte des ausgewählten Planeten. Kamera kann jederzeit per Maus bewegt werden.
 
 Alle Werte sind Beispieldaten; keine Verbindung zu einem echten Spielstand.
 „Diesen Planeten zurücksetzen“ setzt nur den ausgewählten Planeten zurück.

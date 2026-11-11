@@ -21,6 +21,8 @@ export const buildingCatalog = Object.freeze(
             ['rocket', 'defense', 'defense', 60],
             ['laser', 'defense', 'defense', 80],
             ['terraformer', 'facilities', 'capacity', 5],
+            ['nanite', 'facilities', 'facility', 24],
+            ['fusion', 'economy', 'energy', 230],
         ].map(([id, category, metric, base]) => [
             id,
             Object.freeze({

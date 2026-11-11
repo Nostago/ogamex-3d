@@ -1,5 +1,6 @@
 import * as THREE from './vendor/three.module.min.js'
 import { createColonyMaterials } from './materials.js'
+import { createShip } from './ships.js'
 import { createBuilding } from './buildings.js'
 import { surfacePosition } from './layout.js'
 import { createInfrastructure } from './infrastructure.js'
@@ -204,14 +205,6 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         atmosphere.scale.setScalar((radius + 0.22) / 8.22)
         orbitPath.scale.setScalar(orbitRadius / 11.4)
         station.position.x = orbitRadius
-        if (changed)
-            ships.forEach((ship, index) =>
-                ship.position.set(
-                    Math.cos(index * 2) * orbitRadius,
-                    0,
-                    Math.sin(index * 2) * orbitRadius,
-                ),
-            )
         sun.position.set(-radius * 1.5, radius * 2.75, radius * 2.25)
         sun.target.position.y = radius * 0.75
         Object.assign(sun.shadow.camera, {
@@ -244,6 +237,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         labels.forEach((label) => label.remove())
         labels.clear()
         data.buildings.forEach(buildModel)
+        syncFleet(data)
         renderer.shadowMap.needsUpdate = true
         if (changed) resetCamera()
     }
@@ -253,6 +247,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         const current = construction
         construction = null
         disposeGroup(current.scaffold)
+        delete host.dataset.shipPhase
         current.resolve(false)
     }
     function animateUpgrade(id, siteId = null) {
@@ -307,6 +302,18 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             }
         })
     }
+    function animateShip(type, id) {
+        if (reducedMotion.matches) return Promise.resolve(true)
+        const promise = animateUpgrade(id)
+        if (construction) {
+            const model = createShip(type, materials.palette)
+            model.scale.setScalar(0.65)
+            model.position.set(0, 0.6, 0.65)
+            construction.scaffold.add(model)
+            Object.assign(construction, { kind: 'ship', model, duration: 3 })
+        }
+        return promise
+    }
     const orbit = new THREE.Group()
     world.add(orbit)
     const orbitPath = mesh(
@@ -336,28 +343,63 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     box(station, dark, 0, 0, 0, 3.4, 0.15, 0.2)
     for (const side of [-1, 1])
         box(station, panel, side * 2.1, 0, 0, 1.2, 0.1, 1.6)
-    const ships = []
-    for (let i = 0; i < 3; i++) {
-        const ship = new THREE.Group()
-        const hull = mesh(
-            new THREE.ConeGeometry(i === 2 ? 0.28 : 0.18, i === 2 ? 1 : 0.7, 4),
-            steel,
-            ship,
-        )
-        hull.rotation.x = Math.PI / 2
-        box(ship, dark, 0, 0, 0.12, 0.85, 0.08, 0.3)
-        mesh(
-            new THREE.SphereGeometry(0.1, 8, 6),
-            cyan,
-            ship,
-            0,
-            0,
-            0.45,
-        ).scale.z = 2
-        ship.position.set(Math.cos(i * 2) * 11.4, 0, Math.sin(i * 2) * 11.4)
-        ship.rotation.y = -i * 2
-        orbit.add(ship)
-        ships.push(ship)
+    const ships = [],
+        shipLabels = new Map()
+    let fleetKey = '',
+        selectedShip = null
+    function syncFleet(data) {
+        const key = `${data.planet.id}:${data.ships.map((ship) => ship.id).join(',')}`
+        if (key === fleetKey) return
+        ships.forEach((ship) => disposeGroup(ship))
+        ships.length = 0
+        shipLabels.forEach((label) => label.remove())
+        shipLabels.clear()
+        for (const [index, item] of data.ships.entries()) {
+            const ship = createShip(item.type, materials.palette)
+            ship.userData.shipId = item.id
+            ship.position.set(
+                Math.cos(index * 2) * orbitRadius,
+                0,
+                Math.sin(index * 2) * orbitRadius,
+            )
+            ship.rotation.y = Math.PI - index * 2
+            const ring = mesh(
+                new THREE.TorusGeometry(0.9, 0.022, 5, 32),
+                selectionMat,
+                ship,
+            )
+            ring.rotation.x = Math.PI / 2
+            ring.visible = item.id === selectedShip
+            ship.userData.ring = ring
+            orbit.add(ship)
+            ships.push(ship)
+            const label = document.createElement('span')
+            label.className = 'building-label ship-label'
+            label.textContent = `${names[item.type]} · ${item.id.slice(5)}`
+            labelsHost.append(label)
+            shipLabels.set(item.id, label)
+        }
+        host.dataset.ships = String(ships.length)
+        fleetKey = key
+    }
+    function focusShip(id) {
+        const ship = ships.find((item) => item.userData.shipId === id)
+        if (!ship || mode !== 'orbit') return
+        focused = id
+        selectedShip = id
+        autoRotate = false
+        host.dataset.focus = id
+        ships.forEach((item) => {
+            item.userData.ring.visible = item === ship
+        })
+        world.updateMatrixWorld(true)
+        const position = ship.getWorldPosition(new THREE.Vector3())
+        flyTo({
+            angle: Math.atan2(position.x, position.z),
+            elevation: 0.25,
+            distance: 7,
+            target: position,
+        })
     }
     orbit.visible = false
     let mode = 'colony',
@@ -438,7 +480,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         stopFlight()
         distance = THREE.MathUtils.clamp(
             distance + delta,
-            mode === 'orbit' ? radius * 2 + 1 : focused ? 6 : radius + 9,
+            focused ? 6 : mode === 'orbit' ? radius * 2 + 1 : radius + 9,
             Math.max(52, radius * 4 + 6),
         )
     }
@@ -467,13 +509,16 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         const hits = raycaster.intersectObjects(
             [
                 globe,
-                ...Array.from(buildings.values()).map((item) => item.group),
+                ...(mode === 'orbit'
+                    ? ships
+                    : Array.from(buildings.values()).map((item) => item.group)),
             ],
             true,
         )
         let object = hits[0]?.object
-        while (object && !object.userData.buildingId) object = object.parent
-        return object?.userData.buildingId
+        while (object && !object.userData.buildingId && !object.userData.shipId)
+            object = object.parent
+        return object?.userData.shipId || object?.userData.buildingId
     }
     const down = (event) => {
         stopFlight()
@@ -593,7 +638,16 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                 1,
                 construction.elapsed / construction.duration,
             )
-            construction.scanner.position.y = 0.25 + progress * 2.2
+            construction.scanner.position.y =
+                0.25 + Math.min(1, progress / 0.7) * 2.2
+            if (construction.kind === 'ship') {
+                const launch = Math.max(0, (progress - 0.7) / 0.3)
+                construction.model.position.y = 0.6 + launch * 4
+                construction.model.scale.setScalar(
+                    0.1 + Math.min(1, progress / 0.7) * 0.55,
+                )
+                host.dataset.shipPhase = launch > 0 ? 'launch' : 'assembly'
+            }
             host.dispatchEvent(
                 new CustomEvent('construction-progress', { detail: progress }),
             )
@@ -601,6 +655,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                 const completed = construction
                 construction = null
                 disposeGroup(completed.scaffold)
+                delete host.dataset.shipPhase
                 completed.resolve(true)
             }
         }
@@ -614,8 +669,10 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             .add(target)
         camera.lookAt(target)
         camera.updateMatrixWorld()
-        if (!reducedMotion.matches) orbit.rotation.y = time * 0.00004
-        if (!reducedMotion.matches)
+        const trafficMoving =
+            !reducedMotion.matches && !focused?.startsWith('ship-')
+        if (trafficMoving) orbit.rotation.y = time * 0.00004
+        if (trafficMoving)
             ships.forEach((ship, index) => {
                 const a = time * (0.00009 + index * 0.000015) + index * 2
                 ship.position.set(
@@ -623,7 +680,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                     Math.sin(a * 2) * 0.2,
                     Math.sin(a) * orbitRadius,
                 )
-                ship.rotation.y = -a
+                ship.rotation.y = Math.PI - a
             })
         infrastructure?.animate(time / 1000, !reducedMotion.matches)
         buildings.forEach(({ group, motion, labelHeight }, id) => {
@@ -645,6 +702,23 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             label.style.left = `${(projected.x * 0.5 + 0.5) * host.clientWidth}px`
             label.style.top = `${(-projected.y * 0.5 + 0.5) * host.clientHeight}px`
         })
+        ships.forEach((ship) => {
+            ship.getWorldPosition(worldPosition)
+            towardCamera.subVectors(camera.position, worldPosition)
+            projected
+                .copy(worldPosition)
+                .add(new THREE.Vector3(0, 0.65, 0))
+                .project(camera)
+            const label = shipLabels.get(ship.userData.shipId)
+            const visible =
+                mode === 'orbit' &&
+                worldPosition.dot(towardCamera) > 0 &&
+                Math.abs(projected.x) < 0.94 &&
+                Math.abs(projected.y) < 0.9
+            label.style.display = visible ? 'block' : 'none'
+            label.style.left = `${(projected.x * 0.5 + 0.5) * host.clientWidth}px`
+            label.style.top = `${(-projected.y * 0.5 + 0.5) * host.clientHeight}px`
+        })
         renderer.render(scene, camera)
     }
     frame = requestAnimationFrame(render)
@@ -657,6 +731,8 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         select,
         focus,
         animateUpgrade,
+        animateShip,
+        focusShip,
         cancelConstruction,
         setMode,
         zoom,

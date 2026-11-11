@@ -1,6 +1,11 @@
 import '../../css/prototype3d.css'
-import { createDemoProvider, planBuild, checkUpgrade } from './data.js'
-import { demoPlanets } from './planets.js'
+import {
+    createDemoProvider,
+    planBuild,
+    checkUpgrade,
+    checkShipBuild,
+} from './data.js'
+import { shipCatalog, fleetLimit } from './shipCatalog.js'
 import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createPlanetScene } from './scene.js'
 
@@ -28,7 +33,10 @@ const icons = {
     rocket: '⋮',
     laser: '⊕',
     terraformer: '◌',
+    nanite: '⬡',
+    fusion: '⦿',
 }
+const planets = await provider.listPlanets()
 let state = await provider.load()
 let selected = 'metal',
     scene,
@@ -36,7 +44,9 @@ let selected = 'metal',
     rotating = false,
     operation = 0,
     placing = false
-let chosenType = 'terraformer'
+let chosenType = 'terraformer',
+    chosenShip = 'lightFighter',
+    selectedShip = 'ship-1'
 function element(tag, className, text) {
     const node = document.createElement(tag)
     if (className) node.className = className
@@ -57,6 +67,10 @@ function metric(building) {
 }
 function select(id) {
     if (busy) return
+    if (state.ships.some((ship) => ship.id === id)) {
+        showShip(id)
+        return
+    }
     if (root.dataset.mode === 'orbit') setView('colony')
     stopRotation()
     selected = id
@@ -65,9 +79,9 @@ function select(id) {
     scene?.focus(id)
     renderUi()
 }
-function appendProgress(parent) {
+function appendProgress(parent, label = t.working) {
     const construction = element('div', 'construction-status')
-    construction.append(element('span', '', t.working))
+    construction.append(element('span', '', label))
     const progress = element('progress')
     progress.id = 'build-progress'
     progress.max = 1
@@ -137,7 +151,7 @@ async function perform(action, id, type) {
 function renderPlanet() {
     const selector = document.querySelector('#planet-select')
     if (!selector.options.length) {
-        for (const profile of demoPlanets) {
+        for (const profile of planets) {
             const option = element(
                 'option',
                 '',
@@ -242,36 +256,62 @@ function renderUi() {
     list.replaceChildren()
     const summary = document.querySelector('#production-summary')
     summary.replaceChildren()
-    for (const building of state.buildings) {
-        const type = building.type
-        if (buildingTypes.includes(type)) {
-            const card = element('div', `resource ${type}`)
-            card.append(
-                element('span', 'resource-name', `${icons[type]} ${t[type]}`),
-                element('strong', '', number.format(building.value)),
-                element('small', '', type === 'solar' ? t.energy : t.per_hour),
+    for (const category of ['economy', 'facilities', 'storage', 'defense']) {
+        const entries = state.buildings.filter(
+            (item) => buildingCatalog[item.type].category === category,
+        )
+        if (!entries.length) continue
+        const section = element('section', 'building-category')
+        section.dataset.category = category
+        const title = element(
+            'h4',
+            'category-title',
+            `${t[category]} · ${entries.length}`,
+        )
+        section.append(title)
+        list.append(section)
+        for (const building of entries) {
+            const type = building.type
+            if (buildingTypes.includes(type)) {
+                const card = element('div', `resource ${type}`)
+                card.append(
+                    element(
+                        'span',
+                        'resource-name',
+                        `${icons[type]} ${t[type]}`,
+                    ),
+                    element('strong', '', number.format(building.value)),
+                    element(
+                        'small',
+                        '',
+                        type === 'solar' ? t.energy : t.per_hour,
+                    ),
+                )
+                summary.append(card)
+            }
+            const button = element(
+                'button',
+                `building-item ${building.id === selected ? 'selected' : ''}`,
             )
-            summary.append(card)
+            button.dataset.building = building.id
+            button.disabled = busy
+            button.setAttribute(
+                'aria-pressed',
+                String(building.id === selected),
+            )
+            const name = element('span', 'building-name')
+            name.append(
+                element('strong', '', t[type]),
+                element('small', '', metric(building)),
+            )
+            button.append(
+                element('span', `building-icon ${type}`, icons[type]),
+                name,
+                element('span', 'level-badge', `${t.level} ${building.level}`),
+            )
+            button.addEventListener('click', () => select(building.id))
+            section.append(button)
         }
-        const button = element(
-            'button',
-            `building-item ${building.id === selected ? 'selected' : ''}`,
-        )
-        button.dataset.building = building.id
-        button.disabled = busy
-        button.setAttribute('aria-pressed', String(building.id === selected))
-        const name = element('span', 'building-name')
-        name.append(
-            element('strong', '', t[type]),
-            element('small', '', metric(building)),
-        )
-        button.append(
-            element('span', `building-icon ${type}`, icons[type]),
-            name,
-            element('span', 'level-badge', `${t.level} ${building.level}`),
-        )
-        button.addEventListener('click', () => select(building.id))
-        list.append(button)
     }
     document.querySelector('#structure-count').textContent = String(
         state.buildings.length,
@@ -298,7 +338,13 @@ function renderUi() {
         element('strong', '', metric(building)),
     )
     info.append(details)
-    if (busy && !placing) appendProgress(info)
+    if (busy && !placing)
+        appendProgress(
+            info,
+            root.dataset.building?.startsWith('ship-')
+                ? t.ship_working
+                : t.working,
+        )
     let blocked = null
     try {
         checkUpgrade(state, selected)
@@ -311,7 +357,9 @@ function renderUi() {
         'button',
         'upgrade-button',
         busy
-            ? t.working
+            ? root.dataset.building?.startsWith('ship-')
+                ? t.ship_working
+                : t.working
             : building.level >= 8
               ? t.maximum
               : `${t.upgrade} → ${building.level + 1}`,
@@ -320,7 +368,143 @@ function renderUi() {
     upgrade.disabled = busy || !!blocked
     upgrade.addEventListener('click', () => perform('upgrade', selected))
     info.append(upgrade)
+    if (building.type === 'shipyard') renderShipyard(info)
+    renderFleet()
     renderBuilder()
+}
+function renderShipyard(parent) {
+    const section = element('section', 'shipyard-controls')
+    section.append(
+        element('h4', '', t.ship_construction),
+        element('p', 'builder-note', t.ship_demo),
+    )
+    const label = element('label', '', t.choose_ship),
+        chooser = element('select')
+    chooser.id = 'ship-type'
+    chooser.disabled = busy
+    for (const type of Object.keys(shipCatalog)) {
+        const option = element('option', '', t[type])
+        option.value = type
+        chooser.append(option)
+    }
+    chooser.value = chosenShip
+    chooser.addEventListener('change', () => {
+        chosenShip = chooser.value
+    })
+    label.append(chooser)
+    section.append(label)
+    let reason
+    try {
+        checkShipBuild(state, chosenShip)
+    } catch (error) {
+        reason = message(error)
+    }
+    const button = element('button', 'upgrade-button', t.build_ship)
+    button.id = 'build-ship'
+    button.disabled = busy || !!reason
+    button.addEventListener('click', performShip)
+    section.append(button)
+    if (reason) section.append(element('p', 'capacity-warning', reason))
+    parent.append(section)
+}
+function showShip(id) {
+    if (busy) return
+    if (root.dataset.mode !== 'orbit') setView('orbit')
+    selectedShip = id
+    stopRotation()
+    scene?.focusShip(id)
+    renderFleet()
+}
+function renderFleet() {
+    const panel = document.querySelector('#orbit-info')
+    panel.replaceChildren()
+    panel.append(
+        element('span', 'eyebrow', t.orbit_network),
+        element('h3', '', t.station),
+        element('p', '', t.orbit_description),
+    )
+    const count = element(
+        'h4',
+        'category-title',
+        `${t.demo_fleet} · ${state.ships.length} / ${fleetLimit}`,
+    )
+    count.id = 'fleet-count'
+    panel.append(count)
+    if (!state.ships.some((ship) => ship.id === selectedShip))
+        selectedShip = state.ships[0]?.id
+    for (const ship of state.ships) {
+        const button = element(
+            'button',
+            'fleet-item',
+            `${t[ship.type]} · ${ship.id.slice(5)}`,
+        )
+        button.dataset.ship = ship.id
+        button.disabled = busy
+        button.setAttribute('aria-pressed', String(ship.id === selectedShip))
+        button.addEventListener('click', () => showShip(ship.id))
+        panel.append(button)
+    }
+    const ship = state.ships.find((item) => item.id === selectedShip)
+    if (ship) {
+        const detail = element('div', 'ship-details')
+        detail.id = 'ship-details'
+        detail.append(
+            element('h3', '', t[ship.type]),
+            element('p', '', t[shipCatalog[ship.type].role]),
+            element(
+                'p',
+                'builder-note',
+                t[
+                    ship.origin === 'built'
+                        ? 'ship_built_origin'
+                        : 'ship_example_origin'
+                ],
+            ),
+            element('p', 'builder-note', t.ship_focus_note),
+        )
+        panel.append(detail)
+    }
+}
+async function performShip() {
+    if (busy) return
+    try {
+        checkShipBuild(state, chosenShip)
+    } catch (error) {
+        status.textContent = message(error)
+        return
+    }
+    const token = ++operation,
+        planetId = state.planet.id,
+        type = chosenShip
+    busy = true
+    root.dataset.building = `ship-${type}`
+    status.textContent = t.ship_working
+    stopRotation()
+    const yard = state.buildings.find((item) => item.type === 'shipyard')
+    scene?.focus(yard.id)
+    renderUi()
+    try {
+        const complete = scene ? await scene.animateShip(type, yard.id) : true
+        if (!complete || token !== operation || state.planet.id !== planetId)
+            return
+        const snapshot = await provider.buildShip(type)
+        if (token !== operation) return
+        state = snapshot
+        scene?.update(state)
+        busy = false
+        delete root.dataset.building
+        setView('orbit')
+        showShip(state.ships.at(-1).id)
+        status.textContent = t.ship_built
+    } catch (error) {
+        if (token === operation) status.textContent = message(error)
+    } finally {
+        if (token === operation) {
+            busy = false
+            delete root.dataset.building
+            renderUi()
+        }
+    }
 }
 renderUi()
 try {

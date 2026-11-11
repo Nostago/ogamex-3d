@@ -258,6 +258,112 @@ try {
     await load();
     await level(4);
     assert.equal(await text('#fields-used'), '20 / 32');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    assert.equal(await page.locator('.building-category').count(), 4);
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '3');
+    await build('nanite', 10);
+    assert.equal(await text('#building-info h3'), 'Nanitenfabrik');
+    await build('fusion', 11);
+    assert.equal(await text('#fields-used'), '22 / 32');
+    await page.locator('#upgrade-building').click();
+    await level(2);
+    assert.equal(await text('#fields-used'), '23 / 32');
+    await page.locator('[data-building="shipyard"]').click();
+    await settle();
+    await page.locator('#ship-type').selectOption('smallCargo');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.locator('#build-ship').click();
+    await progress();
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-ships'),
+        '3',
+        'No premature fleet commit',
+    );
+    assert.equal(await page.locator('#build-ship').isDisabled(), true);
+    await page.screenshot({ path: `${artifacts}/ship-assembly.png` });
+    await page.waitForFunction(
+        () => document.querySelector('#scene').dataset.shipPhase === 'launch',
+    );
+    await page.screenshot({ path: `${artifacts}/ship-launch.png` });
+    await page.waitForFunction(
+        () =>
+            document.querySelector('#scene').dataset.ships === '4' &&
+            !document.querySelector('#prototype').dataset.building,
+    );
+    assert.equal(
+        await page.locator('#prototype').getAttribute('data-mode'),
+        'orbit',
+    );
+    assert.equal(await text('#ship-details h3'), 'Kleiner Transporter');
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-focus'),
+        'ship-4',
+    );
+    assert.equal(await text('#fields-used'), '23 / 32');
+    await settle();
+    await page.screenshot({ path: `${artifacts}/ship-focus.png` });
+    await page.locator('[data-ship="ship-2"]').click();
+    await settle();
+    assert.equal(await text('#ship-details h3'), 'Kleiner Transporter');
+    const shipLabel = await page
+        .locator('.ship-label')
+        .filter({ hasText: 'Transporter · 2' })
+        .boundingBox();
+    assert.ok(shipLabel, 'Focused ship has a visible label');
+    // Click the focused ship beneath its label; scene selection must reach the fleet UI.
+    await page.mouse.click(
+        shipLabel.x + shipLabel.width / 2,
+        shipLabel.y + shipLabel.height + 30,
+    );
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-focus'),
+        'ship-2',
+    );
+    console.log(
+        'PASS new facilities, grouped list, ship assembly, launch and selectable fleet',
+    );
+    // Aborts must leave the completed fleet untouched, including across planet switches.
+    await page.locator('#colony-view').click();
+    await page.locator('[data-building="shipyard"]').click();
+    await page.locator('#build-ship').click();
+    await progress();
+    await page.locator('#orbit-view').click();
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '4');
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-ship-phase'),
+        null,
+    );
+    await page.locator('#colony-view').click();
+    await page.locator('#build-ship').click();
+    await progress();
+    await planet('small', '15 / 16', 6, 6);
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '3');
+    await planet('medium', '23 / 32', 11, 8.5);
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '4');
+    await page.locator('[data-building="shipyard"]').click();
+    await page.locator('#build-ship').click();
+    await progress();
+    await page.locator('#reset-demo').click();
+    await level(4);
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '3');
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-ship-phase'),
+        null,
+    );
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.locator('[data-building="shipyard"]').click();
+    await page.locator('#ship-type').selectOption('probe');
+    await page.locator('#build-ship').click();
+    await page.waitForFunction(
+        () => document.querySelector('#scene').dataset.ships === '4',
+    );
+    assert.equal(await text('#ship-details h3'), 'Spionagesonde');
+    await load();
+    await level(4);
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '3');
+    console.log(
+        'PASS ship abort at orbit, planet switch and reset, immediate reduced-motion build, fleet reload',
+    );
     assert.deepEqual(errors, []);
     if (standalone)
         assert.deepEqual(network, [], 'Standalone must make no HTTP requests');

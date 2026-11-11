@@ -1,6 +1,7 @@
 import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createLayout, chooseSite } from './layout.js'
 import { demoPlanets, initialBuildings } from './planets.js'
+import { shipCatalog, fleetLimit } from './shipCatalog.js'
 export { buildingTypes } from './catalog.js'
 
 export class DemoError extends Error {
@@ -59,6 +60,12 @@ export function checkUpgrade(state, id) {
         throw new DemoError('fields_full')
     return item
 }
+export function checkShipBuild(state, type) {
+    if (!Object.hasOwn(shipCatalog, type)) throw new DemoError('unknown_ship')
+    if (!state.buildings.some((item) => item.type === 'shipyard'))
+        throw new DemoError('shipyard_required')
+    if (state.ships.length >= fleetLimit) throw new DemoError('fleet_full')
+}
 // An authenticated adapter can supply the same DTO; the server remains authoritative.
 export function createDemoProvider() {
     let selectedPlanet = 'medium'
@@ -74,7 +81,15 @@ export function createDemoProvider() {
             )
             buildings.push({ id: type, type, siteId: site.id, level })
         }
-        return { layout, buildings }
+        return {
+            layout,
+            buildings,
+            ships: Object.keys(shipCatalog).map((type, index) => ({
+                id: `ship-${index + 1}`,
+                type,
+                origin: 'example',
+            })),
+        }
     }
     for (const profile of demoPlanets) states.set(profile.id, fresh(profile))
     const profile = () =>
@@ -82,12 +97,13 @@ export function createDemoProvider() {
     const current = () => states.get(selectedPlanet)
     function snapshot() {
         const planet = profile(),
-            { layout, buildings } = current()
+            { layout, buildings, ships } = current()
         return {
             planet: { ...planet },
             name: planet.name,
             coordinates: `[1:42:${demoPlanets.indexOf(planet) + 6}]`,
             capacity: getCapacity(planet, buildings),
+            ships: ships.map((ship) => ({ ...ship })),
             layout: layout.map((site) => ({
                 ...site,
                 normal: [...site.normal],
@@ -114,6 +130,19 @@ export function createDemoProvider() {
         }
     }
     return {
+        async listPlanets() {
+            return demoPlanets.map((planet) => ({ ...planet }))
+        },
+        async buildShip(type) {
+            checkShipBuild(snapshot(), type)
+            const ships = current().ships
+            ships.push({
+                id: `ship-${ships.length + 1}`,
+                type,
+                origin: 'built',
+            })
+            return snapshot()
+        },
         async load() {
             return snapshot()
         },

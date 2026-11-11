@@ -432,16 +432,67 @@ export function createBuilding(id, level, palette) {
             )
         }
         beam(group, steel, [-0.94, h, 0.8], [0.94, h, 0.8], 0.055)
-        const hull = mesh(
-            new THREE.ConeGeometry(0.2, 0.8, 6),
-            insulation,
-            group,
-            0,
-            0.48,
-            0.65,
-        )
-        hull.rotation.x = -Math.PI / 2
-        box(group, steel, 0, 0.45, 0.55, 0.85, 0.06, 0.32)
+        // Open assembly apron; the actual ship appears here during demo construction.
+        for (const side of [-1, 1]) {
+            for (let i = 0; i < 5; i++) {
+                box(
+                    group,
+                    steel,
+                    side * 0.86,
+                    0.58,
+                    -0.74 + i * 0.22,
+                    0.06,
+                    0.58,
+                    0.035,
+                )
+                box(
+                    group,
+                    warmWindow,
+                    side * 0.64,
+                    1.08 + level * 0.01,
+                    -0.77 + i * 0.2,
+                    0.14,
+                    0.08,
+                    0.025,
+                )
+            }
+            beam(
+                group,
+                steel,
+                [side * 0.94, 0.27, 0.8],
+                [side * 0.94, h - 0.1, -0.75],
+                0.025,
+            )
+            const arm = new THREE.Group()
+            arm.position.set(side * 0.77, 0.6, 0.65)
+            group.add(arm)
+            cylinder(arm, dark, 0, 0, 0, 0.12, 0.12)
+            beam(arm, gold, [0, 0, 0], [-side * 0.19, 0.32, 0], 0.04)
+            beam(
+                arm,
+                steel,
+                [-side * 0.19, 0.32, 0],
+                [-side * 0.36, 0.24, 0],
+                0.025,
+            )
+            box(arm, cyan, -side * 0.36, 0.23, 0, 0.08, 0.09, 0.11)
+            motion.push((time) => {
+                arm.rotation.y = Math.sin(time * 0.5 + side) * 0.18
+            })
+            for (let i = 0; i < 4; i++)
+                box(
+                    group,
+                    gold,
+                    side * 0.6,
+                    0.31,
+                    0.35 + i * 0.19,
+                    0.04,
+                    0.015,
+                    0.09,
+                )
+        }
+        fan(group, -0.4, 1.11 + level * 0.0175, -0.48, 0.14)
+        fan(group, 0.4, 1.11 + level * 0.0175, -0.48, 0.14)
         const hoist = box(group, gold, 0, h - 0.1, 0.8, 0.22, 0.16, 0.18)
         motion.push((time) => {
             hoist.position.x = Math.sin(time * 0.3) * 0.65
@@ -616,9 +667,133 @@ export function createBuilding(id, level, palette) {
             for (const side of [-1, 1])
                 box(turret, dark, side * 0.28, 0.3, 0, 0.12, 0.3, 0.4)
         }
+        for (const side of [-1, 1]) {
+            box(group, painted, side * 0.68, 0.33, 0.16, 0.19, 0.2, 0.8)
+            box(group, gold, side * 0.69, 0.44, 0.16, 0.12, 0.02, 0.3)
+            beam(
+                group,
+                steel,
+                [side * 0.5, 0.36, -0.15],
+                [side * 0.9, 0.25, -0.65],
+                0.045,
+            )
+            for (let i = 0; i < 4; i++)
+                box(
+                    turret,
+                    steel,
+                    side * 0.42,
+                    0.18,
+                    -0.23 + i * 0.12,
+                    0.025,
+                    0.18,
+                    0.025,
+                )
+        }
+        cylinder(turret, dark, 0, 0.46, -0.17, 0.12, 0.1)
+        const radar = mesh(
+            new THREE.SphereGeometry(
+                0.15,
+                12,
+                8,
+                0,
+                Math.PI * 2,
+                0,
+                Math.PI / 2,
+            ),
+            steel,
+            turret,
+            0,
+            0.64,
+            -0.17,
+        )
+        radar.rotation.z = 0.3
         motion.push((time) => {
             turret.rotation.y = Math.sin(time * 0.2) * 0.4
         })
+    } else if (id === 'fusion') {
+        housing(group, painted, 0, 0.5, 0, 1.55, 0.5, 1.2)
+        const reactor = new THREE.Group()
+        reactor.position.y = 0.9 + level * 0.05
+        group.add(reactor)
+        mesh(
+            new THREE.TorusGeometry(0.48, 0.15, 10, 36),
+            insulation,
+            reactor,
+        ).rotation.x = Math.PI / 2
+        mesh(
+            new THREE.TorusGeometry(0.49, 0.025, 6, 36),
+            cyan,
+            reactor,
+            0,
+            0.13,
+        ).rotation.x = Math.PI / 2
+        for (const side of [-1, 1]) {
+            cylinder(
+                group,
+                steel,
+                side * 0.8,
+                0.72,
+                -0.48,
+                0.15,
+                0.9 + level * 0.05,
+            )
+            pipe(
+                group,
+                steel,
+                [
+                    [side * 0.7, 0.4, 0.5],
+                    [side * 0.85, 0.6, 0.5],
+                    [side * 0.85, 0.6, -0.3],
+                ],
+                0.04,
+            )
+            fan(group, side * 0.55, 0.8, 0.4, 0.15)
+        }
+        motion.push((time) => {
+            reactor.rotation.y = time * 0.12
+        })
+    } else if (id === 'nanite') {
+        housing(
+            group,
+            insulation,
+            0,
+            0.65,
+            -0.25,
+            1.65,
+            0.75 + level * 0.04,
+            1.2,
+        )
+        for (let i = 0; i < 4; i++) {
+            box(group, glass, -0.57 + i * 0.38, 0.7, 0.37, 0.27, 0.35, 0.025)
+            box(group, purple, -0.57 + i * 0.38, 0.93, 0.38, 0.27, 0.035, 0.025)
+        }
+        for (const side of [-1, 1]) {
+            cylinder(
+                group,
+                steel,
+                side * 0.8,
+                0.8,
+                -0.6,
+                0.12,
+                1.0 + level * 0.06,
+            )
+            const arm = new THREE.Group()
+            arm.position.set(side * 0.5, 0.35, 0.8)
+            group.add(arm)
+            beam(arm, steel, [0, 0, 0], [0, 0.48, 0], 0.055)
+            beam(arm, gold, [0, 0.48, 0], [-side * 0.32, 0.53, 0], 0.04)
+            mesh(
+                new THREE.IcosahedronGeometry(0.13, 0),
+                purple,
+                arm,
+                -side * 0.32,
+                0.35,
+            )
+            motion.push((time) => {
+                arm.rotation.y = Math.sin(time * 0.4 + side) * 0.3
+            })
+        }
+        fan(group, 0, 1.05 + level * 0.02, -0.3, 0.22)
     } else if (id === 'terraformer') {
         cylinder(group, dark, 0, 0.4, 0, 0.7, 0.3, 24)
         const rotor = new THREE.Group()

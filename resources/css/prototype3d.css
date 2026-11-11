@@ -841,3 +841,66 @@ body:has(#prototype) {
     font-size: 11px;
     line-height: 1.7;
 }
+.building-category {
+    margin-bottom: 14px;
+}
+.category-title {
+    color: #7fa5bd;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 12px 0 9px;
+    font-weight: 500;
+}
+.building-category .building-item {
+    width: 100%;
+    margin-bottom: 6px;
+}
+.shipyard-controls {
+    margin-top: 22px;
+    padding-top: 15px;
+    border-top: 1px solid #244254;
+}
+.shipyard-controls label {
+    display: block;
+    color: #a7c8da;
+    font-size: 12px;
+}
+.shipyard-controls select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 12px;
+    background: #102536;
+    border: 1px solid #36536b;
+    color: #d1e7f5;
+    border-radius: 4px;
+}
+.fleet-item {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    text-align: left;
+    color: #bcd9e8;
+    background: #0c1d2c;
+    border: 1px solid #284458;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.fleet-item[aria-pressed='true'] {
+    border-color: #5cd7ff;
+    background: #133146;
+}
+.fleet-item:focus-visible,
+.shipyard-controls select:focus-visible {
+    outline: 2px solid #7de4ff;
+}
+.ship-details {
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid #284458;
+}
+.ship-label {
+    border-color: #5383ab;
+    color: #b6e2ff;
+}
