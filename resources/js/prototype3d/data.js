@@ -1,6 +1,7 @@
 import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createLayout, chooseSite } from './layout.js'
 import { demoPlanets, initialBuildings } from './planets.js'
+import { shipInventory, validateFleet } from './fleetManagement.js'
 import { shipCatalog } from './shipCatalog.js'
 import {
     createFormations,
@@ -111,6 +112,8 @@ export function createDemoProvider() {
             fleet: exampleFleet('patrol'),
             orders: [],
             nextOrder: 1,
+            managedFleets: [],
+            nextFleet: 1,
         }
     }
     for (const profile of demoPlanets) states.set(profile.id, fresh(profile))
@@ -119,7 +122,7 @@ export function createDemoProvider() {
     const current = () => states.get(selectedPlanet)
     function snapshot() {
         const planet = profile(),
-            { layout, buildings, fleet, orders } = current()
+            { layout, buildings, fleet, orders, managedFleets } = current()
         return {
             planet: { ...planet },
             name: planet.name,
@@ -131,7 +134,17 @@ export function createDemoProvider() {
                 total: fleetTotal(fleet),
                 pending: pendingCount(orders),
             },
-            formations: createFormations(fleet),
+            managedFleets: managedFleets.map((group) => ({
+                ...group,
+                ships: group.ships.map((ship) => ({ ...ship })),
+            })),
+            shipInventory: shipInventory(fleet, orders, managedFleets),
+            formations: createFormations(
+                shipInventory(fleet, orders, managedFleets).map((item) => ({
+                    type: item.type,
+                    count: item.ready,
+                })),
+            ),
             layout: layout.map((site) => ({
                 ...site,
                 normal: [...site.normal],
@@ -157,7 +170,42 @@ export function createDemoProvider() {
             }),
         }
     }
+    function requireGroup(id) {
+        const group = current().managedFleets.find((item) => item.id === id)
+        if (!group) throw new DemoError('unknown_fleet')
+        return group
+    }
     return {
+        async saveFleet(name, counts, id = null) {
+            const validated = validateFleet(snapshot(), name, counts, id)
+            if (id) Object.assign(requireGroup(id), validated)
+            else
+                current().managedFleets.push({
+                    id: `fleet-${current().nextFleet++}`,
+                    ...validated,
+                    status: 'docked',
+                })
+            return snapshot()
+        },
+        async disbandFleet(id) {
+            const group = requireGroup(id)
+            if (group.status === 'mission')
+                throw new DemoError('fleet_on_mission')
+            current().managedFleets = current().managedFleets.filter(
+                (item) => item.id !== id,
+            )
+            return snapshot()
+        },
+        async setFleetMission(id, active) {
+            const group = requireGroup(id)
+            if (
+                typeof active !== 'boolean' ||
+                group.status === (active ? 'mission' : 'docked')
+            )
+                throw new DemoError('fleet_status')
+            group.status = active ? 'mission' : 'docked'
+            return snapshot()
+        },
         async listPlanets() {
             return demoPlanets.map((planet) => ({ ...planet }))
         },
@@ -208,6 +256,8 @@ export function createDemoProvider() {
             if (!fleet) throw new DemoError('unknown_preset')
             if (current().orders.some((item) => item.status === 'queued'))
                 throw new DemoError('orders_pending')
+            if (current().managedFleets.length)
+                throw new DemoError('fleets_exist')
             current().fleet = fleet
             current().orders = []
             return snapshot()

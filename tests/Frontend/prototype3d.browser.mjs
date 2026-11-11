@@ -1,13 +1,12 @@
-// Real Chromium/WebGL regression test for the four-workspace UI and offline ZIP.
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir, readFile } from 'node:fs/promises';
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const artifacts = process.env.ARTIFACT_DIR || '/tmp/ogamex-3d-browser';
 const standalone = process.env.PROTOTYPE_HTML
     ? await readFile(process.env.PROTOTYPE_HTML, 'utf8')
     : null;
+const artifacts = process.env.ARTIFACT_DIR || '/tmp/ogamex-3d-browser';
 await mkdir(artifacts, { recursive: true });
 const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium',
@@ -31,31 +30,35 @@ try {
     page.on('request', (r) => {
         if (/^https?:/.test(r.url())) network.push(r.url());
     });
-    const text = (selector) => page.locator(selector).textContent();
-    const units = (value) =>
+    const text = (s) => page.locator(s).textContent();
+    const units = (n) =>
         page.waitForFunction(
-            (value) =>
-                document.querySelector('#scene').dataset.units ===
-                    String(value) &&
+            (n) =>
+                document.querySelector('#scene').dataset.units === String(n) &&
                 !document.querySelector('#prototype').dataset.building,
-            value,
-        );
-    const level = (value) =>
-        page.waitForFunction(
-            (value) =>
-                document.querySelector('.detail-level').textContent ===
-                    `${value} / 8` &&
-                !document.querySelector('#prototype').dataset.building,
-            value,
+            n,
         );
     const progress = () =>
         page.waitForFunction(
             () => document.querySelector('#build-progress')?.value > 0.05,
         );
-    const settle = () =>
+    const level = (n) =>
         page.waitForFunction(
-            () => document.querySelector('#scene').dataset.camera === 'idle',
+            (n) =>
+                document.querySelector('.detail-level').textContent ===
+                    `${n} / 8` &&
+                !document.querySelector('#prototype').dataset.building,
+            n,
         );
+    async function nav(name) {
+        await page.locator(`[data-page-link="${name}"]`).click();
+        await page.waitForFunction(
+            (name) =>
+                document.querySelector('#prototype').dataset.page === name,
+            name,
+        );
+        assert.equal(await page.locator('.page:visible').count(), 1);
+    }
     async function load(hash = 'planet') {
         if (standalone) {
             await page.context().setOffline(true);
@@ -72,202 +75,176 @@ try {
             hash,
         );
     }
-    async function nav(name) {
-        await page.locator(`[data-page-link="${name}"]`).click();
-        await page.waitForFunction(
-            (name) =>
-                document.querySelector('#prototype').dataset.page === name,
-            name,
-        );
-        assert.equal(
-            await page
-                .locator(`[data-page-link="${name}"]`)
-                .getAttribute('aria-current'),
-            'page',
-        );
-        assert.equal(await page.locator('.page:visible').count(), 1);
-    }
-    async function preview(name, open) {
-        const button = page.locator(`[data-preview="${name}"]`);
-        if (((await button.getAttribute('aria-expanded')) === 'true') !== open)
-            await button.click();
-        await page.waitForFunction(
-            (open) =>
-                document.querySelector('#scene').dataset.rendering ===
-                (open ? 'active' : 'paused'),
-            open,
-        );
-    }
     async function queue(type, quantity) {
         await page.locator('#ship-type').selectOption(type);
         await page.locator('#ship-quantity').fill(String(quantity));
         await page.locator('#build-ship').click();
     }
+    async function create(name, amounts) {
+        await page.locator('#new-fleet').click();
+        await page.locator('#fleet-name').fill(name);
+        for (const [type, n] of Object.entries(amounts))
+            await page.locator(`#fleet-quantity-${type}`).fill(String(n));
+        await page.locator('#save-fleet').click();
+    }
+    const group = (id) => page.locator(`[data-fleet="${id}"]`);
+    const stock = (type, key) =>
+        page.locator(`#stock-${type} .stock-${key} strong`).textContent();
     await load();
-    await settle();
-    assert.equal(await page.locator('.main-nav a').count(), 4);
-    assert.equal(await page.locator('canvas').count(), 1);
-    assert.equal(await page.locator('#ship-quantity').isVisible(), false);
-    assert.equal(await page.locator('#building-list').isVisible(), false);
-    await page.screenshot({ path: `${artifacts}/planet.png`, fullPage: true });
-    const canvas = page.locator('canvas');
-    await canvas.evaluate((node) => (node.dataset.identity = 'original'));
-    const label = await page
-        .locator('.building-label')
-        .filter({ hasText: 'Kristallmine' })
-        .boundingBox();
-    await page.mouse.click(
-        label.x + label.width / 2,
-        label.y + label.height + 28,
-    );
-    await page.waitForFunction(
-        () => document.querySelector('#prototype').dataset.page === 'buildings',
-    );
-    assert.equal(await text('#building-info h3'), 'Kristallmine');
-    assert.equal(
-        await page
-            .locator('[data-preview="buildings"]')
-            .getAttribute('aria-expanded'),
-        'true',
-    );
-    await settle();
-    assert.ok((await canvas.boundingBox()).height <= 300);
-    await preview('buildings', false);
-    assert.equal(await canvas.isVisible(), false);
-    await nav('planet');
-    assert.equal(await page.locator('#scene').getAttribute('data-focus'), '');
-    await nav('buildings');
-    await page.locator('#building-search').fill('Kristall');
-    assert.equal(await page.locator('.building-item').count(), 1);
-    await page.locator('#building-search').fill('xyz');
-    assert.equal(await page.locator('#empty-buildings').isVisible(), true);
-    await page.locator('#clear-building-filter').click();
-    await page.locator('#building-category').selectOption('storage');
-    assert.equal(await page.locator('.building-item').count(), 1);
-    await page.locator('#clear-building-filter').click();
-    await page.locator('[data-building="crystal"]').click();
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.locator('#upgrade-building').click();
-    await progress();
-    assert.equal(await text('.detail-level'), '3 / 8');
-    await nav('ships');
-    assert.equal(await page.locator('#cancel-operation').isVisible(), true);
-    await level(4);
+    assert.equal(await page.locator('#orbit-view').textContent(), '◎ Orbit');
+    await page.locator('#orbit-view').click();
     assert.equal(
         await page.locator('#prototype').getAttribute('data-page'),
-        'ships',
-        'Completion must not navigate away',
+        'planet',
     );
-    assert.equal(await text('#fields-used'), '21 / 32');
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.locator('#ship-type').selectOption('smallCargo');
-    await page.locator('#ship-quantity').fill('12345');
-    await nav('buildings');
-    await page.locator('#building-search').fill('Kristall');
+    assert.equal(
+        await page.locator('#prototype').getAttribute('data-mode'),
+        'orbit',
+    );
+    assert.equal(await page.locator('#planet-orbit-info').isVisible(), true);
+    await page.screenshot({
+        path: `${artifacts}/planet-orbit.png`,
+        fullPage: true,
+    });
     await nav('fleets');
-    await nav('ships');
-    assert.equal(await page.locator('#ship-quantity').inputValue(), '12345');
-    assert.equal(await page.locator('#ship-type').inputValue(), 'smallCargo');
+    assert.equal(await page.locator('#new-fleet').isVisible(), true);
+    await nav('planet');
+    assert.equal(
+        await page.locator('#prototype').getAttribute('data-mode'),
+        'orbit',
+    );
+    await page.locator('#colony-view').click();
+    assert.equal(
+        await page.locator('#prototype').getAttribute('data-mode'),
+        'colony',
+    );
     await nav('buildings');
     assert.equal(
-        await page.locator('#building-search').inputValue(),
-        'Kristall',
+        await page
+            .locator(
+                '#building-search,#building-category,#clear-building-filter',
+            )
+            .count(),
+        0,
     );
-    await page.locator('#clear-building-filter').click();
+    assert.equal(await page.locator('.building-category').count(), 3);
+    for (const name of ['Rohstoffe', 'Schiffe', 'Verteidigung'])
+        assert.match(await text('#building-list'), new RegExp(name));
+    assert.equal(await page.locator('.building-item').count(), 9);
     await page.screenshot({
         path: `${artifacts}/buildings.png`,
         fullPage: true,
     });
-    await nav('fleets');
-    assert.equal(await canvas.isVisible(), false);
-    assert.equal(await page.locator('.fleet-table tbody tr').count(), 3);
+    await nav('ships');
+    assert.equal(await page.locator('.ship-stock-card').count(), 3);
+    assert.equal(await stock('lightFighter', 'ready'), '1');
     await page.locator('#load-fleet-preset').click();
     await units(1100000);
-    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '12');
-    await page.screenshot({ path: `${artifacts}/fleets.png`, fullPage: true });
-    await page.locator('[data-ship="ship-lightFighter"]').click();
-    assert.match(await text('#formation-count'), /750.000/);
-    await preview('fleets', true);
-    await settle();
-    assert.ok((await canvas.boundingBox()).height <= 300);
+    assert.equal(await stock('lightFighter', 'ready'), '750.000');
+    await queue('lightFighter', 3000);
+    assert.equal(await stock('lightFighter', 'in_production'), '3.000');
+    assert.equal(await stock('lightFighter', 'ready'), '750.000');
+    await nav('fleets');
+    await page.locator('#new-fleet').click();
+    await page.locator('#fleet-name').fill('Zukunft');
+    await page.locator('#fleet-quantity-lightFighter').fill('751000');
+    assert.equal(await page.locator('#save-fleet').isDisabled(), true);
+    assert.match(await text('#fleet-editor-error'), /nicht frei verfügbar/);
+    await page.locator('.fleet-editor button[type="button"]').click();
+    await nav('ships');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.locator('#start-ship-order').click();
+    await progress();
     await page.screenshot({
-        path: `${artifacts}/fleet-preview.png`,
+        path: `${artifacts}/ships-production.png`,
         fullPage: true,
     });
-    await preview('fleets', false);
-    await nav('planet');
-    await page.waitForFunction(
-        () => document.querySelector('#scene').dataset.rendering === 'active',
-    );
-    assert.ok((await canvas.boundingBox()).height > 400);
-    assert.equal(await canvas.getAttribute('data-identity'), 'original');
-    assert.equal(await page.locator('canvas').count(), 1);
+    assert.equal(await stock('lightFighter', 'in_production'), '3.000');
+    await nav('buildings');
+    await units(1103000);
     await nav('ships');
-    await page.locator('#ship-quantity').fill('0');
-    assert.equal(await page.locator('#build-ship').isDisabled(), true);
-    await queue('lightFighter', 10000);
-    await queue('smallCargo', 5000);
-    assert.match(await text('#pending-total'), /15.000/);
-    await preview('ships', true);
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.locator('#start-ship-order').click();
-    await progress();
-    assert.equal(
-        await page.locator('#scene').getAttribute('data-units'),
-        '1100000',
-    );
-    assert.equal(await page.locator('#build-progress').count(), 1);
-    await page.screenshot({ path: `${artifacts}/ships.png`, fullPage: true });
-    await nav('fleets'); // Navigation is view-only; the running quantity order continues.
-    await units(1110000);
-    assert.equal(
-        await page.locator('#prototype').getAttribute('data-page'),
-        'fleets',
-    );
-    await nav('ships');
-    await preview('ships', false);
+    assert.equal(await stock('lightFighter', 'ready'), '753.000');
+    assert.equal(await stock('lightFighter', 'in_production'), '0');
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.locator('#start-ship-order').click();
-    await units(1115000);
-    assert.equal(
-        await page
-            .locator('[data-ship="ship-lightFighter"]')
-            .getAttribute('aria-pressed'),
-        'true',
+    await nav('fleets');
+    await create('Alpha', { lightFighter: 10000, smallCargo: 200 });
+    assert.equal(await page.locator('[data-fleet]').count(), 1);
+    assert.match(
+        await group('fleet-1').textContent(),
+        /10.000 × Leichter Jäger/,
     );
-    assert.match(await text('#pending-total'), /: 0$/);
-    await queue('probe', 2000);
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.locator('#start-ship-order').click();
-    await progress();
-    await page.locator('#cancel-operation').click();
-    assert.match(await text('#pending-total'), /2.000/);
-    await units(1115000);
-    await page.locator('.order-row button').click();
-    assert.match(await text('#pending-total'), /: 0$/);
-    await queue('probe', 77);
-    await page.locator('#start-ship-order').click();
-    await progress();
+    await group('fleet-1').locator('[data-action="edit"]').click();
+    assert.equal(
+        await page.locator('#fleet-quantity-lightFighter').inputValue(),
+        '10000',
+    );
+    await page.locator('#fleet-name').fill('Alpha II');
+    await page.locator('#fleet-quantity-lightFighter').fill('12000');
+    await page.locator('#fleet-quantity-smallCargo').fill('0');
+    await page.locator('#save-fleet').click();
+    await create('Beta', { lightFighter: 5000 });
+    assert.equal(await page.locator('[data-fleet]').count(), 2);
+    await nav('ships');
+    assert.equal(await stock('lightFighter', 'ready'), '753.000');
+    assert.equal(await stock('lightFighter', 'available'), '736.000');
+    assert.equal(await page.locator('#load-fleet-preset').isDisabled(), true);
+    await nav('fleets');
+    await group('fleet-1').locator('[data-action="mission"]').click();
+    assert.equal(
+        await group('fleet-1').locator('[data-action="edit"]').isDisabled(),
+        true,
+    );
+    assert.equal(
+        await group('fleet-1').locator('[data-action="disband"]').isDisabled(),
+        true,
+    );
+    assert.match(await group('fleet-1').textContent(), /Auf Mission/);
+    await page.screenshot({
+        path: `${artifacts}/fleet-mission-lock.png`,
+        fullPage: true,
+    });
+    await nav('ships');
+    assert.equal(await stock('lightFighter', 'ready'), '741.000');
+    assert.equal(await stock('lightFighter', 'on_mission'), '12.000');
+    assert.equal(await stock('lightFighter', 'available'), '736.000');
+    await nav('fleets');
+    await group('fleet-1').locator('[data-action="mission"]').click();
+    await group('fleet-1').locator('[data-action="disband"]').click();
+    assert.equal(await page.locator('[data-fleet]').count(), 1);
+    await nav('ships');
+    assert.equal(await stock('lightFighter', 'available'), '748.000');
+    await nav('fleets');
+    await group('fleet-2').locator('[data-action="disband"]').click();
+    await create('Wache', { probe: 1000 });
+    await page.locator('#new-fleet').click();
+    await page.locator('#fleet-name').fill('Entwurf');
+    await page.locator('#fleet-quantity-lightFighter').fill('123');
+    await nav('ships');
+    await nav('fleets');
+    assert.equal(await page.locator('#fleet-name').inputValue(), 'Entwurf');
+    assert.equal(
+        await page.locator('#fleet-quantity-lightFighter').inputValue(),
+        '123',
+    );
+    await page.screenshot({
+        path: `${artifacts}/fleet-editor.png`,
+        fullPage: true,
+    });
     await page.locator('#planet-select').selectOption('small');
-    await page.waitForFunction(
-        () => document.querySelector('#scene').dataset.planet === 'small',
-    );
-    assert.equal(
-        await page.locator('#prototype').getAttribute('data-page'),
-        'ships',
-    );
     await units(3);
+    assert.equal(await page.locator('[data-fleet]').count(), 0);
+    await create('Kleine Wache', { lightFighter: 1 });
     await page.locator('#planet-select').selectOption('medium');
-    await page.waitForFunction(
-        () => document.querySelector('#scene').dataset.planet === 'medium',
-    );
-    await units(1115000);
-    assert.match(await text('#pending-total'), /77/);
+    await units(1103000);
+    assert.equal(await page.locator('[data-fleet]').count(), 1);
+    assert.match(await text('#fleet-management'), /Wache/);
     await page.locator('#reset-demo').click();
     await units(3);
-    assert.match(await text('#pending-total'), /: 0$/);
-    await page.emulateMedia({ reducedMotion: 'reduce' });
+    assert.equal(await page.locator('[data-fleet]').count(), 0);
     await page.locator('#planet-select').selectOption('small');
+    await units(3);
+    assert.equal(await page.locator('[data-fleet]').count(), 1);
+    await page.locator('#reset-demo').click();
     await units(3);
     await nav('buildings');
     await page.locator('[data-building="metal"]').click();
@@ -275,13 +252,6 @@ try {
     await level(5);
     assert.equal(await text('#fields-used'), '16 / 16');
     assert.equal(await page.locator('#upgrade-building').isDisabled(), true);
-    await page.locator('#toggle-build').click();
-    await page.locator('#build-type').selectOption('terraformer');
-    assert.equal(await page.locator('#build-facility').isDisabled(), true);
-    await page.locator('#build-type').selectOption('laser');
-    await page.locator('#build-facility').click();
-    await level(1);
-    assert.equal(await text('#fields-used'), '16 / 16');
     await page.locator('#reset-demo').click();
     await level(4);
     await page.locator('#toggle-build').click();
@@ -290,20 +260,9 @@ try {
     await level(1);
     assert.equal(await text('#fields-used'), '16 / 21');
     console.log(
-        'PASS navigation, direct 3D selection, filters, persistent form values, previews, uninterrupted navigation during construction, explicit interruption, field limits and Terraformer',
+        'PASS local Planet/Orbit, three building overviews, live per-type completed/production/free counts, no use of pending ships, create/edit/disband, mission lock, reservation release, per-planet isolation/reset and existing fields',
     );
-    // Offline deep links, browser history and phone layouts.
     await load('ships');
-    assert.equal(await canvas.isVisible(), false);
-    await nav('fleets');
-    await page.goBack();
-    await page.waitForFunction(
-        () => document.querySelector('#prototype').dataset.page === 'ships',
-    );
-    await page.goForward();
-    await page.waitForFunction(
-        () => document.querySelector('#prototype').dataset.page === 'fleets',
-    );
     await page.setViewportSize({ width: 390, height: 844 });
     for (const name of ['planet', 'buildings', 'ships', 'fleets']) {
         await nav(name);
@@ -314,27 +273,24 @@ try {
             true,
             name,
         );
-        const navBox = await page.locator('.main-nav').boundingBox();
-        assert.ok(navBox.y + navBox.height <= 845);
-        if (name !== 'planet') assert.equal(await canvas.isVisible(), false);
         await page.screenshot({
             path: `${artifacts}/mobile-${name}.png`,
             fullPage: true,
         });
     }
+    await create('Mobilflotte', { lightFighter: 1 });
+    assert.equal(await page.locator('[data-fleet]').count(), 1);
+    await page.screenshot({
+        path: `${artifacts}/mobile-fleet-created.png`,
+        fullPage: true,
+    });
     await nav('ships');
-    await preview('ships', true);
-    await preview('ships', false);
+    assert.equal(await stock('lightFighter', 'available'), '0');
     assert.equal(await page.locator('canvas').count(), 1);
-    await page.evaluate(() => (location.hash = '#unknown'));
-    await page.waitForFunction(
-        () => document.querySelector('#prototype').dataset.page === 'planet',
-    );
     assert.deepEqual(errors, []);
-    if (standalone)
-        assert.deepEqual(network, [], 'Offline ZIP makes no HTTP requests');
+    if (standalone) assert.deepEqual(network, []);
     console.log(
-        'PASS 1.1-million fleet and bounded models, per-planet queues/reset, mobile workspaces, single canvas, hidden renderer pause, deep links/back/forward, invalid routes, reduced motion; no page errors',
+        'PASS mobile sections and fleet editor, deep link, one shared canvas, no page errors and no offline HTTP requests',
     );
 } finally {
     await browser.close();

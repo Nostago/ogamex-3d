@@ -48,18 +48,27 @@ Nach dem Download funktioniert die Demo ohne Internet.
 
 Hauptnavigation: Planet / Gebäude / Schiffe / Flotten. Auf dem Handy unten.
 Planet und Reset sind oben auf allen Seiten erreichbar.
-Planet: große 3D-Übersicht, Baufelder und Beispielproduktion.
+Planet: Kolonie und Orbit sind zwei Ansichten desselben Planeten.
+Orbit bleibt hier; die linke Navigation Flotten öffnet die Flottenverwaltung.
 Maus ziehen: drehen. Mausrad oder +/−: zoomen. Übersicht: Kamera zurücksetzen.
 Ein Gebäude auf dem Planeten anklicken öffnet seine Gebäudeseite.
-Gebäude: Suche und Kategorien, Details und Demo-Ausbau bis Stufe 8.
+Gebäude: drei Übersichten Rohstoffe, Schiffe und Verteidigung.
+Keine Suchleiste oder Kategorienfilter. Details und Demo-Ausbau bis Stufe 8.
 Baumenü: Typ wählen und Demo errichten. Der Standort wird automatisch vergeben.
 Terraformer erweitert die Baufelder, nicht den Planetendurchmesser.
 Jede Gebäudestufe braucht ein Feld; Verteidigungsmodelle brauchen keine Felder.
-Schiffe: Typ und Stückzahl eingeben, Mengenauftrag vormerken, dann nächsten Auftrag ausführen.
+Schiffe: Je Typ werden Bereit, In Produktion / beauftragt und Frei verfügbar aktualisiert.
+Typ und Stückzahl eingeben, Mengenauftrag vormerken, dann nächsten Auftrag ausführen.
 Die kurze Montage-/Startanimation steht für den gesamten Mengenauftrag.
-Flotten: Tabelle mit fertigem Bestand und zusätzlich vorgemerkten Mengen.
-Großflotte wählen und Demo-Bestand ersetzen: 1.100.000 Schiffe.
-Offene Aufträge vor dem Ersetzen abschließen oder entfernen.
+Flotten: Bestehende Verbände mit Name, Zusammensetzung und Status.
+Neue Flotte: Name und verfügbare Schiffe wählen, dann speichern.
+Bearbeiten ändert die Zusammensetzung; Auflösen gibt reservierte Schiffe frei.
+Noch nicht fertig gebaute oder anderen Flotten zugewiesene Schiffe sind nicht verfügbar.
+Demo-Mission starten sperrt Bearbeiten und Auflösen; Demo-Mission beenden hebt die Sperre auf.
+Das demonstriert nur die Sperre: keine echten Flüge, Kosten oder Kämpfe.
+Flotten werden in dieser geöffneten Demo gespeichert; Neuladen setzt die Demo zurück.
+Unter Schiffe den Beispielbestand Großflotte wählen: 1.100.000 Schiffe.
+Vor dem Ersetzen offene Aufträge abschließen/entfernen und bestehende Flotten auflösen.
 Höchstens zwölf repräsentative Orbitmodelle stehen für den ganzen Bestand.
 Auf Unterseiten ist die kleine 3D-Vorschau optional; Listen und Eingaben stehen im Mittelpunkt.
 Formulare, Suche und Auswahl bleiben beim Navigieren erhalten.

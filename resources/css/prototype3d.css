@@ -1185,3 +1185,127 @@ footer {
         max-width: none;
     }
 }
+.ship-stock-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+}
+.ship-stock-card {
+    border: 1px solid #2a465b;
+    border-radius: 7px;
+    padding: 13px 10px;
+    background: #0b1927;
+    min-width: 0;
+}
+.ship-stock-card.selected {
+    border-color: #57b7da;
+    background: #123044;
+}
+.ship-stock-card button {
+    padding: 0;
+    background: none !important;
+    border: 0;
+    text-align: left;
+    color: #b4e2f3;
+    width: 100%;
+    font-size: 12px;
+    min-height: 34px;
+}
+.stock-line {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    gap: 3px;
+}
+.stock-line strong {
+    font-size: 16px;
+    font-weight: 500;
+}
+.stock-line span {
+    font-size: 9px;
+    color: #83a4bb;
+}
+.stock-in_production strong {
+    color: #e3c389;
+}
+.stock-available strong {
+    color: #74d0bc;
+}
+#ship-examples {
+    margin-top: 24px;
+}
+.managed-fleet-card {
+    padding: 20px;
+    border: 1px solid #2a465b;
+    background: #0b1d2d;
+    border-radius: 8px;
+    margin: 18px 0;
+}
+.managed-fleet-card h3 {
+    margin: 0;
+    font-size: 17px;
+    overflow-wrap: anywhere;
+}
+.managed-fleet-card .section-heading {
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.fleet-status {
+    font-size: 10px;
+    color: #8ed3bd;
+    white-space: nowrap;
+}
+.fleet-status.mission {
+    color: #e3bd81;
+}
+.fleet-composition {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0;
+    display: grid;
+    gap: 8px;
+    color: #9dc3d8;
+    font-size: 12px;
+}
+.fleet-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.fleet-actions button {
+    font-size: 11px;
+}
+.fleet-editor {
+    position: sticky;
+    top: 132px;
+}
+.fleet-editor label {
+    margin: 16px 0;
+}
+.fleet-pick small {
+    font-size: 10px;
+    color: #719ab4;
+}
+.empty-state {
+    padding: 28px 0;
+    color: #7da1b9;
+    font-size: 13px;
+}
+@media (max-width: 1150px) {
+    .ship-stock-grid {
+        grid-template-columns: 1fr;
+    }
+    .stock-line {
+        display: inline-flex;
+        margin: 8px 9px 0 0;
+    }
+    .ship-stock-card button {
+        min-height: 24px;
+    }
+}
+@media (max-width: 850px) {
+    .fleet-editor {
+        position: static;
+    }
+}
