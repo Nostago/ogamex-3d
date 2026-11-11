@@ -57,11 +57,18 @@ Terraformer: erweitert die Feldkapazität, nicht den Planetendurchmesser.
 Sein eigener Bau/Ausbau benötigt zunächst ein freies Feld.
 Vorhandene Anlagen lassen sich über die scrollbare Gebäudeliste auswählen.
 Einzigartige Anlagen sind einmal baubar, Verteidigungsmodelle auch mehrfach.
-Schiffswerft anklicken: Unter den Details Schiffstyp wählen und Demo-Schiff bauen.
+Schiffswerft anklicken: Schiffstyp und Stückzahl wählen, „Mengenauftrag vormerken“.
+Unter den Aufträgen „Nächsten Demo-Auftrag ausführen“ wählen.
+Die kurze Animation steht für den gesamten Mengenauftrag, unabhängig von der Stückzahl.
+Unterbrechen lässt den Auftrag vorgemerkt. „Auftrag entfernen“ verwirft ihn.
 Leichter Jäger, Kleiner Transporter oder Spionagesonde: Montage, Start und Orbit.
-Schiffe im Orbit oder in der Flottenliste anklicken: Informationen und Kamerafokus.
+Formationen im Orbit oder in der Flottenliste anklicken: Bestand und Kamerafokus.
 Schiffsauswahl pausiert den Orbitverkehr; „Übersicht“ setzt ihn fort.
-Drei Beispielschiffe anfangs, maximal zwölf sichtbare Schiffe pro Planet.
+Bestand, offene Aufträge und sichtbare Modelle sind getrennte Größen.
+Im Orbit „Großflotte“ wählen und „Demo-Bestand ersetzen“: 1.100.000 Schiffe.
+Offene Aufträge müssen vor dem Ersetzen abgeschlossen oder entfernt sein.
+Höchstens zwölf Modelle vertreten den gesamten Bestand, ohne echtes Flottenlimit.
+Die Eingabegrenze 1 bis 1.000.000.000 und 20 offene Aufträge sind Demogrenzen.
 Nanitenfabrik und Fusionskraftwerk sind ebenfalls im Baumenü verfügbar.
 Die Gebäudeliste ist nach Ressourcen, Einrichtungen, Lagern und Verteidigung gegliedert.
 Keine produktive Schiffsproduktion, Flugmissionen, Forschung, Transporte oder Kämpfe.

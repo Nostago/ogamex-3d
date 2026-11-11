@@ -1,7 +1,15 @@
 import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createLayout, chooseSite } from './layout.js'
 import { demoPlanets, initialBuildings } from './planets.js'
-import { shipCatalog, fleetLimit } from './shipCatalog.js'
+import { shipCatalog } from './shipCatalog.js'
+import {
+    createFormations,
+    fleetTotal,
+    pendingCount,
+    exampleFleet,
+    maxOrderQuantity,
+    maxPendingOrders,
+} from './fleet.js'
 export { buildingTypes } from './catalog.js'
 
 export class DemoError extends Error {
@@ -60,11 +68,27 @@ export function checkUpgrade(state, id) {
         throw new DemoError('fields_full')
     return item
 }
-export function checkShipBuild(state, type) {
+export function checkShipBuild(state, type, quantity) {
     if (!Object.hasOwn(shipCatalog, type)) throw new DemoError('unknown_ship')
     if (!state.buildings.some((item) => item.type === 'shipyard'))
         throw new DemoError('shipyard_required')
-    if (state.ships.length >= fleetLimit) throw new DemoError('fleet_full')
+    if (
+        !Number.isSafeInteger(quantity) ||
+        quantity < 1 ||
+        quantity > maxOrderQuantity
+    )
+        throw new DemoError('invalid_quantity')
+    if (
+        state.orders.filter((item) => item.status === 'queued').length >=
+        maxPendingOrders
+    )
+        throw new DemoError('queue_full')
+    if (
+        !Number.isSafeInteger(
+            fleetTotal(state.fleet) + pendingCount(state.orders) + quantity,
+        )
+    )
+        throw new DemoError('count_overflow')
 }
 // An authenticated adapter can supply the same DTO; the server remains authoritative.
 export function createDemoProvider() {
@@ -84,11 +108,9 @@ export function createDemoProvider() {
         return {
             layout,
             buildings,
-            ships: Object.keys(shipCatalog).map((type, index) => ({
-                id: `ship-${index + 1}`,
-                type,
-                origin: 'example',
-            })),
+            fleet: exampleFleet('patrol'),
+            orders: [],
+            nextOrder: 1,
         }
     }
     for (const profile of demoPlanets) states.set(profile.id, fresh(profile))
@@ -97,13 +119,19 @@ export function createDemoProvider() {
     const current = () => states.get(selectedPlanet)
     function snapshot() {
         const planet = profile(),
-            { layout, buildings, ships } = current()
+            { layout, buildings, fleet, orders } = current()
         return {
             planet: { ...planet },
             name: planet.name,
             coordinates: `[1:42:${demoPlanets.indexOf(planet) + 6}]`,
             capacity: getCapacity(planet, buildings),
-            ships: ships.map((ship) => ({ ...ship })),
+            fleet: fleet.map((item) => ({ ...item })),
+            orders: orders.map((item) => ({ ...item })),
+            fleetSummary: {
+                total: fleetTotal(fleet),
+                pending: pendingCount(orders),
+            },
+            formations: createFormations(fleet),
             layout: layout.map((site) => ({
                 ...site,
                 normal: [...site.normal],
@@ -133,14 +161,55 @@ export function createDemoProvider() {
         async listPlanets() {
             return demoPlanets.map((planet) => ({ ...planet }))
         },
-        async buildShip(type) {
-            checkShipBuild(snapshot(), type)
-            const ships = current().ships
-            ships.push({
-                id: `ship-${ships.length + 1}`,
+        async enqueueShip(type, quantity) {
+            checkShipBuild(snapshot(), type, quantity)
+            const data = current()
+            data.orders = data.orders
+                .filter((item) => item.status === 'queued')
+                .concat(
+                    data.orders
+                        .filter((item) => item.status !== 'queued')
+                        .slice(-5),
+                )
+            data.orders.push({
+                id: `order-${data.nextOrder++}`,
                 type,
-                origin: 'built',
+                quantity,
+                status: 'queued',
             })
+            return snapshot()
+        },
+        async completeShipOrder(id) {
+            const order = current().orders.find((item) => item.id === id)
+            if (!order || order.status !== 'queued')
+                throw new DemoError('unknown_order')
+            const item = current().fleet.find(
+                (item) => item.type === order.type,
+            )
+            if (
+                !Number.isSafeInteger(
+                    fleetTotal(current().fleet) + order.quantity,
+                )
+            )
+                throw new DemoError('count_overflow')
+            item.count += order.quantity
+            order.status = 'completed'
+            return snapshot()
+        },
+        async cancelShipOrder(id) {
+            const order = current().orders.find((item) => item.id === id)
+            if (!order || order.status !== 'queued')
+                throw new DemoError('unknown_order')
+            order.status = 'cancelled'
+            return snapshot()
+        },
+        async loadFleetExample(name) {
+            const fleet = exampleFleet(name)
+            if (!fleet) throw new DemoError('unknown_preset')
+            if (current().orders.some((item) => item.status === 'queued'))
+                throw new DemoError('orders_pending')
+            current().fleet = fleet
+            current().orders = []
             return snapshot()
         },
         async load() {

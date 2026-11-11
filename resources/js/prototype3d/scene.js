@@ -348,23 +348,39 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     let fleetKey = '',
         selectedShip = null
     function syncFleet(data) {
-        const key = `${data.planet.id}:${data.ships.map((ship) => ship.id).join(',')}`
+        const key = `${data.planet.id}:${data.formations.map((ship) => `${ship.id}:${ship.count}`).join(',')}`
         if (key === fleetKey) return
         ships.forEach((ship) => disposeGroup(ship))
         ships.length = 0
         shipLabels.forEach((label) => label.remove())
         shipLabels.clear()
-        for (const [index, item] of data.ships.entries()) {
-            const ship = createShip(item.type, materials.palette)
+        for (const [index, item] of data.formations.entries()) {
+            const ship = new THREE.Group()
+            for (let index = 0; index < item.modelCount; index++) {
+                const model = createShip(item.type, materials.palette)
+                if (item.modelCount > 1)
+                    model.position.set(
+                        ((index % 2) - 0.5) * 1.5,
+                        0,
+                        (Math.floor(index / 2) - 0.5) * 1.7,
+                    )
+                ship.add(model)
+            }
+            ship.userData.modelCount = item.modelCount
             ship.userData.shipId = item.id
             ship.position.set(
-                Math.cos(index * 2) * orbitRadius,
+                Math.cos(1 + index * 2) * orbitRadius,
                 0,
-                Math.sin(index * 2) * orbitRadius,
+                Math.sin(1 + index * 2) * orbitRadius,
             )
-            ship.rotation.y = Math.PI - index * 2
+            ship.rotation.y = Math.PI - (1 + index * 2)
             const ring = mesh(
-                new THREE.TorusGeometry(0.9, 0.022, 5, 32),
+                new THREE.TorusGeometry(
+                    item.modelCount > 1 ? 1.9 : 0.9,
+                    0.022,
+                    5,
+                    48,
+                ),
                 selectionMat,
                 ship,
             )
@@ -375,11 +391,15 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             ships.push(ship)
             const label = document.createElement('span')
             label.className = 'building-label ship-label'
-            label.textContent = `${names[item.type]} · ${item.id.slice(5)}`
+            label.textContent = `${names[item.type]} × ${new Intl.NumberFormat('de-DE').format(item.count)}`
             labelsHost.append(label)
             shipLabels.set(item.id, label)
         }
-        host.dataset.ships = String(ships.length)
+        host.dataset.ships = String(
+            data.formations.reduce((n, item) => n + item.modelCount, 0),
+        )
+        host.dataset.formations = String(data.formations.length)
+        host.dataset.units = String(data.fleetSummary.total)
         fleetKey = key
     }
     function focusShip(id) {
@@ -397,7 +417,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         flyTo({
             angle: Math.atan2(position.x, position.z),
             elevation: 0.25,
-            distance: 7,
+            distance: ship.userData.modelCount > 1 ? 10 : 7,
             target: position,
         })
     }
@@ -674,7 +694,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         if (trafficMoving) orbit.rotation.y = time * 0.00004
         if (trafficMoving)
             ships.forEach((ship, index) => {
-                const a = time * (0.00009 + index * 0.000015) + index * 2
+                const a = time * (0.00009 + index * 0.000015) + 1 + index * 2
                 ship.position.set(
                     Math.cos(a) * orbitRadius,
                     Math.sin(a * 2) * 0.2,
@@ -707,7 +727,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             towardCamera.subVectors(camera.position, worldPosition)
             projected
                 .copy(worldPosition)
-                .add(new THREE.Vector3(0, 0.65, 0))
+                .add(new THREE.Vector3(0, 1.1, 0))
                 .project(camera)
             const label = shipLabels.get(ship.userData.shipId)
             const visible =

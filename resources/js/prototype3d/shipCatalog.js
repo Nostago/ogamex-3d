@@ -4,4 +4,3 @@ export const shipCatalog = Object.freeze({
     smallCargo: Object.freeze({ role: 'ship_role_cargo' }),
     probe: Object.freeze({ role: 'ship_role_probe' }),
 })
-export const fleetLimit = 12

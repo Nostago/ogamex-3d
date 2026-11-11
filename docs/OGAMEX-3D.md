@@ -1,46 +1,62 @@
-# OGameX-3D 0.6 ausprobieren
+# OGameX-3D 0.7 ausprobieren
 
 ## ZIP-Demo ohne Server
 
-[OGameX-3D-0.6.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.6/downloads/OGameX-3D-0.6.zip),
-entpacken und `OGameX-3D-0.6.html` in Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.7.zip herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.7/downloads/OGameX-3D-0.7.zip),
+entpacken und `OGameX-3D-0.7.html` in Safari, Chrome, Firefox oder Edge öffnen.
 Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
 aktiv sein. Nach dem Download funktioniert die Demo vollständig ohne Internet.
 Die ZIP enthält zusätzlich eine deutsche Anleitung und die HTML-Datei enthält
-die Three.js-Lizenz. Versionen 0.1–0.5 bleiben unter `downloads/` erhalten.
+die Three.js-Lizenz. Versionen 0.1–0.6 bleiben unter `downloads/` erhalten.
 
-## Neu in 0.6: Schiffswerft und Orbitflotte
+## Neu in 0.7: Mengenproduktion und große Flotten
 
-- Detailliertere Schiffswerft mit offener Montageplattform, Andockarmen,
-  Hallenrippen, Kontrollfenstern, Lüftern und Kran. Raketenwerfer und Laser
-  besitzen zusätzliche Sockel, Abstützungen, Kühlrippen und Sensoren.
-- Nanitenfabrik und Fusionskraftwerk: zwei zusätzliche, automatisch platzierte
-  Anlagen mit eigenen Betriebsanimationen und stufenabhängigen Modellen.
-  Insgesamt 15 Gebäudetypen. Keine Simulation der echten Naniten-Zeitverkürzung
-  oder des Deuteriumverbrauchs eines Fusionskraftwerks.
-- Die Gebäudeliste ist in Ressourcen, Einrichtungen, Lager und Verteidigung
-  gegliedert. Jeder Eintrag bleibt einzeln auswählbar.
-- Schiffswerft auswählen, unter den Gebäudedetails einen **Leichten Jäger**,
-  **Kleinen Transporter** oder eine **Spionagesonde** wählen und „Demo-Schiff
-  bauen und starten“ drücken. Die Schiffswerft montiert ein sichtbares Modell,
-  anschließend steigt es von der Plattform auf. Erst nach Abschluss erscheint
-  es als zusätzliche Instanz im Orbit. Die Ansicht wechselt zur neuen Einheit.
-- Im Orbit Schiffe direkt oder in der Flottenliste anklicken: Kamerafokus,
-  Modellinformationen und Herkunft (anfängliches Beispiel oder neu gebaut).
-  Die Auswahl pausiert den Orbitverkehr zum Betrachten; „Übersicht“ setzt ihn fort.
-- Drei anfängliche Beispielschiffe pro Planet, höchstens zwölf sichtbare Schiffe
-  pro Planet als **Darstellungsbudget**, kein produktives Flottenlimit.
-  Fertige Schiffe bleiben beim Planetenwechsel erhalten. Reset betrifft nur den
-  aktuellen Planeten; Neuladen setzt alle Flotten und Kolonien zurück.
+**Bestand, Bauaufträge und 3D-Modelle sind getrennte Größen.** Die Oberfläche
+zeigt exakte fertige Stückzahlen je Typ sowie zusätzlich vorgemerkte Mengen.
+Eine Formation vertritt einen ganzen Schiffstyp; ihre höchstens vier Modelle
+sind Stellvertreter. Mit drei Typen entstehen maximal zwölf Orbitmodelle,
+unabhängig davon, ob der Bestand drei, eine Million oder eine Milliarde Schiffe
+enthält. Der Renderer durchläuft niemals die tatsächliche Stückzahl.
 
-Es gibt einen Demo-Bauvorgang gleichzeitig (Gebäude oder Schiff). Planetenwechsel,
-Orbitwechsel oder Reset brechen laufende Vorgänge ab, bevor Daten übernommen
-werden. Manuelle Kamerabewegung unterbricht nur die Kamerafahrt. Bei „Bewegung
-reduzieren“ werden Schiffsmontage und Start unmittelbar abgeschlossen.
-Die Demo belastet keine Rohstoffe und prüft keine echten Forschungsvoraussetzungen
-oder Bauzeiten. Schiffsbau setzt hier nur eine vorhandene Schiffswerft voraus.
-Schiffe verbrauchen keine Gebäude-Baufelder. Keine Flugmissionen, Transporte,
-Spionageaktionen, Forschung oder Kämpfe; sämtliche Angaben bleiben Demodaten.
+### Ausprobieren
+
+1. Schiffswerft auswählen. Unter den Gebäudedetails Schiffstyp und Stückzahl
+   eingeben, z. B. **10.000 Leichte Jäger**. „Mengenauftrag vormerken“ legt einen
+   Auftrag an. Mehrere Aufträge können vor dem Start vorgemerkt werden.
+2. Unter „Schiffsbau-Aufträge“ **Nächsten Demo-Auftrag ausführen** wählen.
+   Eine kurze Montage-/Startanimation steht für den gesamten Auftrag. Die Dauer
+   ist unabhängig von der Menge. Fertiger Bestand und Formation ändern sich
+   erst nach vollständigem Abschluss, genau einmal um die bestellte Stückzahl.
+3. Im Orbit eine Formation oder ihren Listeneintrag wählen. Die Detailansicht
+   zeigt den gesamten fertigen Bestand, nicht die Zahl sichtbarer Modelle.
+   Die Auswahl pausiert den Verkehr; „Übersicht“ setzt ihn fort.
+4. Im Orbit „Großflotte · 1.100.000 Schiffe“ auswählen und **Demo-Bestand ersetzen**
+   drücken: 750.000 Leichte Jäger, 250.000 Kleine Transporter, 100.000 Sonden.
+   Das ersetzt nur die fertige Flotte des ausgewählten Planeten. Offene Aufträge
+   müssen vorher abgeschlossen oder entfernt werden. „Patrouille“ stellt drei
+   Beispielschiffe ein. Weitere Mengenaufträge addieren sich auf den Bestand.
+
+Planeten-/Orbitwechsel unterbrechen die laufende Demoanimation; der Auftrag
+bleibt **vorgemerkt** und kann erneut gestartet werden. „Auftrag entfernen“
+verwirft einen offenen Auftrag ausdrücklich, ohne fertige Schiffe zu verändern.
+Reset löscht Flotte und Aufträge des aktuellen Planeten; Neuladen setzt alle
+Planeten zurück. Aufträge anderer Planeten bleiben beim Wechsel erhalten.
+
+Dies ist eine manuell gesteuerte Demo-Warteliste, keine produktive Werft mit
+Hintergrundtimer. Ein Auftrag läuft zur Zeit; weitere lassen sich vorab vormerken.
+„Bewegung reduzieren“ schließt einen gestarteten Auftrag unmittelbar ab.
+Die Demo begrenzt Eingaben auf ganze Zahlen von 1 bis 1.000.000.000 und zwanzig
+noch offene Aufträge. Diese Eingabe-/Speichergrenzen sind **keine OGame-Flottenlimits**.
+Abgeschlossene/entfernte Aufträge werden als kurze Historie aufbewahrt; insgesamt
+bleiben höchstens 25 Aufträge im Speicher. Überläufe über den exakt darstellbaren
+JavaScript-Integerbereich werden vor einer Änderung abgewiesen.
+
+Erhalten aus 0.6 sind die detaillierte Schiffswerft und Verteidigung, Nanitenfabrik
+und Fusionskraftwerk, insgesamt 15 Anlagentypen, drei prozedurale Schiffsmodelle
+und die nach Kategorien gegliederte Gebäudeliste. Keine echten Rohstoffkosten,
+Bauzeiten, Forschungsvoraussetzungen, Flugmissionen, Transporte, Spionage oder
+Kämpfe. Nanitenfabrik und Fusionskraftwerk beeinflussen keine echte Wirtschaft.
+Eine Kampfvisualisierung ist nicht Teil dieser Version.
 
 ## Planeten und automatische Bebauung
 
@@ -81,8 +97,8 @@ Die Anzeige trennt Basisfelder, Terraformer-Bonus und verbleibende Kapazität.
 - „Baumenü“ öffnen, Typ wählen, „Demo errichten“. Der Standort wird automatisch
   vergeben. Ausbau und Neubau zeigen zunächst Gerüst und Fortschritt. Erst bei
   Abschluss ändern sich Stufe, Felder und Modell. Demo-Maximum ist Stufe 8.
-- Planetenwechsel, Reset oder Orbitwechsel brechen laufende Bauanimationen ab,
-  ohne Felder oder Stufen zu verändern. Manuelle Kameraeingaben unterbrechen
+- Planetenwechsel, Reset oder Orbitwechsel brechen laufende Gebäudeanimationen ab,
+  ohne Felder oder Stufen zu verändern. Unterbrochene Schiffsaufträge bleiben vorgemerkt. Manuelle Kameraeingaben unterbrechen
   Kamerafahrten, ohne den Bau abzubrechen.
 - „Orbit“ zeigt Raumstation und drei Beispielschiffe. „Rotation“ aktiviert die
   Kameradrehung. „Bewegung reduzieren“ in den Systemeinstellungen stoppt
@@ -136,14 +152,16 @@ Es werden keine Spielstände, Datenbanken oder produktiven Bauaufträge verände
 
 `planets.js` enthält ausschließlich Demo-Profile und Ausgangskolonien.
 `catalog.js` beschreibt Typen, Kategorien, Wiederholbarkeit und Feldverbrauch.
-`shipCatalog.js` enthält die Demo-Schiffstypen und das Darstellungsbudget;
+`shipCatalog.js` enthält die Demo-Schiffstypen; `fleet.js` trennt Bestände,
+Auftragsmengen und begrenzte Formationen und enthält die Beispielbestände;
 `ships.js` baut ihre prozeduralen Modelle. `layout.js` vergibt deterministische, voneinander getrennte Oberflächenpositionen.
 `data.js` verwaltet Zustand und validiert vor jeder Mutation. `scene.js` erhält
 Snapshots und zeichnet nur; `index.js` verbindet UI, Provider und Animationen.
 Abbruchmarken verhindern, dass verspätete Animationsabschlüsse auf dem falschen
 Planeten angewandt werden.
 
-Provider-Vertrag (alle Methoden asynchron, Rückgabe jeweils vollständiger Snapshot):
+Provider-Vertrag (asynchron; Zustandsmethoden liefern vollständige Snapshots,
+`listPlanets()` liefert eine Metadatenliste):
 
 ```js
 await provider.listPlanets();        // kopierte Planeten-Metadaten
@@ -151,7 +169,10 @@ await provider.load();
 await provider.selectPlanet('small');
 await provider.build('terraformer'); // kein Standortargument
 await provider.upgrade(instanceId);
-await provider.buildShip('smallCargo'); // sofortige Demo-Mutation nach Animation
+await provider.enqueueShip('smallCargo', 10000);
+await provider.completeShipOrder(orderId); // genau einmal nach erfolgreicher Animation
+await provider.cancelShipOrder(orderId);   // ausdrücklich entfernen
+await provider.loadFleetExample('armada'); // nur ohne offene Aufträge
 await provider.reset();              // nur aktueller Planet
 ```
 
@@ -163,7 +184,10 @@ await provider.reset();              // nur aktueller Planet
     field_current, field_max, terraformer,
     terraformer_bonus, effective_max, remaining
   },
-  ships: [{ id, type, origin }], // origin: 'example' oder 'built'
+  fleet: [{ type, count }],
+  fleetSummary: { total, pending },
+  orders: [{ id, type, quantity, status }], // queued, completed, cancelled
+  formations: [{ id, type, count, modelCount }], // modelCount <= 4
   layout: [{ id, normal: [x, y, z] }],
   buildings: [{ id, type, siteId, level, metric, value, production }]
 }
@@ -172,11 +196,17 @@ await provider.reset();              // nur aktueller Planet
 `field_current` ist hier aus den Gebäudestufen abgeleitet; `field_max` meint
 Basisfelder, `effective_max` die einschließlich Terraformer. `siteId` ist ein
 rein grafischer Standort. Neue Instanz-IDs enthalten Typ und Standort, z. B.
-`laser-site-012`; ursprüngliche IDs wie `metal` bleiben erhalten. Die drei Schiffstypen besitzen planetenlokale Instanz-IDs wie `ship-4`.
-`checkShipBuild()` validiert Typ, Schiffswerft und Grafiklimit vor jeder Mutation.
-Der Provider startet keine Hintergrundtimer oder produktiven Aufträge: erst nach
-erfolgreicher Animation ruft das UI `buildShip()` auf. Abbruchmarken verhindern
-den Aufruf nach Planetenwechsel oder Reset. Snapshots sind
+`laser-site-012`; ursprüngliche IDs wie `metal` bleiben erhalten. Formationen besitzen stabile Typ-IDs wie `ship-lightFighter`; neue Mengen
+verändern die ID nicht. Aufträge besitzen planetenlokale, fortlaufende IDs wie
+`order-4`. `checkShipBuild()` validiert Typ, Schiffswerft, ganzzahlige Menge,
+Queuegrenze und sichere Gesamtsumme inklusive aller offenen Aufträge.
+`completeShipOrder()` lehnt doppelte oder bereits entfernte Abschlüsse ab.
+
+Die kurze Animationsphase und ihr Fortschritt gehören zum UI. Der Provider kennt
+vorgemerkte, abgeschlossene und entfernte Aufträge. Erst die erfolgreich beendete
+Animation ruft `completeShipOrder()` auf; Abbruchmarken verhindern verspätete
+Abschlüsse nach Reset oder Planetenwechsel. Es gibt keine Timer pro Schiff.
+Snapshots sind vollständig
 kopiert, sodass UI-Mutationen den Provider nicht verändern.
 
 Ein späterer authentifizierter HTTP-Adapter liefert echte Planetendaten und
@@ -236,8 +266,9 @@ Andernorts `PLAYWRIGHT_MODULE`, bei Bedarf `CHROMIUM_PATH` und
 drei Profile, Bauanimation und verzögerte Mutation, volle Felder, Verteidigung,
 Terraformer, unabhängige Zustände, Abbruch bei Planeten-/Orbitwechsel und Reset,
 Kamera, Maus, Mobilansicht, reduzierte Bewegung und Neuladen. Zusätzlich werden
-Schiffsmontage und sichtbarer Start, verzögerter Flottenzuwachs, Schiffsauswahl,
-Bauabbruch an allen drei Grenzen und die neuen Anlagen geprüft. Screenshots werden
+Mengenvalidierung, mehrere vorgemerkte Aufträge, Montage/Start, exakte Mengenübernahme,
+Unterbrechen/Entfernen/Reset, Formationsauswahl, die neuen Anlagen und Bestände
+von 1,1 bzw. 2,1 Millionen Schiffen bei höchstens zwölf Orbitmodellen geprüft. Screenshots werden
 im angegebenen Verzeichnis abgelegt.
 
 ## ZIP reproduzieren und offline prüfen
@@ -245,9 +276,9 @@ im angegebenen Verzeichnis abgelegt.
 Bei laufender Laravel-Seite und gebauten Assets:
 
 ```sh
-python3 scripts/codex/export-prototype.py --version 0.6 --output /workspace/exports/v0.6
+python3 scripts/codex/export-prototype.py --version 0.7 --output /workspace/exports/v0.7
 PLAYWRIGHT_MODULE=/workspace/ogamex-cloud/browser-tools/node_modules/playwright \
-PROTOTYPE_HTML=/workspace/exports/v0.6/OGameX-3D-0.6.html \
+PROTOTYPE_HTML=/workspace/exports/v0.7/OGameX-3D-0.7.html \
 ARTIFACT_DIR=/workspace/ogamex-cloud/v05-artifacts \
 node tests/Frontend/prototype3d.browser.mjs
 ```

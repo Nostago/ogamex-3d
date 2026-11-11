@@ -904,3 +904,64 @@ body:has(#prototype) {
     border-color: #5383ab;
     color: #b6e2ff;
 }
+.shipyard-controls input,
+.preset-label select {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 12px;
+    background: #102536;
+    border: 1px solid #36536b;
+    color: #d1e7f5;
+    border-radius: 4px;
+}
+.shipyard-controls input:focus-visible,
+.preset-label select:focus-visible {
+    outline: 2px solid #7de4ff;
+}
+#ship-orders {
+    border-top: 1px solid #284458;
+    margin-top: 20px;
+    padding-top: 16px;
+}
+#ship-orders h3 {
+    font-size: 16px;
+    font-weight: 500;
+}
+.order-row {
+    background: #102536;
+    border: 1px solid #284458;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 8px 0;
+}
+.order-row strong,
+.order-row small {
+    display: block;
+    font-size: 11px;
+    color: #bcd9e8;
+    margin-bottom: 5px;
+}
+.order-row small,
+.order-history,
+.fleet-pending {
+    color: #82a2b8;
+    font-size: 10px;
+}
+.preset-label {
+    display: block;
+    margin: 20px 0 10px;
+    color: #a7c8da;
+    font-size: 12px;
+}
+#pending-total {
+    color: #78d4e9;
+    font-size: 12px;
+}
+
+.order-row progress {
+    width: 100%;
+    height: 6px;
+    accent-color: #66d0e6;
+    margin: 8px 0;
+}

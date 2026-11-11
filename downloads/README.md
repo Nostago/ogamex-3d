@@ -1,50 +1,55 @@
 # OGameX-3D als lokale Demo
 
-## Aktuelle Version 0.6
+## Aktuelle Version 0.7
 
-[OGameX-3D-0.6.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.6/downloads/OGameX-3D-0.6.zip),
-entpacken und `OGameX-3D-0.6.html` mit Safari, Chrome, Firefox oder Edge öffnen.
+[OGameX-3D-0.7.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.7/downloads/OGameX-3D-0.7.zip),
+entpacken und `OGameX-3D-0.7.html` mit Safari, Chrome, Firefox oder Edge öffnen.
 Keine Installation und kein Server erforderlich. JavaScript und WebGL müssen
 aktiv sein. Nach dem Download funktioniert die Demo ohne Internet.
 
-Neu in 0.6:
+Neu: Mengenaufträge und repräsentative Großflotten. Der Schiffbestand ist eine
+Stückzahl je Typ, keine Sammlung einzelner 3D-Modelle. Drei Formationen mit
+höchstens zwölf Modellen vertreten auch Millionen Schiffe. Die Darstellung
+nennt den tatsächlichen fertigen Bestand und zusätzlich vorgemerkte Mengen.
 
-- Detailliertere Schiffswerft und Verteidigung; eigene Modelle für Nanitenfabrik
-  und Fusionskraftwerk, insgesamt 15 Anlagentypen.
-- Gebäudeliste nach Ressourcen, Einrichtungen, Lagern und Verteidigung gegliedert.
-- Schiffswerft auswählen, unter den Gebäudedetails einen Leichten Jäger, Kleinen
-  Transporter oder eine Spionagesonde auswählen und „Demo-Schiff bauen und starten“.
-  Montage und Start sind sichtbar; danach wechselt die Ansicht zum Schiff im Orbit.
-- Im Orbit sind Schiffe direkt und über die Flottenliste auswählbar. Die Auswahl
-  pausiert den Verkehr für die Detailansicht, „Übersicht“ setzt ihn fort.
-- Flotten werden pro Planet getrennt verwaltet. Drei anfängliche Beispielschiffe,
-  maximal zwölf sichtbare Schiffe als Grafikbudget. Reset oder Neuladen setzt zurück.
-  Planetenwechsel, Orbit und Reset brechen unfertige Bauten ohne Flottenzuwachs ab.
+Ausprobieren:
 
-Die drei Planetengrößen, automatischen Gebäudestandorte, Baufeldgrenzen,
-Terraformer, Betriebsanimationen, Straßen, Versorgungstrassen und Fahrzeuge bleiben
-verfügbar. Gebäudestufen verbrauchen Felder, Verteidigung und Schiffe nicht.
-Der Terraformer vergrößert die Kapazität, nicht den physischen Durchmesser.
-Die ausgewählten Planetengrößen und Basisfelder sind Demodaten.
+1. Schiffswerft anklicken, Schiffstyp und Stückzahl wählen, etwa 10.000 Leichte
+   Jäger. „Mengenauftrag vormerken“ drücken; mehrere Aufträge sind möglich.
+2. „Nächsten Demo-Auftrag ausführen“ zeigt Montage und wenige symbolische Starts.
+   Die Animationsdauer ist unabhängig von der Menge. Erst danach wird die ganze
+   Stückzahl genau einmal zum Bestand addiert.
+3. Formationen im Orbit oder in der Liste auswählen. „Übersicht“ beendet den
+   Fokus und setzt den pausierten Orbitverkehr fort.
+4. Im Orbit „Großflotte · 1.100.000 Schiffe“ auswählen und „Demo-Bestand ersetzen“:
+   750.000 Jäger, 250.000 Transporter und 100.000 Sonden, mit zwölf Orbitmodellen.
+   Offene Aufträge vorher abschließen oder entfernen.
 
-Ausschließlich Beispieldaten: keine echten Kosten, Forschungsvoraussetzungen,
-Bauzeiten oder Verbindung zu Spielständen. Der Schiffsbau ist eine Demoanimation,
-keine produktive Schiffsproduktion. Keine Flugmissionen, Transporte, Spionage,
-Forschung oder Kämpfe. Nanitenfabrik und Fusionskraftwerk beeinflussen keine echte
-Wirtschaft. Die HTML-Datei enthält die Three.js-MIT-Lizenz; die ZIP eine Anleitung.
-Texturen und Modelle benötigen keine Netzwerkzugriffe.
+Planeten- und Orbitwechsel unterbrechen eine Animation; ihr Auftrag bleibt
+vorgemerkt. „Auftrag entfernen“ verwirft einen offenen Auftrag. Reset betrifft
+nur den aktuellen Planeten, Neuladen alle. Die Demo-Warteliste wird manuell
+fortgesetzt, ohne echte Kosten, Bauzeiten oder Forschungsvoraussetzungen.
+Eingaben von 1 bis 1.000.000.000 und höchstens 20 offene Aufträge sind technische
+Demogrenzen; zwölf Modelle sind ein Grafikbudget, kein OGame-Flottenlimit.
+
+Drei Planetengrößen, 15 Anlagentypen, automatische Standorte, Baufelder,
+Terraformer, Infrastruktur, Fahrzeuge, Betriebsanimationen und reduzierte
+Bewegung bleiben verfügbar. Kein Zugriff auf echte Spielstände; keine
+Flugmissionen, Transporte, Spionage oder Kämpfe. Die HTML-Datei enthält die
+Three.js-MIT-Lizenz, die ZIP eine Anleitung. Keine Laufzeit-Downloads.
 
 SHA-256:
 
 ```text
-59d930579e1ee964cbecca860bf8e937eeb4068c850baeba9bade7f18ae96a63
+062d884339412006cedbea1b922de358361e58c3d80a9182106cc14fb41c81da
 ```
 
-Bedienung, Feldregeln, Provider-Vertrag und Testbefehle:
+Bedienung, Provider-Vertrag und Testbefehle:
 [Dokumentation](../docs/OGAMEX-3D.md).
 
 ## Frühere Versionen
 
+- [Version 0.6](OGameX-3D-0.6.zip)
 - [Version 0.5](OGameX-3D-0.5.zip)
 - [Version 0.4](OGameX-3D-0.4.zip)
 - [Version 0.3](OGameX-3D-0.3.zip)

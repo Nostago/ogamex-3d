@@ -270,99 +270,138 @@ try {
     assert.equal(await text('#fields-used'), '23 / 32');
     await page.locator('[data-building="shipyard"]').click();
     await settle();
-    await page.locator('#ship-type').selectOption('smallCargo');
+    await page.locator('#ship-quantity').fill('0');
+    assert.equal(await page.locator('#build-ship').isDisabled(), true);
+    assert.match(await text('#quantity-error'), /ganze Stückzahl/);
+    await page.locator('#ship-quantity').fill('1.5');
+    assert.equal(await page.locator('#build-ship').isDisabled(), true);
+    async function queue(type, quantity) {
+        await page.locator('#ship-type').selectOption(type);
+        await page.locator('#ship-quantity').fill(String(quantity));
+        await page.locator('#build-ship').click();
+    }
+    await queue('lightFighter', 10000);
+    await queue('smallCargo', 5000);
+    assert.equal(await page.locator('.order-row').count(), 2);
+    assert.match(await text('#pending-total'), /15.000/);
+    assert.equal(await page.locator('#scene').getAttribute('data-units'), '3');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.locator('#build-ship').click();
+    await page.locator('#start-ship-order').click();
     await progress();
     assert.equal(
-        await page.locator('#scene').getAttribute('data-ships'),
+        await page.locator('#scene').getAttribute('data-units'),
         '3',
-        'No premature fleet commit',
+        'Inventory is unchanged during animation',
     );
-    assert.equal(await page.locator('#build-ship').isDisabled(), true);
-    await page.screenshot({ path: `${artifacts}/ship-assembly.png` });
+    assert.match(await text('#pending-total'), /15.000/);
+    assert.equal(await page.locator('#build-progress').count(), 1);
+    assert.equal(await page.locator('.order-row #build-progress').isVisible(), true);
+    await page.screenshot({ path: `${artifacts}/quantity-assembly.png` });
     await page.waitForFunction(
         () => document.querySelector('#scene').dataset.shipPhase === 'launch',
     );
-    await page.screenshot({ path: `${artifacts}/ship-launch.png` });
+    await page.screenshot({ path: `${artifacts}/quantity-launch.png` });
     await page.waitForFunction(
         () =>
-            document.querySelector('#scene').dataset.ships === '4' &&
+            document.querySelector('#scene').dataset.units === '10003' &&
             !document.querySelector('#prototype').dataset.building,
     );
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '6');
     assert.equal(
-        await page.locator('#prototype').getAttribute('data-mode'),
-        'orbit',
+        await page.locator('#scene').getAttribute('data-formations'),
+        '3',
     );
-    assert.equal(await text('#ship-details h3'), 'Kleiner Transporter');
-    assert.equal(
-        await page.locator('#scene').getAttribute('data-focus'),
-        'ship-4',
+    assert.match(await text('#formation-count'), /10.001/);
+    assert.match(await text('#pending-total'), /5.000/);
+    assert.equal(await page.locator('#load-fleet-preset').isDisabled(), true);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.locator('#start-ship-order').click();
+    await page.waitForFunction(
+        () => document.querySelector('#scene').dataset.units === '15003',
     );
-    assert.equal(await text('#fields-used'), '23 / 32');
-    await settle();
-    await page.screenshot({ path: `${artifacts}/ship-focus.png` });
-    await page.locator('[data-ship="ship-2"]').click();
-    await settle();
-    assert.equal(await text('#ship-details h3'), 'Kleiner Transporter');
-    const shipLabel = await page
-        .locator('.ship-label')
-        .filter({ hasText: 'Transporter · 2' })
-        .boundingBox();
-    assert.ok(shipLabel, 'Focused ship has a visible label');
-    // Click the focused ship beneath its label; scene selection must reach the fleet UI.
-    await page.mouse.click(
-        shipLabel.x + shipLabel.width / 2,
-        shipLabel.y + shipLabel.height + 30,
-    );
-    assert.equal(
-        await page.locator('#scene').getAttribute('data-focus'),
-        'ship-2',
-    );
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '9');
+    assert.match(await text('#pending-total'), /: 0$/);
     console.log(
-        'PASS new facilities, grouped list, ship assembly, launch and selectable fleet',
+        'PASS quantity validation, multiple queued orders, delayed exact completion, bounded formations',
     );
-    // Aborts must leave the completed fleet untouched, including across planet switches.
     await page.locator('#colony-view').click();
     await page.locator('[data-building="shipyard"]').click();
-    await page.locator('#build-ship').click();
+    await queue('probe', 2000);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.locator('#start-ship-order').click();
     await progress();
     await page.locator('#orbit-view').click();
-    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '4');
     assert.equal(
-        await page.locator('#scene').getAttribute('data-ship-phase'),
-        null,
+        await page.locator('#scene').getAttribute('data-units'),
+        '15003',
     );
-    await page.locator('#colony-view').click();
-    await page.locator('#build-ship').click();
+    assert.match(await text('#pending-total'), /2.000/);
+    await page.locator('#start-ship-order').click();
     await progress();
     await planet('small', '15 / 16', 6, 6);
-    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '3');
     await planet('medium', '23 / 32', 11, 8.5);
-    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '4');
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-units'),
+        '15003',
+    );
     await page.locator('[data-building="shipyard"]').click();
-    await page.locator('#build-ship').click();
+    assert.match(await text('#pending-total'), /2.000/);
+    await page.locator('#start-ship-order').click();
     await progress();
     await page.locator('#reset-demo').click();
     await level(4);
-    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '3');
-    assert.equal(
-        await page.locator('#scene').getAttribute('data-ship-phase'),
-        null,
-    );
+    assert.equal(await page.locator('#scene').getAttribute('data-units'), '3');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.locator('[data-building="shipyard"]').click();
-    await page.locator('#ship-type').selectOption('probe');
-    await page.locator('#build-ship').click();
+    await queue('probe', 77);
+    await page.locator('.order-row button').click();
+    assert.match(await text('#pending-total'), /: 0$/);
+    await page.locator('#orbit-view').click();
+    await page.locator('#fleet-preset').selectOption('armada');
+    await page.locator('#load-fleet-preset').click();
     await page.waitForFunction(
-        () => document.querySelector('#scene').dataset.ships === '4',
+        () => document.querySelector('#scene').dataset.units === '1100000',
     );
-    assert.equal(await text('#ship-details h3'), 'Spionagesonde');
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '12');
+    assert.equal(await page.locator('[data-ship]').count(), 3);
+    assert.match(await text('#fleet-count'), /1.100.000/);
+    await page.screenshot({ path: `${artifacts}/million-fleet.png` });
+    await page.locator('[data-ship="ship-lightFighter"]').click();
+    await settle();
+    assert.match(await text('#formation-count'), /750.000/);
+    await page.screenshot({ path: `${artifacts}/formation-focus.png` });
+    await page.locator('#colony-view').click();
+    await page.locator('[data-building="shipyard"]').click();
+    await queue('probe', 1000000);
+    await page.locator('#start-ship-order').click();
+    await page.waitForFunction(
+        () => document.querySelector('#scene').dataset.units === '2100000',
+    );
+    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '12');
+    await planet('large', '29 / 69', 13, 12);
+    assert.equal(await page.locator('#scene').getAttribute('data-units'), '3');
+    await planet('medium', '20 / 32', 9, 8.5);
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-units'),
+        '2100000',
+    );
+    await page.locator('#orbit-view').click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        true,
+    );
+    await page.screenshot({
+        path: `${artifacts}/million-mobile.png`,
+        fullPage: true,
+    });
     await load();
     await level(4);
-    assert.equal(await page.locator('#scene').getAttribute('data-ships'), '3');
+    assert.equal(await page.locator('#scene').getAttribute('data-units'), '3');
     console.log(
-        'PASS ship abort at orbit, planet switch and reset, immediate reduced-motion build, fleet reload',
+        'PASS interrupted orders stay queued, explicit removal, local reset, 1.1/2.1 million ships with <=12 models, independent planets, mobile and reload',
     );
     assert.deepEqual(errors, []);
     if (standalone)

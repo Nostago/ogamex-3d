@@ -5,7 +5,13 @@ import {
     checkUpgrade,
     checkShipBuild,
 } from './data.js'
-import { shipCatalog, fleetLimit } from './shipCatalog.js'
+import { shipCatalog } from './shipCatalog.js'
+import {
+    fleetExamples,
+    maxOrderQuantity,
+    modelsPerFormation,
+    pendingCount,
+} from './fleet.js'
 import { buildingCatalog, buildingTypes } from './catalog.js'
 import { createPlanetScene } from './scene.js'
 
@@ -46,7 +52,9 @@ let selected = 'metal',
     placing = false
 let chosenType = 'terraformer',
     chosenShip = 'lightFighter',
-    selectedShip = 'ship-1'
+    chosenQuantity = '10000',
+    activeOrder = null,
+    selectedShip = 'ship-lightFighter'
 function element(tag, className, text) {
     const node = document.createElement(tag)
     if (className) node.className = className
@@ -67,7 +75,7 @@ function metric(building) {
 }
 function select(id) {
     if (busy) return
-    if (state.ships.some((ship) => ship.id === id)) {
+    if (state.formations.some((ship) => ship.id === id)) {
         showShip(id)
         return
     }
@@ -244,7 +252,7 @@ function renderBuilder() {
         warning.setAttribute('role', 'status')
         builder.append(warning)
     }
-    if (busy) appendProgress(builder)
+    if (busy && placing) appendProgress(builder)
     const build = element('button', 'upgrade-button', t.build)
     build.id = 'build-facility'
     build.disabled = busy || !!reason || !chosenType
@@ -338,7 +346,7 @@ function renderUi() {
         element('strong', '', metric(building)),
     )
     info.append(details)
-    if (busy && !placing)
+    if (busy && !placing && !activeOrder)
         appendProgress(
             info,
             root.dataset.building?.startsWith('ship-')
@@ -370,6 +378,7 @@ function renderUi() {
     info.append(upgrade)
     if (building.type === 'shipyard') renderShipyard(info)
     renderFleet()
+    renderOrders()
     renderBuilder()
 }
 function renderShipyard(parent) {
@@ -393,18 +402,46 @@ function renderShipyard(parent) {
     })
     label.append(chooser)
     section.append(label)
+    const quantityLabel = element('label', '', t.ship_quantity)
+    const quantity = element('input')
+    quantity.id = 'ship-quantity'
+    quantity.type = 'number'
+    quantity.min = '1'
+    quantity.max = String(maxOrderQuantity)
+    quantity.step = '1'
+    quantity.value = chosenQuantity
+    quantity.disabled = busy
+    quantityLabel.append(quantity)
+    section.append(quantityLabel)
+    const warning = element('p', 'capacity-warning')
+    warning.id = 'quantity-error'
+    warning.setAttribute('role', 'status')
     let reason
     try {
-        checkShipBuild(state, chosenShip)
+        checkShipBuild(state, chosenShip, Number(chosenQuantity))
     } catch (error) {
         reason = message(error)
     }
     const button = element('button', 'upgrade-button', t.build_ship)
     button.id = 'build-ship'
     button.disabled = busy || !!reason
-    button.addEventListener('click', performShip)
+    button.addEventListener('click', enqueueShip)
     section.append(button)
-    if (reason) section.append(element('p', 'capacity-warning', reason))
+    warning.textContent = reason || ''
+    warning.hidden = !reason
+    section.append(warning)
+    quantity.addEventListener('input', () => {
+        chosenQuantity = quantity.value
+        try {
+            checkShipBuild(state, chosenShip, Number(chosenQuantity))
+            reason = null
+        } catch (error) {
+            reason = message(error)
+        }
+        warning.textContent = reason || ''
+        warning.hidden = !reason
+        button.disabled = busy || !!reason
+    })
     parent.append(section)
 }
 function showShip(id) {
@@ -414,6 +451,87 @@ function showShip(id) {
     stopRotation()
     scene?.focusShip(id)
     renderFleet()
+}
+function renderOrders() {
+    const panel = document.querySelector('#ship-orders')
+    panel.replaceChildren()
+    panel.hidden =
+        placing ||
+        (root.dataset.mode !== 'orbit' &&
+            state.buildings.find((item) => item.id === selected)?.type !==
+                'shipyard')
+    panel.append(
+        element('h3', '', t.ship_orders),
+        element('p', 'builder-note', t.order_note),
+    )
+    const total = element(
+        'p',
+        '',
+        `${t.pending_total}: ${number.format(state.fleetSummary.pending)}`,
+    )
+    total.id = 'pending-total'
+    panel.append(total)
+    const queued = state.orders.filter((item) => item.status === 'queued')
+    for (const order of queued) {
+        const row = element('div', 'order-row')
+        row.dataset.order = order.id
+        row.append(
+            element(
+                'strong',
+                '',
+                `${number.format(order.quantity)} × ${t[order.type]}`,
+            ),
+            element(
+                'small',
+                '',
+                order.id === activeOrder ? t.ship_working : t.order_queued,
+            ),
+        )
+        if (order.id === activeOrder) {
+            const progress = element('progress')
+            progress.id = 'build-progress'
+            progress.max = 1
+            progress.value = 0
+            progress.setAttribute('aria-label', t.build_progress)
+            row.append(progress)
+        }
+        const cancel = element('button', 'text-button', t.cancel_order)
+        cancel.disabled = busy
+        cancel.addEventListener('click', async () => {
+            state = await provider.cancelShipOrder(order.id)
+            renderUi()
+        })
+        row.append(cancel)
+        panel.append(row)
+    }
+    if (!queued.length) panel.append(element('p', 'builder-note', t.no_orders))
+    const start = element('button', 'upgrade-button', t.start_order)
+    start.id = 'start-ship-order'
+    start.disabled = busy || !queued.length
+    start.addEventListener('click', () => performShip(queued[0].id))
+    panel.append(start)
+    for (const order of state.orders
+        .filter((item) => item.status !== 'queued')
+        .slice(-5)) {
+        panel.append(
+            element(
+                'p',
+                'order-history',
+                `${number.format(order.quantity)} × ${t[order.type]} · ${t[`order_${order.status}`]}`,
+            ),
+        )
+    }
+}
+async function enqueueShip() {
+    if (busy) return
+    try {
+        state = await provider.enqueueShip(chosenShip, Number(chosenQuantity))
+        status.textContent = t.order_added
+        renderUi()
+    } catch (error) {
+        status.textContent = message(error)
+        renderUi()
+    }
 }
 function renderFleet() {
     const panel = document.querySelector('#orbit-info')
@@ -426,81 +544,124 @@ function renderFleet() {
     const count = element(
         'h4',
         'category-title',
-        `${t.demo_fleet} · ${state.ships.length} / ${fleetLimit}`,
+        `${t.demo_fleet} · ${number.format(state.fleetSummary.total)}`,
     )
     count.id = 'fleet-count'
     panel.append(count)
-    if (!state.ships.some((ship) => ship.id === selectedShip))
-        selectedShip = state.ships[0]?.id
-    for (const ship of state.ships) {
+    const budget = element(
+        'p',
+        'builder-note',
+        `${t.visible_models}: ${state.formations.reduce((n, item) => n + item.modelCount, 0)} / ${Object.keys(shipCatalog).length * modelsPerFormation} · ${t.representative_note}`,
+    )
+    budget.id = 'rendered-models'
+    panel.append(budget)
+    if (!state.formations.some((item) => item.id === selectedShip))
+        selectedShip = state.formations[0]?.id
+    for (const ship of state.formations) {
         const button = element(
             'button',
             'fleet-item',
-            `${t[ship.type]} · ${ship.id.slice(5)}`,
+            `${t[ship.type]} × ${number.format(ship.count)}`,
         )
         button.dataset.ship = ship.id
         button.disabled = busy
         button.setAttribute('aria-pressed', String(ship.id === selectedShip))
         button.addEventListener('click', () => showShip(ship.id))
         panel.append(button)
+        const pending = element(
+            'small',
+            'fleet-pending',
+            `${t.pending_type}: ${number.format(pendingCount(state.orders, ship.type))}`,
+        )
+        panel.append(pending)
     }
-    const ship = state.ships.find((item) => item.id === selectedShip)
+    const ship = state.formations.find((item) => item.id === selectedShip)
     if (ship) {
         const detail = element('div', 'ship-details')
         detail.id = 'ship-details'
+        const units = element(
+            'strong',
+            '',
+            `${t.actual_count}: ${number.format(ship.count)}`,
+        )
+        units.id = 'formation-count'
         detail.append(
             element('h3', '', t[ship.type]),
+            units,
             element('p', '', t[shipCatalog[ship.type].role]),
-            element(
-                'p',
-                'builder-note',
-                t[
-                    ship.origin === 'built'
-                        ? 'ship_built_origin'
-                        : 'ship_example_origin'
-                ],
-            ),
+            element('p', 'builder-note', t.representative_note),
             element('p', 'builder-note', t.ship_focus_note),
         )
         panel.append(detail)
     }
-}
-async function performShip() {
-    if (busy) return
-    try {
-        checkShipBuild(state, chosenShip)
-    } catch (error) {
-        status.textContent = message(error)
-        return
+    const label = element('label', 'preset-label', t.fleet_example),
+        selector = element('select')
+    selector.id = 'fleet-preset'
+    selector.disabled = busy || state.fleetSummary.pending > 0
+    for (const key of Object.keys(fleetExamples)) {
+        const option = element('option', '', t[`preset_${key}`])
+        option.value = key
+        selector.append(option)
     }
+    selector.value = 'armada'
+    label.append(selector)
+    panel.append(label)
+    const load = element('button', 'upgrade-button', t.load_fleet_example)
+    load.id = 'load-fleet-preset'
+    load.disabled = selector.disabled
+    load.addEventListener('click', async () => {
+        if (busy) return
+        try {
+            state = await provider.loadFleetExample(selector.value)
+            scene?.update(state)
+            scene?.resetCamera()
+            renderUi()
+            status.textContent = t.ready
+        } catch (error) {
+            status.textContent = message(error)
+        }
+    })
+    panel.append(load, element('p', 'builder-note', t.preset_note))
+}
+async function performShip(orderId) {
+    if (busy) return
+    const order = state.orders.find(
+        (item) => item.id === orderId && item.status === 'queued',
+    )
+    if (!order) return
+    const yard = state.buildings.find((item) => item.type === 'shipyard')
+    if (root.dataset.mode !== 'colony') setView('colony')
+    selected = yard.id
+    placing = false
     const token = ++operation,
         planetId = state.planet.id,
-        type = chosenShip
+        type = order.type
+    activeOrder = order.id
     busy = true
     root.dataset.building = `ship-${type}`
     status.textContent = t.ship_working
     stopRotation()
-    const yard = state.buildings.find((item) => item.type === 'shipyard')
     scene?.focus(yard.id)
     renderUi()
     try {
         const complete = scene ? await scene.animateShip(type, yard.id) : true
         if (!complete || token !== operation || state.planet.id !== planetId)
             return
-        const snapshot = await provider.buildShip(type)
+        const snapshot = await provider.completeShipOrder(orderId)
         if (token !== operation) return
         state = snapshot
         scene?.update(state)
         busy = false
         delete root.dataset.building
         setView('orbit')
-        showShip(state.ships.at(-1).id)
+        showShip(`ship-${type}`)
         status.textContent = t.ship_built
     } catch (error) {
         if (token === operation) status.textContent = message(error)
     } finally {
         if (token === operation) {
             busy = false
+            activeOrder = null
             delete root.dataset.building
             renderUi()
         }
@@ -528,6 +689,7 @@ function stopRotation() {
     document.querySelector('#rotate').setAttribute('aria-pressed', 'false')
 }
 function cancelUpgrade() {
+    activeOrder = null
     ++operation
     scene?.cancelConstruction()
     busy = false
