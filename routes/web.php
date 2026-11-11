@@ -20,6 +20,7 @@ use OGame\Http\Controllers\GalaxyController;
 use OGame\Http\Controllers\HighscoreController;
 use OGame\Http\Controllers\JumpGateController;
 use OGame\Http\Controllers\LanguageController;
+use OGame\Http\Controllers\Live3dController;
 use OGame\Http\Controllers\MerchantController;
 use OGame\Http\Controllers\MessagesController;
 use OGame\Http\Controllers\NotesController;
@@ -68,6 +69,11 @@ Route::get('/ajax/main/contact', [RulesController::class, 'ajaxContact'])->name(
 
 // Group: all logged in pages:
 Route::middleware(['auth', 'banned', 'globalgame', 'locale', 'firstlogin'])->group(function () {
+    // Authenticated 3D interface: original backend, separate public demo.
+    Route::get('/play-3d', [Live3dController::class, 'index'])->name('live3d.index');
+    Route::get('/play-3d/state', [Live3dController::class, 'state'])->name('live3d.state');
+    Route::post('/play-3d/command', [Live3dController::class, 'command'])->name('live3d.command');
+
     // Overview
     Route::get('/overview', [OverviewController::class, 'index'])->name('overview.index');
 

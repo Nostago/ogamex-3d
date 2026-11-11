@@ -1,4 +1,15 @@
 {
+  "_scene-BC_hx_BB.css": {
+    "file": "assets/scene-BC_hx_BB.css",
+    "src": "_scene-BC_hx_BB.css"
+  },
+  "_scene-BETdDy0N.js": {
+    "file": "assets/scene-BETdDy0N.js",
+    "name": "scene",
+    "css": [
+      "assets/scene-BC_hx_BB.css"
+    ]
+  },
   "resources/css/ingame.css": {
     "file": "assets/ingame-C9U8U3hi.css",
     "name": "ingame",
@@ -17,13 +28,25 @@
     "src": "resources/css/outgame.css",
     "isEntry": true
   },
+  "resources/js/live3d/index.js": {
+    "file": "assets/index-CDHwU7oj.js",
+    "name": "index",
+    "src": "resources/js/live3d/index.js",
+    "isEntry": true,
+    "imports": [
+      "_scene-BETdDy0N.js"
+    ],
+    "css": [
+      "assets/index-BOdYvRFK.css"
+    ]
+  },
   "resources/js/prototype3d/index.js": {
-    "file": "assets/index-BxrahCT4.js",
+    "file": "assets/index-CQIBzpsu.js",
     "name": "index",
     "src": "resources/js/prototype3d/index.js",
     "isEntry": true,
-    "css": [
-      "assets/index-BC_hx_BB.css"
+    "imports": [
+      "_scene-BETdDy0N.js"
     ]
   },
   "resources/js/ingame.js": {

@@ -1,0 +1,160 @@
+.live-interface .topbar {
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.live-interface #live-planet {
+    min-width: 190px;
+    max-width: 280px;
+}
+.live-badge {
+    padding: 7px 10px;
+    border: 1px solid #238b9b;
+    border-radius: 16px;
+    color: #86f5dc;
+    font-size: 10px;
+}
+.live-groups {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+.live-groups [aria-pressed='true'] {
+    border-color: #6ddcff;
+    color: #85e2ff;
+}
+#live-catalog {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    max-height: 78vh;
+    overflow: auto;
+}
+.live-object {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+.live-object[aria-pressed='true'] {
+    background: #12374c;
+    border-color: #53d3ff;
+}
+.live-object small {
+    color: #7fabbf;
+}
+#live-detail {
+    align-self: start;
+    overflow-wrap: anywhere;
+}
+#live-detail p {
+    color: #a6c6db;
+    line-height: 1.8;
+    font-size: 13px;
+}
+#live-detail label {
+    display: grid;
+    gap: 8px;
+    margin: 18px 0;
+}
+#live-detail input {
+    width: 100%;
+}
+#live-detail button {
+    width: 100%;
+    margin-top: 12px;
+}
+.live-queue {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+#live-queues .card {
+    margin-bottom: 16px;
+}
+#live-original {
+    width: 100%;
+    height: 78vh;
+    min-height: 650px;
+    border: 1px solid #25485e;
+    border-radius: 10px;
+    background: #07121f;
+}
+.original-note {
+    margin: 20px 0;
+    color: #92b3ca;
+    font-size: 12px;
+}
+.live-interface .scene-panel {
+    min-height: 580px;
+}
+.live-interface #scene {
+    position: absolute;
+    inset: 0;
+}
+.live-interface .view-switch {
+    z-index: 4;
+}
+.live-interface #live-status {
+    white-space: pre-wrap;
+}
+@media (max-width: 850px) {
+    .live-interface .main-nav {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+    .live-interface .main-nav a {
+        font-size: 7px;
+    }
+    .live-interface #live-planet {
+        min-width: 0;
+        max-width: 240px;
+        flex: 1;
+    }
+    .live-interface .topbar label {
+        font-size: 11px;
+    }
+    .live-interface .scene-panel {
+        min-height: 440px;
+    }
+    #live-catalog {
+        max-height: none;
+    }
+}
+
+/* Visual direction: blue orbital HUD, using actual OGameX values throughout. */
+.live-interface {
+    background:
+        radial-gradient(ellipse at 65% 15%, #10294088, transparent 65%), #050d16;
+}
+.live-interface .card {
+    background: linear-gradient(125deg, #102735e8, #071520ed);
+    border-color: #2d5b70;
+    box-shadow:
+        inset 0 1px #8bdfff16,
+        0 0 18px #00b8ff08;
+}
+.live-interface .topbar {
+    border-bottom-color: #38b0d066;
+    background: linear-gradient(110deg, #081724, #06101a);
+}
+.live-interface .main-nav a[aria-current='page'] {
+    box-shadow:
+        inset 3px 0 #66eaff,
+        0 0 16px #00b8ff26;
+    background: linear-gradient(110deg, #123b50, #071a28);
+}
+.live-interface .live-rate {
+    color: #5bd9a1;
+    margin-left: 8px;
+    font-size: 10px;
+    white-space: nowrap;
+}
+.live-interface .workspace-heading h1 {
+    color: #eefaff;
+    text-shadow: 0 0 18px #78dbff22;
+}
+.live-interface #live-planet {
+    border-color: #2d617a;
+}

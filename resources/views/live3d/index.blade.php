@@ -1,0 +1,18 @@
+@php
+    $t = __('t_live3d', [], 'de');
+    $bootstrap = ['initial' => $initial, 't' => $t, 'models' => __('t_prototype3d', [], 'de'), 'stateUrl' => route('live3d.state'), 'commandUrl' => route('live3d.command'), 'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index', ['prototype3d' => 1])]];
+    $liveVite = clone app(\Illuminate\Foundation\Vite::class);
+    $liveVite->useScriptTagAttributes(['type' => 'module']);
+@endphp
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="csrf-token" content="{{ csrf_token() }}"><title>OGameX · 3D</title>{{ $liveVite('resources/js/live3d/index.js') }}</head>
+<body class="prototype-3d live-interface"><div id="prototype" data-mode="colony">
+<header class="topbar"><a class="brand" href="{{ route('live3d.index') }}">◈ OGameX<span class="brand-3d">3D</span></a><span class="live-badge">{{ $t['live'] }}</span><label for="live-planet">{{ $t['planet'] }}</label><select id="live-planet"></select><a href="{{ route('overview.index') }}">{{ $t['original'] }}</a><button id="live-refresh">{{ $t['refresh'] }}</button></header>
+<div class="activity-bar"><p id="live-status" role="status">{{ $t['connected'] }}</p><a id="live-login" href="{{ route('login') }}" hidden>{{ $t['login'] }}</a></div><div id="live-resources" class="resource-balances"></div>
+<div class="app-shell"><nav class="main-nav" aria-label="{{ $t['navigation'] }}">@foreach(['planet'=>'◉','buildings'=>'▥','research'=>'⌬','ships'=>'◇','fleets'=>'⌁','galaxy'=>'✧','messages'=>'✉'] as $page=>$icon)<a href="#{{ $page }}" data-live-page="{{ $page }}"><span aria-hidden="true">{{ $icon }}</span><span>{{ $t[$page] }}</span></a>@endforeach<p class="nav-note">{{ $t['authority'] }}</p></nav>
+<main class="workspace"><header class="workspace-heading"><span class="eyebrow" id="live-context"></span><h1 id="live-heading" tabindex="-1"></h1></header>
+<section id="live-page-planet"><div class="planet-layout"><section class="scene-panel"><div class="view-switch"><button id="live-colony" aria-pressed="true">{{ $t['colony'] }}</button><button id="live-orbit" aria-pressed="false">{{ $t['orbit'] }}</button></div><div id="scene" tabindex="0" aria-label="{{ $t['scene_controls'] }}"></div><div id="scene-labels" aria-hidden="true"></div><div class="scene-tools"><button id="live-zoom-in" aria-label="{{ $t['zoom_in'] }}">+</button><button id="live-zoom-out" aria-label="{{ $t['zoom_out'] }}">−</button><button id="live-rotate" aria-pressed="false">{{ $t['rotate'] }}</button><button id="live-camera">{{ $t['camera'] }}</button></div></section><aside class="overview-cards"><section id="live-overview" class="card"></section><section class="card"><p>{{ $t['geometry'] }}</p><a href="{{ route('resources.settings') }}" id="live-production-link">{{ $t['production_settings'] }}</a></section></aside></div></section>
+<section id="live-page-catalog" hidden><div id="live-groups" class="live-groups"></div><div id="live-queues"></div><div class="split-layout"><section id="live-catalog" class="card"></section><aside id="live-detail" class="card"></aside></div></section>
+<section id="live-page-original" hidden><div class="card original-note"><p>{{ $t['embedded'] }}</p><a id="live-original-link" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><iframe id="live-original" title="{{ $t['original_area'] }}"></iframe></section>
+</main></div><footer><span>{{ $t['authority'] }}</span><span>OGameX · 3D</span></footer>
+</div><script id="live-bootstrap" type="application/json">@json($bootstrap)</script></body></html>

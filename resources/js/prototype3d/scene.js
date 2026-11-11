@@ -183,7 +183,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         })
         const label = document.createElement('span')
         label.className = 'building-label'
-        label.textContent = `${names[data.type]} · ${data.level}`
+        label.textContent = `${names[data.type]} · ${data.displayLevel ?? data.level}`
         labelsHost.append(label)
         labels.set(data.id, label)
     }

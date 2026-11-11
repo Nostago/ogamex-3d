@@ -1,5 +1,7 @@
 # OGameX-3D als lokale Demo
 
+Die neue Anbindung an echte Laravel-Spielstände ist unter [Live-Oberfläche](../docs/OGAMEX-3D-LIVE.md) dokumentiert. Die ZIP bleibt die separate Offline-Demo.
+
 ## Aktuelle Version 0.13
 
 [OGameX-3D-0.13.zip direkt herunterladen](https://github.com/Nostago/ogamex-3d/raw/refs/heads/codex/ogamex-3d-v0.13/downloads/OGameX-3D-0.13.zip),

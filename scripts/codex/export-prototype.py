@@ -4,6 +4,7 @@ import argparse
 import json
 import pathlib
 import re
+import subprocess
 import urllib.parse
 import urllib.request
 import zipfile
@@ -20,8 +21,6 @@ def main():
     root = pathlib.Path(__file__).resolve().parents[2]
     manifest = json.loads((root / 'public/build/manifest.json').read_text())
     entry = manifest['resources/js/prototype3d/index.js']
-    if entry.get('imports') or entry.get('dynamicImports'):
-        raise RuntimeError('Standalone export requires a single self-contained JS bundle')
     with urllib.request.urlopen(args.url, timeout=30) as response:
         page = response.read().decode('utf-8')
     if f'OGameX-3D · {args.version}' not in page:
@@ -29,8 +28,29 @@ def main():
     page = re.sub(r'<a\b[^>]*data-live-message-link[^>]*>.*?</a>', '', page, flags=re.S)
     page = re.sub(r'<link\b[^>]*>', '', page)
     page = re.sub(r'<script\b[^>]*\bsrc=[^>]*></script>', '', page)
-    css = '\n'.join((root / 'public/build' / path).read_text() for path in entry['css'])
+    css_paths = []
+    visited = set()
+    def collect_css(key):
+        if key in visited:
+            return
+        visited.add(key)
+        item = manifest[key]
+        for dependency in item.get('imports', []) + item.get('dynamicImports', []):
+            collect_css(dependency)
+        for path in item.get('css', []):
+            if path not in css_paths:
+                css_paths.append(path)
+    collect_css('resources/js/prototype3d/index.js')
+    css = '\n'.join((root / 'public/build' / path).read_text() for path in css_paths)
     js = (root / 'public/build' / entry['file']).read_text()
+    if entry.get('imports') or entry.get('dynamicImports'):
+        # Multiple Vite entries share visual modules. Bundle the demo entry only;
+        # Rolldown is already provided by Vite, so no installation is required.
+        js = subprocess.check_output([
+            'node', '--input-type=module', '-e',
+            "import {rolldown} from 'rolldown'; const b = await rolldown({input:process.argv[1]}); const r = await b.generate({format:'es',inlineDynamicImports:true}); process.stdout.write(r.output.find(x=>x.type==='chunk').code)",
+            str(root / 'public/build' / entry['file']),
+        ], cwd=root, text=True)
     license_text = (root / 'resources/js/prototype3d/vendor/THREE-LICENSE').read_text()
     page = page.replace('</head>', '<style>' + css + '</style>\n</head>')
     page = page.replace('</body>', '<script type="module">' + js.replace('</script', '<\\/script') + '</script>\n<!-- Three.js MIT license\n' + license_text + '-->\n</body>')
