@@ -53,6 +53,9 @@ use OGame\Http\Controllers\TechtreeController;
 
 Route::redirect('/', '/overview', 301);
 
+// Isolated, public prototype: sample data only; no game-state mutations.
+Route::view('/prototype-3d', 'prototype3d.index')->name('prototype3d.index');
+
 // Language switcher — accessible to both guests and authenticated users.
 Route::get('/lang/{lang}', [LanguageController::class, 'switchLang'])->name('language.switch');
 
