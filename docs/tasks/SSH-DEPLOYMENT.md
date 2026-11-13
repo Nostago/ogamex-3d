@@ -1,5 +1,21 @@
 # OGameX-3D: Bestehende Installation sicher per SSH aktualisieren
 
+## NEUER bestätigter externer SSH-Endpunkt (13.11.2026, 15:50 UTC) – Vorrang vor früheren VPN-Annahmen
+
+Der Nutzer hat einen **öffentlichen SSH-Zugang** zum bestehenden OGameX-Server angegeben:
+
+- Host: `31.70.140.248`
+- Port: `22`
+- Benutzer: `ogamedev`
+- Authentifizierung: SSH-Schlüssel (Mac-Datei: `~/.ssh/id_ed25519_ogame`; dieser **lokale Pfad existiert NICHT automatisch in Codex Cloud**)
+- Projektverzeichnis: `/home/ogamedev/OGameX`
+- Nutzerbefehl auf seinem Mac: `ssh -i ~/.ssh/id_ed25519_ogame ogamedev@31.70.140.248`.
+- Der Mac darf NICHT als Verbindung/Brücke für Codex Cloud benötigt werden.
+
+**Verbindliche Priorität: zuerst direkte SSH-Erreichbarkeit aus der ECHTEN Codex-Cloud-Umgebung read-only testen**, nicht aus der lokalen ChatGPT-Tool-Sandbox. Der öffentliche Endpunkt macht Tailscale oder MCP im Prinzip unnötig, **aber die Netzwerkrichtlinie von Codex Cloud könnte direkten TCP-Verkehr auf Port 22 blockieren**. Einen erfolgreichen Test niemals ohne den tatsächlichen Cloud-Lauf behaupten. Erst öffentliche Internetfreigabe/Agent-Security für das Ziel prüfen; Hostkey unabhängig gegenprüfen und strikt verifizieren. Das bestehende SSH-Schlüsselpaar des Nutzers NICHT in Chat, Repository oder CI-Logs kopieren. Bevorzugt einen eigenen, eingeschränkten SSH-Deploy-Key erzeugen und seinen Public Key auf dem Server autorisieren; Private Key ausschließlich über einen für Codex nutzbaren Secret-Mechanismus liefern. HTTPS-Network-Secrets auf Port 443 sind nicht als SSH-Authentifizierung geeignet. Keine öffentlichen SSH-Portöffnungen mehr anfordern; der Nutzer bestätigt, dass SSH bereits per öffentlicher IP funktioniert.
+
+Wenn ein echter Codex-Cloud-Verbindungstest trotz korrekt eingerichteter öffentlicher Netzfreigabe scheitert, klar melden: "Codex Cloud erlaubt direkten SSH-Verkehr nicht" (sofern anhand des Fehlers nachgewiesen) und minimalen Fallback wählen, statt weitere zufällige Befehle oder Drittanbieterinstallationen vorzuschlagen. Weiterhin keine Neuinstallation, keine verlorenen Docker-Volumes und keine unauthorisierten Datenbankänderungen.
+
 ## Verbindliche Korrektur des Auftrags
 **Der Nutzer hat bestätigt: OGameX ist auf dem Zielserver BEREITS installiert. Er besitzt einen funktionierenden SSH-Schlüssel.**
 Daher **KEINE Neuinstallation**, **KEINE neue Datenbank**, **KEINE neuen Docker-Volumes**, **KEINE neue Standard-Compose-Installation** und keine Änderung an bestehender Domain/Spielwelt, sofern die Bestandsprüfung nicht ausdrückliche Notwendigkeit belegt und die Änderung freigegeben wurde.
