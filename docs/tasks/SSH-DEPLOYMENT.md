@@ -8,6 +8,24 @@ Ziel ist ein eigenständig von Codex vorbereiteter, **wiederholbarer, sicherer D
 
 Der aktuelle Branch `codex/ogamex-3d-ssh-deployment` basiert auf `codex/ogamex-3d-live-backend`. Arbeite nur hier, keine direkten Änderungen an `main`, kein automatischer Merge.
 
+## Verbindliche Architekturentscheidung des Nutzers (13.11.2026): Nur Codex Cloud, KEIN Mac als Brücke
+Der Nutzer hat ausdrücklich festgelegt:
+- **Codex Cloud** soll nach einmaliger Konfiguration autonom über SSH die bestehende OGameX-Installation bearbeiten und freigegebene Updates deployen.
+- Der Mac darf hierfür **nicht** eingeschaltet bleiben und darf **weder SSH-Bastion, VPN-Gateway noch selbstgehosteter Runner** sein.
+- `ssh ogame` ist nur ein funktionierender Zugriff des Nutzers zur einmaligen Diagnose, **kein** Cloud-Zugangsweg.
+
+**Bevorzugte direkte Lösung: Tailscale-VPN für Codex Cloud plus einen dauerhaft laufenden Tailscale-Knoten auf dem OGameX-Server oder einem anderen ohnehin ständig erreichbaren Rechner im Zielnetz.** Die offizielle Dokumentation https://learn.chatgpt.com/docs/environments/cloud-environments beschreibt in aktuellen Codex-Cloud-Umgebungen die Tailscale-Einrichtung in der Umgebungskonfiguration sowie private TCP-/SSH-Verbindungen über `proxy:8088` (HTTP CONNECT). TCP/SSH erfordert einen Proxy-fähigen SSH-Client oder lokalen Forwarder, authentifiziert mit eigenem eingeschränkten SSH-Deploy-Schlüssel, verifiziertem SSH-Hostkey und Tailscale-ACL auf alleinigen Zielport 22. **Keine öffentliche SSH-Portöffnung, keine Mac-Abhängigkeit.**
+
+### Einmalige Infrastrukturvoraussetzungen, von Codex Cloud NICHT selbst beschaffbar
+1. Auf dem OGameX-Server prüfen, ob Tailscale mit seinen Container-/Host-Rechten installiert und betrieben werden kann. Der Login `ogamedev` hat möglicherweise keinen `sudo`-Zugriff; auch ein LXC-Container könnte TUN-Anforderungen haben. `command -v tailscale` gab bislang keine Ausgabe. Falls nicht auf diesem Host möglich: ein vorhandenes **dauerhaft eingeschaltetes** Tailscale-Gateway mit restriktiver IPv4-Subnetzroute zu `10.77.0.10/32`. **Nicht** den Mac dafür verwenden.
+2. In Codex Cloud **Settings > Codex Cloud > Environments > gewünschte Umgebung > Edit > Tailscale (Stiftsymbol)** eine Tailscale-Verbindung einrichten; hierfür nach offizieller Vorgabe einen geeigneten **Reusable + Ephemeral** Auth-Key sicher im Umgebungsdialog hinterlegen. Save/Publish/Republish und mit neuer Aufgabe testen.
+3. Berechtigung nur `Codex-Cloud-Tailscale-Identität -> OGameX-SSH-Ziel-IP:22` erlauben; keine globale Erreichbarkeit des privaten Netzes oder der Docker-Datenbank.
+4. Einen separaten, minimal berechtigten **SSH-Deploy-Key** nur für Codex erzeugen. Dessen Public Key mit eingeschränkten Account-Rechten auf dem Host autorisieren. Private Key nur in einem passend geschützten persönlichen oder Umgebungs-Secret von Codex Cloud hinterlegen, **nicht** im Chat/GitHub-Commit/PR/Deployment-Log. In Codex Cloud benötigen SSH-Schlüssel direkte Environment-Variablen/Secret-Delivery; ein HTTPS-Network-Secret ersetzt keine SSH-Authentifizierung.
+5. Hostkey des Zielservers über unabhängigen vertrauenswürdigen Weg vorab prüfen; `StrictHostKeyChecking=yes`. SSH durch den von der Plattform geforderten HTTP CONNECT-Proxy `proxy:8088` führen. Verbindung nur dann als eingerichtet melden, wenn eine **echte read-only SSH-Probe aus einer neuen Codex-Cloud-Aufgabe** erfolgreich war.
+6. Erst danach Update-Workflow ausführen: Prüfen von Git-Remote und aktiver Compose-Kombination, Backup der Spiel-DB, Build/Test, 3D-Live-UI deployen, Healthchecks, ggf. Code-Rollback (DB nicht blind zurückrollen). Keine neue OGameX-Installation, keine neuen Volumes.
+
+**Fallback nur falls direktes VPN nicht möglich:** Ein GitHub Actions Self-hosted Runner auf einem unabhängig vom Mac ständig erreichbaren vertrauenswürdigen Rechner **in diesem privaten Netzwerk** kann als Deploy-Ausführungsort dienen. Aber nicht ohne ausdrückliche Sicherheitsmaßnahmen/Review untrusted PR-Code auf einem produktiven Host ausführen. Kein externer Standard-GitHub-Runner kann `10.77.0.10` direkt routen. GitHub Actions ist **nicht** mehr die bevorzugte Architektur gegen den Nutzerwunsch nach direktem Cloud-Zugriff.
+
 ## Bekannte ältere Bestandsinformationen – NICHT als heutigen Zustand voraussetzen
 Frühere Serverausgaben des Nutzers (Stand August 2026) nannten:
 - Hostname am Shellprompt: `24fire` (nicht notwendigerweise eine öffentlich auflösbare SSH-Adresse).
@@ -118,13 +136,13 @@ Nach Einrichtung der einmaligen Verbindung zuerst per SSH verifizieren und proto
 - Vorhandene Secrets nicht blind ändern, keine standardisierten `toor`-Beispielpasswörter, `APP_DEBUG=false`; öffentlich zugängliches phpMyAdmin/DB-Ports im Rahmen der Bestandsprüfung identifizieren und Risiken zunächst dokumentieren, nicht unerwartet produktive Zugänge abschalten.
 - Deployment muss idempotent, versioniert und nachprüfbar sein; Login, klassisches OGameX, Auth/CSRF, /play-3d, /play-3d/state, PHP-FPM, MariaDB, Scheduler, Queue, Reverb und originale Spielfunktionen prüfen. Kein uneingeschränkter Test mit echten Nutzeraktionen.
 
-## Phase C: Eigenständige Codex-Updates über GitHub Actions
-Entwickle nur mit nachgewiesenen Rechten einen **manuell auslösbaren** GitHub-Actions-Workflow mit zwei Modi:
+## Phase C: Eigenständige Updates aus Codex Cloud über den privaten Tailscale-Zugang (GitHub Actions nur optionaler Fallback)
+Entwickle für die **direkte SSH-Ausführung aus Codex Cloud** einen wiederholbaren, geprüften Ablauf mit diesen Modi:
 - `preflight`: nur lesende Bestandsaufnahme und Gesundheitsprüfungen;
 - `deploy`: nur freigegebene Commits, Vorabtests, Backup, geordneter Deploy, Smoke Tests, dokumentierter Rollback;
 - optional `rollback`: kontrollierter Code-Rollback auf vorherigen Stand, ohne Migrationen blind zurückzudrehen.
 
-Abgesicherte `ogamex-production` Environment mit Required Reviewers (wo verfügbar), geschützten Variablen/Secrets, enger Branch-/SHA-Zulassung und Sperre gleichzeitiger Deployments. Keine SSH-Secrets bei untrusted PRs. Geschützten Host-Key verifizieren. Logs ohne Secrets, aber mit Commit, Backup-Referenz und Prüfresultaten. Der Nutzer möchte künftig wenig manuelle Bedienung: Codex soll alle **nicht privilegierten Vorarbeiten** eigenständig erledigen; der einmalige Schlüssel-/Zielzugang und die Freigabe eines produktiven Deployments sind notwendige Sicherheitsgrenzen.
+Geschützte Codex-Cloud-Umgebung mit Tailscale-ACLs und Secret-Variablen sowie enger Branch-/SHA-Zulassung und Sperre gleichzeitiger Deployments. Keine SSH-Secrets bei untrusted PRs. Geschützten Host-Key verifizieren. Bei GitHub-Actions-Fallback zusätzlich ein `ogamex-production` Deployment-Environment verwenden. Logs ohne Secrets, aber mit Commit, Backup-Referenz und Prüfresultaten. Der Nutzer möchte künftig wenig manuelle Bedienung: Codex soll alle **nicht privilegierten Vorarbeiten** eigenständig erledigen; der einmalige Schlüssel-/Zielzugang und die Freigabe eines produktiven Deployments sind notwendige Sicherheitsgrenzen.
 
 ## Tests, Dokumentation und Ergebnis
 - Dokumentiere vorhandene Serverarchitektur und safe update procedure auf Deutsch, mit Notfall-Rollback.
