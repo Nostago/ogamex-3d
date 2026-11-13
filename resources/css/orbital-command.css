@@ -1,0 +1,825 @@
+/* Orbital Command: the 3D scene fills the overview; other pages remain workspaces. */
+.orbital-command {
+    background: #020810;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.orbital-command [hidden] {
+    display: none !important;
+}
+.orbital-command .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+.orbital-command svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+.orbital-command button,
+.orbital-command a,
+.orbital-command input,
+.orbital-command select {
+    -webkit-tap-highlight-color: transparent;
+}
+.orbital-command .command-header {
+    display: grid;
+    grid-template-columns: 176px 195px minmax(0, 1fr) 140px;
+    gap: 0;
+    align-items: center;
+    min-height: 78px;
+    background: linear-gradient(100deg, #071623f5, #020a11f5);
+    border-bottom: 1px solid #39b4d077;
+    position: relative;
+    z-index: 30;
+}
+.orbital-command .brand {
+    margin: 0;
+    padding: 14px 12px;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+.orbital-command .brand b {
+    color: #4ae4ff;
+    font-weight: 400;
+}
+.orbital-command .brand small {
+    display: block;
+    font-size: 7px;
+    letter-spacing: 2px;
+    color: #81bdd4;
+    margin-top: 5px;
+}
+.brand-orbit {
+    color: #5deaff;
+    text-shadow: 0 0 15px #30dfff;
+    font-size: 28px;
+}
+.command-empire {
+    min-width: 0;
+    padding: 8px 12px;
+    border-left: 1px solid #1f536a;
+    border-right: 1px solid #1f536a;
+}
+#live-player {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #d4eaf9;
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+.orbital-command #live-planet {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    border: 0;
+    padding: 4px;
+    background: #0a1b29;
+    font-size: 11px;
+    color: #8ec6db;
+}
+.orbital-command .resource-balances {
+    padding: 0;
+    background: none;
+    border: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.orbital-command .resource-balances > span {
+    padding: 9px 13px;
+    border-top: 0 !important;
+    border-left: 0;
+    border-right: 1px solid #1a394a;
+    font-size: 9px;
+    position: relative;
+}
+.orbital-command .resource-balances > span::before {
+    content: '◆';
+    color: #7ea6c1;
+    position: absolute;
+    left: 10px;
+    top: 24px;
+    font-size: 22px;
+    text-shadow: 0 0 14px currentColor;
+}
+.orbital-command .resource-balances > .resource-crystal::before {
+    content: '◈';
+    color: #43ddff;
+}
+.orbital-command .resource-balances > .resource-deuterium::before {
+    content: '◉';
+    color: #6be88a;
+}
+.orbital-command .resource-balances > .resource-energy::before {
+    content: 'ϟ';
+    color: #efc765;
+}
+.orbital-command .resource-balances strong,
+.orbital-command .resource-balances small {
+    margin-left: 30px;
+}
+.orbital-command .resource-balances strong {
+    font-size: clamp(12px, 1.25vw, 19px);
+    font-weight: 600;
+}
+.orbital-command .resource-balances small {
+    font-size: 9px;
+    color: #78d970;
+}
+.header-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1px;
+}
+.orbital-command .header-actions button,
+.orbital-command .header-actions a {
+    padding: 6px;
+    border: 0;
+    background: none;
+    color: #a8c8db;
+}
+.orbital-command .header-actions svg {
+    width: 21px;
+    height: 21px;
+}
+.orbital-command .activity-bar {
+    min-height: 24px;
+    justify-content: flex-end;
+    font-size: 9px;
+    background: #040c15;
+    border-bottom: 1px solid #173749;
+}
+.orbital-command #live-status {
+    margin: 5px 0;
+}
+.orbital-command .app-shell {
+    grid-template-columns: 176px minmax(0, 1fr);
+}
+.orbital-command .main-nav {
+    min-height: calc(100dvh - 102px);
+    height: auto;
+    top: 0;
+    padding: 12px 10px;
+    gap: 5px;
+    background: linear-gradient(180deg, #030c15ee, #051320d9);
+}
+.orbital-command .main-nav a {
+    min-height: 53px;
+    margin: 0;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    border: 1px solid #1a4559;
+    border-radius: 0 8px 0 8px;
+    background: linear-gradient(110deg, #0a2434bb, #04101cdd);
+}
+.orbital-command .main-nav a[aria-current='page'] {
+    background: linear-gradient(110deg, #08607a77, #041a29ee);
+    border-color: #4de6ff;
+    box-shadow:
+        inset 3px 0 #81f6ff,
+        0 0 16px #00d5ff38;
+}
+.orbital-command .main-nav a > span:first-child {
+    width: 25px;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+.orbital-command .main-nav .nav-banner {
+    height: 75px;
+    min-height: 75px;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    margin: 0 0 7px;
+    border-color: #245368;
+}
+.nav-banner-world {
+    display: block;
+    width: 200px !important;
+    height: 200px;
+    position: absolute;
+    top: 16px;
+    left: 10px;
+    border-radius: 50%;
+    background:
+        radial-gradient(ellipse at 40% 25%, #fff8, transparent 25%),
+        radial-gradient(ellipse at 30% 15%, #8fbc8c 0 12%, transparent 13%),
+        radial-gradient(
+            ellipse at 65% 20%,
+            #83b693 0 20%,
+            #154d71 21% 45%,
+            #041a2d 60%
+        );
+    box-shadow:
+        0 -5px 10px #7dd7ff,
+        0 -10px 30px #39bfff55;
+    transform: rotate(-25deg);
+}
+.orbital-command .nav-note {
+    font-size: 8px;
+    min-height: 0;
+    line-height: 1.8;
+    margin: 8px 2px;
+}
+.orbital-command .main-nav .nav-galaxy-card {
+    display: grid;
+    gap: 0;
+    min-height: 110px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 14px;
+    padding: 10px;
+    font-size: 10px;
+    background: radial-gradient(ellipse, #2e769555, #08111c 70%);
+}
+.nav-galaxy-card > span:last-child {
+    z-index: 2;
+    align-self: end;
+    display: flex;
+    justify-content: space-between;
+}
+.orbital-command .main-nav .galaxy-radar {
+    width: 95px !important;
+    height: 75px;
+    border: 1px solid #3cb9db66;
+    position: absolute;
+    top: 7px;
+    left: 27px;
+    border-radius: 50%;
+    transform: rotate(-25deg);
+    background:
+        repeating-radial-gradient(
+            ellipse,
+            #27a9d522 0 2px,
+            transparent 3px 12px
+        ),
+        radial-gradient(ellipse, #5de8ff, transparent 20%);
+    box-shadow: 0 0 30px #3ab5e633;
+}
+.orbital-command .workspace {
+    padding: 25px;
+}
+#prototype[data-page='planet'] .workspace {
+    padding: 0;
+}
+#prototype[data-page='planet'] .workspace-heading {
+    display: none;
+}
+.orbital-command .orbital-stage {
+    position: relative;
+    min-height: 800px;
+    height: calc(100dvh - 102px);
+    isolation: isolate;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 35% 18%, #113d5b99, transparent 45%),
+        radial-gradient(ellipse at 72% 28%, #32244c88, transparent 33%),
+        radial-gradient(ellipse at 40% 75%, #073a5d55, transparent 55%), #020914;
+}
+.orbital-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image:
+        radial-gradient(1px 1px at 16% 27%, #dcf8ff 90%, transparent),
+        radial-gradient(1px 1px at 74% 13%, #91c6ff 90%, transparent),
+        radial-gradient(1px 1px at 44% 71%, #bceeff 90%, transparent),
+        radial-gradient(2px 2px at 88% 65%, #5da6dbaa 80%, transparent);
+    background-size:
+        143px 197px,
+        233px 173px,
+        191px 233px,
+        331px 307px;
+}
+.orbital-command .scene-panel {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    border-radius: 0;
+    height: 100%;
+    min-height: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: hidden;
+}
+.orbital-command .scene-panel::after {
+    display: none;
+}
+.orbital-command #scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.orbital-command #scene canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+.orbital-command #scene-labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.orbital-reticle {
+    position: absolute;
+    width: 56%;
+    height: 65%;
+    left: 19%;
+    top: 18%;
+    border: 1px solid #2bbed133;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: rotate(-18deg);
+    box-shadow: 0 0 50px #00769c0c;
+}
+.orbital-reticle::after {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border: 2px dashed #45b9ce22;
+    border-radius: 50%;
+}
+.stage-heading {
+    position: absolute;
+    z-index: 3;
+    top: 28px;
+    left: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    pointer-events: none;
+}
+.stage-heading > span {
+    color: #62dbf5;
+    padding: 12px;
+    border: 1px solid #32aac188;
+    border-radius: 50%;
+    box-shadow: 0 0 24px #31bfe630;
+}
+.stage-heading h1 {
+    margin: 0 0 5px;
+    font-size: 27px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+}
+.stage-heading p {
+    margin: 0;
+    font-size: 12px;
+    color: #95b7cb;
+}
+.hud-left,
+.hud-right {
+    position: absolute;
+    z-index: 3;
+    display: grid;
+    gap: 16px;
+    top: 110px;
+    pointer-events: none;
+}
+.hud-left {
+    left: 30px;
+    width: 235px;
+}
+.hud-right {
+    right: 22px;
+    width: 280px;
+    top: 100px;
+}
+.hud-left > *,
+.hud-right > * {
+    pointer-events: auto;
+}
+.orbital-command .hud-panel {
+    padding: 16px;
+    background: linear-gradient(120deg, #081d2bbf, #03101be8);
+    border: 1px solid #48d2ed99;
+    border-radius: 0 9px 0 9px;
+    box-shadow:
+        inset 0 1px #9aefff33,
+        0 0 20px #0099c310;
+    backdrop-filter: blur(8px);
+}
+.orbital-command .hud-panel h2 {
+    font-size: 14px;
+    color: #9deaff;
+    margin-bottom: 14px;
+    letter-spacing: 0.01em;
+}
+.orbital-command #live-overview h2 {
+    font-size: 20px;
+}
+.orbital-command .planet-portrait {
+    width: 42px;
+    height: 42px;
+}
+.orbital-command .stat-line {
+    padding: 9px 0;
+    font-size: 10px;
+}
+.orbital-command .stat-line strong {
+    font-size: 11px;
+}
+.orbital-command .production-row {
+    padding: 8px 0;
+    font-size: 11px;
+}
+.orbital-command .production-row progress {
+    height: 5px;
+}
+.orbital-command #live-production-link {
+    font-size: 10px;
+    padding: 0;
+    color: #90cee0;
+}
+.orbital-command .command-dock {
+    display: grid;
+    margin: 0;
+    gap: 9px;
+}
+.orbital-command .command-dock h2 {
+    margin: 0;
+}
+.orbital-command .command-dock > p {
+    font-size: 11px;
+    line-height: 1.7;
+}
+.orbital-command .dock-order {
+    grid-template-columns: 35px 1fr auto;
+    padding: 8px;
+    gap: 5px 9px;
+    border-color: #22485c;
+    border-radius: 3px;
+    background: #061827bb;
+}
+.orbital-command .dock-order img {
+    width: 35px;
+    height: 39px;
+}
+.orbital-command .dock-order strong {
+    font-size: 10px;
+}
+.orbital-command .dock-order small {
+    font-size: 8px;
+}
+.orbital-command .dock-order > span {
+    font-size: 9px;
+}
+.orbital-command .event-hostile strong {
+    color: #ff7474;
+}
+.next-fleet-event {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 11px;
+    color: #b1d9eb;
+}
+.fleet-event-clock {
+    color: #58edfa;
+    font-variant-numeric: tabular-nums;
+}
+.orbital-command #live-fleet-events > p {
+    font-size: 10px;
+    line-height: 1.6;
+}
+.orbital-bottom {
+    position: absolute;
+    z-index: 4;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: calc(100% - 560px);
+    min-width: 330px;
+    padding: 15px 25px;
+    background: linear-gradient(0deg, #031421ed, #061c2d88);
+    border: 1px solid #38a7c36b;
+    border-radius: 0 0 22px 22px;
+}
+.orbital-command .view-switch,
+.orbital-command .scene-tools {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.orbital-command .view-switch button {
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+    background: transparent;
+    border: 0;
+    color: #9bb7ca;
+    padding: 5px 10px;
+    font-size: 10px;
+    border-radius: 0;
+}
+.orbital-command .view-switch button svg {
+    width: 31px;
+    height: 31px;
+}
+.orbital-command .view-switch button[aria-pressed='true'] {
+    color: #62f1ff;
+    background: radial-gradient(ellipse, #1394ab44, transparent 70%);
+    box-shadow: 0 3px #54eaff;
+}
+.orbital-command .scene-tools button {
+    padding: 6px;
+    border-radius: 50%;
+    width: 29px;
+    height: 29px;
+    background: #061725cc;
+    border-color: #275b71;
+}
+.orbital-command .scene-tools svg {
+    width: 15px;
+    height: 15px;
+}
+.orbital-bottom .geometry-note {
+    flex-basis: 100%;
+    font-size: 8px;
+    line-height: 1.5;
+    margin: 0;
+    text-align: center;
+    color: #6c9cb4;
+}
+.scene-recovery {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    transform: translate(-50%, -50%);
+    max-width: 330px;
+    width: 80%;
+    z-index: 5;
+    text-align: center;
+    padding: 17px;
+    background: #031321eb;
+    border: 1px solid #2d9eb9;
+    border-radius: 7px;
+}
+.scene-recovery p {
+    line-height: 1.7;
+    font-size: 12px;
+    color: #a9e4ee;
+}
+.scene-recovery details {
+    margin-top: 12px;
+    font-size: 10px;
+    color: #739daf;
+    overflow-wrap: anywhere;
+}
+.scene-recovery output {
+    display: block;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    text-align: left;
+}
+#scene[data-renderer='software'] ~ .orbital-reticle {
+    opacity: 0.4;
+}
+.orbital-command .scene-recovery:has(~ .orbital-bottom) {
+    top: auto;
+    bottom: 150px;
+    transform: translateX(-50%);
+    padding: 10px;
+}
+.orbital-command .scene-recovery:has(~ .orbital-bottom) p {
+    margin: 5px;
+}
+.orbital-command #live-fleet-stock {
+    margin-bottom: 20px;
+}
+.fleet-stock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+.orbital-command .fleet-stock-item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 7px 12px;
+    text-align: left;
+    align-items: center;
+}
+.fleet-stock-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    grid-row: span 2;
+}
+.fleet-stock-item span {
+    font-size: 11px;
+}
+.fleet-stock-item strong {
+    font-size: 16px;
+    color: #7de8ff;
+}
+.orbital-command #live-original {
+    border-radius: 0 8px 0 8px;
+}
+@media (min-width: 1800px) {
+    .hud-left {
+        width: 265px;
+    }
+    .hud-right {
+        width: 310px;
+    }
+    .orbital-command .orbital-stage {
+        min-height: 850px;
+    }
+}
+@media (max-width: 1250px) and (min-width: 851px) {
+    .hud-left {
+        left: 20px;
+        width: 200px;
+    }
+    .hud-right {
+        right: 15px;
+        width: 235px;
+    }
+    .orbital-command .command-header {
+        grid-template-columns: 176px 160px minmax(0, 1fr) 110px;
+    }
+    .orbital-command .header-actions {
+        flex-wrap: wrap;
+    }
+    .orbital-command .resource-balances > span {
+        padding: 8px;
+    }
+    .orbital-command .resource-balances strong,
+    .orbital-command .resource-balances small {
+        margin-left: 0;
+    }
+    .orbital-command .resource-balances > span::before {
+        display: none;
+    }
+    .orbital-bottom {
+        max-width: 330px;
+    }
+    .stage-heading {
+        left: 20px;
+    }
+}
+@media (max-width: 850px) {
+    .orbital-command .command-header {
+        grid-template-columns: 1fr 1fr;
+    }
+    .orbital-command .brand {
+        padding: 12px;
+        font-size: 19px;
+    }
+    .command-empire {
+        border: 0;
+        padding: 8px 12px;
+    }
+    .orbital-command .resource-balances {
+        grid-column: 1/-1;
+        border-top: 1px solid #26546b;
+    }
+    .orbital-command .resource-balances > span {
+        padding: 10px 8px;
+    }
+    .orbital-command .resource-balances > span::before {
+        display: none;
+    }
+    .orbital-command .resource-balances strong,
+    .orbital-command .resource-balances small {
+        margin-left: 0;
+    }
+    .orbital-command .resource-balances strong {
+        font-size: 14px;
+    }
+    .orbital-command .header-actions {
+        position: absolute;
+        left: 5px;
+        top: 73px;
+        transform: translateY(-3px);
+        display: none;
+    }
+    .orbital-command .activity-bar {
+        padding: 0 12px;
+    }
+    .orbital-command .app-shell {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .orbital-command .main-nav {
+        position: fixed;
+        inset: auto 0 0;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
+        padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    }
+    .orbital-command .main-nav .nav-banner,
+    .orbital-command .main-nav .nav-galaxy-card,
+    .orbital-command .nav-note {
+        display: none;
+    }
+    .orbital-command .main-nav a {
+        min-height: 46px;
+        padding: 5px 2px;
+        gap: 4px;
+        font-size: 8px;
+        flex-direction: column;
+        border-radius: 3px;
+    }
+    .orbital-command .main-nav svg {
+        width: 20px;
+        height: 20px;
+    }
+    .orbital-command #prototype {
+        padding-bottom: 120px;
+    }
+    .orbital-command .workspace {
+        padding: 20px 12px;
+    }
+    .orbital-command .orbital-stage {
+        min-height: 0;
+        height: auto;
+        overflow: visible;
+        display: grid;
+        padding-top: 0;
+    }
+    .orbital-command .scene-panel {
+        position: relative;
+        height: 500px;
+        min-height: 0;
+        grid-row: 1;
+    }
+    .stage-heading {
+        top: 20px;
+        left: 18px;
+    }
+    .stage-heading h1 {
+        font-size: 21px;
+    }
+    .stage-heading > span {
+        padding: 8px;
+    }
+    .hud-left,
+    .hud-right {
+        position: static;
+        width: auto;
+        display: grid;
+        gap: 14px;
+        margin: 0 12px 14px;
+        pointer-events: auto;
+    }
+    .hud-left {
+        margin-top: 20px;
+    }
+    .orbital-command .orbital-bottom {
+        position: relative;
+        grid-row: 2;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        min-width: 0;
+        max-width: none;
+        margin: -10px 12px 0;
+        gap: 20px;
+        padding: 14px;
+    }
+    .orbital-command .orbital-reticle {
+        top: 90px;
+        left: 12%;
+        width: 76%;
+        height: 340px;
+    }
+    .orbital-command .scene-recovery:has(~ .orbital-bottom) {
+        position: absolute;
+        top: 300px;
+        bottom: auto;
+    }
+    .orbital-command .hud-panel {
+        padding: 18px;
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .orbital-command .hud-panel {
+        background: #061725;
+    }
+}
+
+/* The compatibility renderer also avoids expensive translucent GPU filters. */
+.orbital-command:has(#scene[data-renderer='software']) .hud-panel {
+    backdrop-filter: none;
+    background: #061725ee;
+}

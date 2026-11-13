@@ -46,7 +46,7 @@ export function renderDashboard(state, t, el, number, navigate) {
     operations.replaceChildren(el('h2', '', t.operations))
     for (const [key, value, page] of [
         ['ships', number(state.shipTotal), 'ships'],
-        ['defenses', number(state.defenseTotal), 'buildings'],
+        ['defenses', number(state.defenseTotal), 'defense'],
         [
             'fleet_slots',
             `${state.fleetSlots.used} / ${state.fleetSlots.max}`,
@@ -61,7 +61,9 @@ export function renderDashboard(state, t, el, number, navigate) {
         )
         operations.append(button)
     }
-    const inbox = document.querySelector('[data-live-page="messages"]')
+    const inbox = document.querySelector(
+        '.main-nav [data-live-page="messages"]',
+    )
     inbox.querySelector('.nav-count')?.remove()
     if (state.unread) inbox.append(el('b', 'nav-count', number(state.unread)))
     const dock = document.querySelector('#live-dock')

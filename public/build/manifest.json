@@ -1,13 +1,24 @@
 {
-  "_scene-BC_hx_BB.css": {
-    "file": "assets/scene-BC_hx_BB.css",
-    "src": "_scene-BC_hx_BB.css"
+  "_catalog-BC_hx_BB.css": {
+    "file": "assets/catalog-BC_hx_BB.css",
+    "src": "_catalog-BC_hx_BB.css"
   },
-  "_scene-BZZujxIT.js": {
-    "file": "assets/scene-BZZujxIT.js",
-    "name": "scene",
+  "_catalog-sCOHZ3bQ.js": {
+    "file": "assets/catalog-sCOHZ3bQ.js",
+    "name": "catalog",
     "css": [
-      "assets/scene-BC_hx_BB.css"
+      "assets/catalog-BC_hx_BB.css"
+    ]
+  },
+  "_layout-SWFQj27H.js": {
+    "file": "assets/layout-SWFQj27H.js",
+    "name": "layout"
+  },
+  "_scene-BmTXDnus.js": {
+    "file": "assets/scene-BmTXDnus.js",
+    "name": "scene",
+    "imports": [
+      "_layout-SWFQj27H.js"
     ]
   },
   "resources/css/ingame.css": {
@@ -29,24 +40,39 @@
     "isEntry": true
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-Ddveaf2A.js",
+    "file": "assets/index-CYHsks4W.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
     "imports": [
-      "_scene-BZZujxIT.js"
+      "_catalog-sCOHZ3bQ.js",
+      "_layout-SWFQj27H.js"
+    ],
+    "dynamicImports": [
+      "resources/js/prototype3d/scene.js"
     ],
     "css": [
-      "assets/index-CvUIgTMF.css"
+      "assets/index-B7znjIaT.css"
     ]
   },
   "resources/js/prototype3d/index.js": {
-    "file": "assets/index-C0MSi_va.js",
+    "file": "assets/index-BXTT8-eM.js",
     "name": "index",
     "src": "resources/js/prototype3d/index.js",
     "isEntry": true,
     "imports": [
-      "_scene-BZZujxIT.js"
+      "_catalog-sCOHZ3bQ.js",
+      "_layout-SWFQj27H.js",
+      "_scene-BmTXDnus.js"
+    ]
+  },
+  "resources/js/prototype3d/scene.js": {
+    "file": "assets/scene-Chj2vUZW.js",
+    "name": "scene",
+    "src": "resources/js/prototype3d/scene.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_scene-BmTXDnus.js"
     ]
   },
   "resources/js/ingame.js": {

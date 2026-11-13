@@ -5,13 +5,24 @@ import { createBuilding } from './buildings.js'
 import { surfacePosition } from './layout.js'
 import { createInfrastructure } from './infrastructure.js'
 import { createPlanetSurface } from './planetSurface.js'
+import { createOrbitalRing } from './orbitalRing.js'
 
 // Procedural scene only. No remote textures, models, game services or mutations.
-export function createPlanetScene(host, labelsHost, onSelect, names) {
+export function createPlanetScene(
+    host,
+    labelsHost,
+    onSelect,
+    names,
+    options = {},
+) {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 160)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    host.dataset.renderer = 'webgl'
+    renderer.debug.onShaderError = () => {
+        throw new Error('scene_shader')
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     renderer.setClearColor(0x040b16, 0)
     renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -26,7 +37,13 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     scene.environment = materials.environment
     host.append(renderer.domElement)
     renderer.domElement.setAttribute('aria-label', names.scene)
-    scene.add(new THREE.HemisphereLight(0xcedbe5, 0x37322b, 1.05))
+    scene.add(
+        new THREE.HemisphereLight(
+            0xcedbe5,
+            0x37322b,
+            options.orbitalStyle ? 0.55 : 1.05,
+        ),
+    )
     const sun = new THREE.DirectionalLight(0xffe5c7, 3.4)
     sun.position.set(-12, 22, 18)
     sun.target.position.set(0, 6, 0)
@@ -76,6 +93,9 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             map: planetTextures.surface,
             bumpMap: planetTextures.surface,
             bumpScale: 0.035,
+            emissiveMap: planetTextures.cities,
+            emissive: 0xffcb79,
+            emissiveIntensity: options.orbitalStyle ? 0.65 : 0.15,
             roughness: 0.84,
             metalness: 0.02,
         }),
@@ -206,6 +226,13 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         atmosphere.scale.setScalar((radius + 0.22) / 8.22)
         orbitPath.scale.setScalar(orbitRadius / 11.4)
         station.position.x = orbitRadius
+        if (orbitalRing) {
+            orbitalRing.scale.setScalar(orbitRadius)
+            orbitalRing.visible = data.buildings.some(
+                (item) => item.type === 'shipyard',
+            )
+            station.visible = !orbitalRing.visible
+        }
         sun.position.set(-radius * 1.5, radius * 2.75, radius * 2.25)
         sun.target.position.y = radius * 0.75
         Object.assign(sun.shadow.camera, {
@@ -230,6 +257,8 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
                 sites,
                 radius,
             )
+            infrastructure.group.visible =
+                !options.orbitalStyle || mode === 'colony'
             world.add(infrastructure.group)
             networkKey = key
         }
@@ -344,6 +373,10 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     box(station, dark, 0, 0, 0, 3.4, 0.15, 0.2)
     for (const side of [-1, 1])
         box(station, panel, side * 2.1, 0, 0, 1.2, 0.1, 1.6)
+    const orbitalRing = options.orbitalStyle
+        ? createOrbitalRing(materials.palette)
+        : null
+    if (orbitalRing) orbit.add(orbitalRing)
     const ships = [],
         shipLabels = new Map()
     let fleetKey = '',
@@ -455,10 +488,12 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             angle:
                 angle +
                 Math.atan2(Math.sin(0.55 - angle), Math.cos(0.55 - angle)),
-            elevation: 0.82,
+            elevation: options.orbitalStyle && mode === 'orbit' ? 0.28 : 0.82,
             distance:
                 mode === 'orbit'
-                    ? Math.max(37, radius * 3 + 5)
+                    ? options.orbitalStyle
+                        ? Math.max(30, radius * 3.8)
+                        : Math.max(37, radius * 3 + 5)
                     : Math.max(25, radius * 2 + 10),
             target: new THREE.Vector3(
                 0,
@@ -508,6 +543,10 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     const setMode = (value) => {
         mode = value
         orbit.visible = value === 'orbit'
+        if (options.orbitalStyle) {
+            colony.visible = value !== 'orbit'
+            if (infrastructure) infrastructure.group.visible = value !== 'orbit'
+        }
         resetCamera()
     }
     const select = (id) => {
@@ -625,7 +664,7 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
     let previous = 0,
         frame
     function render(time) {
-        frame = requestAnimationFrame(render)
+        frame = requestAnimationFrame(safeRender)
         const delta = Math.min((time - previous) / 1000, 0.05)
         previous = time
         if (document.hidden) return
@@ -746,12 +785,22 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             label.style.top = `${(-projected.y * 0.5 + 0.5) * host.clientHeight}px`
         })
         renderer.render(scene, camera)
+        host.dataset.frames = String(Number(host.dataset.frames || 0) + 1)
     }
-    frame = requestAnimationFrame(render)
-    renderer.domElement.addEventListener('webglcontextlost', (event) => {
+    frame = requestAnimationFrame(safeRender)
+    function safeRender(time) {
+        try {
+            render(time)
+        } catch {
+            cancelAnimationFrame(frame)
+            host.dispatchEvent(new CustomEvent('scene-error'))
+        }
+    }
+    const contextLost = (event) => {
         event.preventDefault()
         host.dispatchEvent(new CustomEvent('scene-error'))
-    })
+    }
+    renderer.domElement.addEventListener('webglcontextlost', contextLost)
     return {
         update,
         select,
@@ -771,6 +820,11 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             cancelConstruction()
             cancelAnimationFrame(frame)
             resize.disconnect()
+            host.removeEventListener('keydown', key)
+            renderer.domElement.removeEventListener(
+                'webglcontextlost',
+                contextLost,
+            )
             scene.traverse((object) => {
                 object.geometry?.dispose()
             })
@@ -782,8 +836,11 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             ].forEach((mat) => mat.dispose())
             infrastructure?.dispose()
             planetTextures.dispose()
+            orbitalRing?.userData.dispose?.()
             materials.dispose()
             renderer.dispose()
+            renderer.forceContextLoss()
+            renderer.domElement.remove()
         },
     }
 }

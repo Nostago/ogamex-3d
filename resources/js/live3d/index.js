@@ -1,10 +1,13 @@
 import '../../css/prototype3d.css'
 import '../../css/live3d.css'
-import { createPlanetScene } from '../prototype3d/scene.js'
+import '../../css/orbital-command.css'
+import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
+import { renderIcons } from './icons.js'
+import { createFleetMonitor } from './fleetMonitor.js'
 
 const config = JSON.parse(
         document.querySelector('#live-bootstrap').textContent,
@@ -24,6 +27,8 @@ const pages = [
     'ships',
     'fleets',
     'galaxy',
+    'defense',
+    'alliance',
     'messages',
 ]
 let state = config.initial,
@@ -31,7 +36,7 @@ let state = config.initial,
     planet = String(state.planet.id),
     busy = false,
     scene = null,
-    mode = 'colony',
+    mode = 'orbit',
     rotating = false,
     selected = {},
     group = 'building',
@@ -68,7 +73,9 @@ function objects() {
             ? item.type === 'research'
             : page === 'ships'
               ? item.type === 'ship'
-              : item.type === group,
+              : page === 'defense'
+                ? item.type === 'defense'
+                : item.type === group,
     )
 }
 function show(name, fromFrame = false) {
@@ -78,17 +85,21 @@ function show(name, fromFrame = false) {
         if (n.dataset.livePage === page) n.setAttribute('aria-current', 'page')
         else n.removeAttribute('aria-current')
     })
+    root.dataset.page = page
     document.querySelector('#live-heading').textContent = t[page]
+    document.querySelector('#live-fleet-stock').hidden = page !== 'fleets'
     document.querySelector('#live-page-planet').hidden = page !== 'planet'
     document.querySelector('#live-page-catalog').hidden = ![
         'buildings',
         'research',
         'ships',
+        'defense',
     ].includes(page)
     document.querySelector('#live-page-galaxy').hidden = page !== 'galaxy'
     document.querySelector('#live-page-original').hidden = ![
         'fleets',
         'messages',
+        'alliance',
     ].includes(page)
     if (page === 'galaxy') {
         document.querySelector('#live-galaxy-original').href = contextUrl(
@@ -96,7 +107,7 @@ function show(name, fromFrame = false) {
         )
         galaxy.show()
     }
-    if (['fleets', 'messages'].includes(page)) {
+    if (['fleets', 'messages', 'alliance'].includes(page)) {
         document.querySelector('#live-original-link').href = contextUrl(
             config.links[page],
         )
@@ -160,6 +171,11 @@ function render() {
     document.querySelector('#live-production-link').href = contextUrl(
         '/resources/settings',
     )
+    document.querySelector('#live-player').textContent = state.player
+    document.querySelector('#live-world-name').textContent = state.planet.name
+    document.querySelector('#live-world-coordinates').textContent =
+        `[${state.planet.coordinates}] · ${state.planet.type === 3 ? t.moon : t.planet}`
+    renderFleetStock()
     const visual = visualState(state),
         signature = JSON.stringify(visual)
     if (scene && signature !== renderedScene) {
@@ -176,6 +192,27 @@ function render() {
     renderQueues()
     document.querySelector('#live-refresh').disabled = busy || stopped
 }
+function renderFleetStock() {
+    const stock = document.querySelector('#live-fleet-stock')
+    stock.replaceChildren(el('h2', '', t.fleet_stock))
+    const grid = el('div', 'fleet-stock-grid')
+    for (const item of state.objects.filter(
+        (o) => o.type === 'ship' && BigInt(o.amount) > 0n,
+    )) {
+        const card = el('button', 'fleet-stock-item'),
+            image = el('img')
+        image.src = item.image
+        image.alt = ''
+        card.append(
+            image,
+            el('span', '', item.name),
+            el('strong', '', number(item.amount)),
+        )
+        card.addEventListener('click', () => navigate('ships', null, item.id))
+        grid.append(card)
+    }
+    stock.append(grid.childElementCount ? grid : el('p', 'muted', t.no_ships))
+}
 function renderCatalog() {
     const focus = document.activeElement?.id === 'live-quantity'
     const scroll = document.querySelector('#live-catalog').scrollTop
@@ -183,7 +220,7 @@ function renderCatalog() {
         detail = document.querySelector('#live-detail'),
         groups = document.querySelector('#live-groups')
     groups.replaceChildren()
-    if (!['buildings', 'research', 'ships'].includes(page)) return
+    if (!['buildings', 'research', 'ships', 'defense'].includes(page)) return
     if (page === 'buildings')
         for (const kind of ['building', 'station', 'defense']) {
             const button = el('button', '', t[kind])
@@ -500,7 +537,10 @@ frame.addEventListener('load', () => {
         document.head.append(style)
         // A late load from a hidden original view must not undo navigation or
         // a planet selection in the surrounding interface.
-        if (!['fleets', 'messages'].includes(page) || framePlanet !== planet)
+        if (
+            !['fleets', 'messages', 'alliance'].includes(page) ||
+            framePlanet !== planet
+        )
             return
         const cp = url.searchParams.get('cp')
         if (
@@ -517,7 +557,9 @@ frame.addEventListener('load', () => {
               ? 'galaxy'
               : url.pathname.startsWith('/messages')
                 ? 'messages'
-                : null
+                : url.pathname.startsWith('/alliance')
+                  ? 'alliance'
+                  : null
         if (area === 'galaxy') {
             show('galaxy')
             return
@@ -597,34 +639,39 @@ const galaxy = createGalaxy({
         document.querySelector('#live-original-link').href = contextUrl(url)
     },
 })
+renderIcons()
+const fleetMonitor = createFleetMonitor({
+    url: config.fleetEventsUrl,
+    t,
+    el,
+    number,
+    navigate,
+    onSession: () => failure({ code: 'session' }),
+})
 render()
 show(page)
-try {
-    const names = { ...config.models }
-    for (const object of state.objects)
-        if (modelAliases[object.key])
-            names[modelAliases[object.key]] = object.name
-    scene = createPlanetScene(
-        document.querySelector('#scene'),
-        document.querySelector('#scene-labels'),
-        (id) => {
-            const object = state.objects.find((o) => String(o.id) === id)
-            if (object) {
-                group = object.type
-                selected.buildings = object.id
-                show('buildings')
-            }
-        },
-        names,
-    )
-    scene.update(visualState(state))
-    renderedScene = JSON.stringify(visualState(state))
-    scene.setMode(mode)
-} catch {
-    scene?.dispose()
-    scene = null
-    status.textContent = t.scene_unavailable
-}
+const names = { ...config.models }
+for (const object of state.objects)
+    if (modelAliases[object.key]) names[modelAliases[object.key]] = object.name
+scene = createSceneHost({
+    host: document.querySelector('#scene'),
+    labels: document.querySelector('#scene-labels'),
+    names,
+    t,
+    onStatus: (text) => (status.textContent = text),
+    select(id) {
+        const object = state.objects.find((o) => String(o.id) === id)
+        if (object) {
+            group = object.type
+            selected.buildings = object.id
+            show('buildings')
+        }
+    },
+})
+scene.update(visualState(state))
+renderedScene = JSON.stringify(visualState(state))
+setMode(mode)
+scene.start()
 root.dataset.ready = 'true'
 const poll = setInterval(() => {
         if (document.hidden) return
@@ -635,12 +682,19 @@ const poll = setInterval(() => {
             refresh()
     }, 5000),
     clock = setInterval(updateCountdowns, 1000)
-window.addEventListener('pagehide', () => {
+window.addEventListener('pagehide', (event) => {
+    // Safari restores bfcache pages without rerunning this module. Keep the
+    // paused scene alive so returning from the original interface still works.
+    if (event.persisted) return
     clearInterval(poll)
     clearInterval(clock)
     galaxy.dispose()
+    fleetMonitor.dispose()
     client.dispose()
     scene?.dispose()
+})
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) refresh()
 })
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) refresh()

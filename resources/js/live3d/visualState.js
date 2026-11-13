@@ -24,7 +24,10 @@ const ships = {
 }
 export function visualState(snapshot) {
     const radius = Math.min(12, Math.max(6, snapshot.planet.diameter / 1700))
-    const layout = createLayout(radius, 48),
+    // The live scene has at most 15 distinct building models. Twenty-four sites
+    // also fit the smallest visual sphere (radius 6); 48 cannot and used to
+    // abort the entire interface on small planets and moons.
+    const layout = createLayout(radius, 24),
         buildings = []
     for (const item of snapshot.objects) {
         const type = modelAliases[item.key]

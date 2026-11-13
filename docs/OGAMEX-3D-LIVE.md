@@ -52,6 +52,48 @@ Benutzer. Es wird durch diesen Branch kein öffentlicher Server bereitgestellt.
   Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese beiden
   Bereiche sind weiterhin Übergangsansichten mit einem Link zur separaten Originalseite.
 
+## Etappe: Orbital Command
+
+Branch: `codex/ogamex-3d-orbital-command`, aufbauend auf der bereits getesteten
+Kommandooberfläche. Der Hauptbranch und die vorhandenen Spielregeln bleiben unverändert.
+
+Die Planetenübersicht verwendet nun die Bildvorlage als Layout: große durchgehende
+interaktive Szene, schmale Navigation mit eigenen SVG-Symbolen, Rohstoffleiste oben,
+schwebende Informationsfelder links/rechts und Kolonie-/Orbitsteuerung unten.
+Unterseiten bleiben getrennte Arbeitsflächen. Verteidigung hat einen eigenen Bereich;
+die vollständige originale Allianzansicht ist im Rahmen erreichbar.
+
+Im Orbit erscheint die detailliertere Werftplattform nur bei tatsächlich vorhandener
+Schiffswerft. Die grafische Plattform und Oberflächenlichter sind illustrative Modelle,
+keine neuen Spielobjekte. Schiffsverbände repräsentieren weiterhin die echten Bestände
+mit höchstens zwölf Modellen. Die Flottenseite zeigt zusätzlich den tatsächlichen
+Schiffsbestand am ausgewählten Himmelskörper; die originale Planung bleibt darunter erhalten.
+Das Flottenstatusfeld bezieht freundliche/neutrale/feindliche Ereignisse und die nächste
+Restzeit aus dem originalen `FleetEventsController`, einschließlich dessen Halte-/Rückflugregeln.
+
+### Reparatur leerer 3D-Ansichten
+
+Ein reproduzierbarer Fehler: `visualState()` verlangte 48 Modellplätze selbst bei
+kleinen Himmelskörpern (visueller Radius 6 bis 6,5). Die Abstandsprüfung in `createLayout()`
+konnte diese Zahl nicht erfüllen und warf eine Ausnahme vor Abschluss der Initialisierung.
+Es werden nun 24 Plätze angelegt; alle 15 unterstützten Gebäudemodelle passen auch auf
+den kleinsten visuellen Himmelskörper. Tatsächliche Baufelder und Spielregeln ändern sich nicht.
+Ein Regressionstest prüft kleine Planeten, Monde und hohe Ausbaustufen.
+
+Zusätzlich wird das Three.js-Modul separat geladen. Fehler beim Laden, Shadern,
+GPU-Kontextverlust oder ein ausbleibender erster Renderframe aktivieren eine lokale
+CPU-Ansicht mit echter sphärischer Projektion, Rotation, Zoom und anklickbaren
+Gebäuden. Sie hat weniger Details und ist als Kompatibilitätsmodus gekennzeichnet.
+Ein Knopf startet den WebGL-Versuch erneut; die Diagnose zeigt nur Renderer,
+Fehlerkategorie, Abmessungen und Framezahl, keine Accountdaten oder Tokens.
+Nach Wiederherstellung aus dem Browser-Verlauf (bfcache, besonders relevant bei Safari)
+bleiben die Szene und ihre Listener erhalten. Nicht zwischengespeicherte Seiten werden
+weiterhin vollständig aufgeräumt.
+
+Die Cloud darf den Testserver-Host derzeit nicht direkt per HTTPS erreichen; die
+konkrete serverseitige Browsersitzung wurde daher nicht ausgelesen. Reproduktion und
+Tests laufen auf derselben Laravel-Anwendung mit einem isolierten Testkonto.
+
 ## Etappe: Kommandooberfläche
 
 Branch: `codex/ogamex-3d-command-interface` (Fortsetzung des bereits eingebundenen
@@ -94,7 +136,7 @@ Rohstoffberechnungen oder Spielstandsresets. Die Browserspeicherstände der
 Offline-Version werden nicht gelesen. Alle Aktionen betreffen den angemeldeten
 OGameX-Account und werden nach dessen Universumseinstellungen verarbeitet.
 
-Die 3D-Szene verwendet bisher nur die vorhandenen 15 Gebäudemodelle und drei
+Die 3D-Szene verwendet die vorhandenen 15 Gebäudemodelle und drei
 Schiffstypmodelle. Andere Anlagen und Schiffe bleiben vollständig in den Listen
 verfügbar. Grafische Stufen werden auf acht begrenzt, Beschriftungen zeigen aber
 den tatsächlichen Ausbaustand. Diese Begrenzung beeinflusst keine Spielregel.
@@ -212,7 +254,7 @@ Die Loopbackadresse hier ist ausschließlich die Ausführungsadresse des
 Browser-Testprozesses auf dem Server, kein Benutzerlink. Der Lauf prüft echte
 Anmeldung, Darstellung und Aufträge gegen Laravel, Abbruch, Planetenwechsel,
 Originalansichten, native Galaxienavigation, Bestands-/Produktionsanzeigen,
-Auftragsleiste, Erhalt von Mengen und Eingabefokus, alle sieben mobilen Bereiche und serverseitigen Fortbestand
+Auftragsleiste, Erhalt von Mengen und Eingabefokus, alle neun mobilen Bereiche und serverseitigen Fortbestand
 nach Neuladen. Temporäre Testaccounts werden nach der Prüfung wieder entfernt.
 Die vorhandenen Race-Condition-Tests für Erteilung und Abarbeitung von Unitqueues
 werden unverändert gegen den lokalen Docker-Webserver ausgeführt. Bei gesetztem
@@ -251,7 +293,15 @@ wenn das vorhandene OGameX dafür tatsächlich Daten und Regeln bereitstellt.
 ### Ergebnis der Kommandoetappe
 
 Rector, Pint und PHPStan: erfolgreich. PHP-Auswahl: **68 Tests, 1.229 Assertions**.
-Frontend-Logik: **69 Tests**. Browserprüfungen gegen echte Laravel-Testkonten
+Frontend-Logik: **70 Tests**. Browserprüfungen gegen echte Laravel-Testkonten
 umfassen die oben beschriebenen Abläufe; kein echter Spieleraccount wird dafür verwendet.
 Die vorhandene Offline-Demo wird zusätzlich exportiert und im Browser auf
 Kompatibilität der gemeinsamen 3D-Module geprüft; veröffentlichte ZIP-Dateien bleiben unverändert.
+
+
+Orbital-Prüfungen erweitern den Browserlauf um sichtbare Renderframes, den eigenen
+Verteidigungsbereich und die Allianzansicht, erzwungenen WebGL-Kontextverlust,
+CPU-Rotation/Zoom, erneuten WebGL-Start und die Wiederkehr aus bfcache.
+`tests/Frontend/live3d-recovery.browser.mjs` prüft zusätzlich fehlende GPU-Unterstützung
+und blockierte 3D-Moduldateien. Beide Fälle müssen die Spieloberfläche und eine
+interaktive Kompatibilitätsansicht erhalten.

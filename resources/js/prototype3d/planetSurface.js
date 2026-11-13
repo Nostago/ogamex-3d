@@ -13,6 +13,9 @@ export function createPlanetSurface() {
     const cloudCanvas = canvas.cloneNode(),
         cloudContext = cloudCanvas.getContext('2d'),
         cloudImage = cloudContext.createImageData(width, height)
+    const cityCanvas = canvas.cloneNode(),
+        cityContext = cityCanvas.getContext('2d'),
+        cityImage = cityContext.createImageData(width, height)
     const noise = (x, y, z) =>
         Math.sin(x * 2.7 + Math.cos(z * 3.1)) +
         Math.cos(z * 3.6 + Math.sin(y * 2.8)) * 0.65 +
@@ -62,6 +65,17 @@ export function createPlanetSurface() {
                     Math.min(255, color[channel] * shade),
                 )
             image.data[index + 3] = 255
+            // Sparse warm settlement lights; purely illustrative surface detail.
+            const settlement =
+                !ice &&
+                elevation > 0.02 &&
+                elevation < 0.9 &&
+                grain > 1.45 &&
+                Math.sin(col * 17.1 + row * 37.7) > 0.5
+            cityImage.data[index] = settlement ? 255 : 0
+            cityImage.data[index + 1] = settlement ? 180 : 0
+            cityImage.data[index + 2] = settlement ? 85 : 0
+            cityImage.data[index + 3] = 255
             const cloud = Math.max(
                 0,
                 Math.min(
@@ -80,6 +94,9 @@ export function createPlanetSurface() {
     }
     context.putImageData(image, 0, 0)
     cloudContext.putImageData(cloudImage, 0, 0)
+    cityContext.putImageData(cityImage, 0, 0)
+    const cities = new THREE.CanvasTexture(cityCanvas)
+    cities.colorSpace = THREE.SRGBColorSpace
     const surface = new THREE.CanvasTexture(canvas),
         clouds = new THREE.CanvasTexture(cloudCanvas)
     surface.colorSpace = THREE.SRGBColorSpace
@@ -88,9 +105,11 @@ export function createPlanetSurface() {
     return {
         surface,
         clouds,
+        cities,
         dispose() {
             surface.dispose()
             clouds.dispose()
+            cities.dispose()
         },
     }
 }

@@ -49,6 +49,13 @@ try {
             .count(),
         0,
     );
+    await page.waitForFunction(
+        () => Number(document.querySelector('#scene').dataset.frames) > 0,
+    );
+    assert.equal(
+        await page.locator('#scene').getAttribute('data-renderer'),
+        'webgl',
+    );
     assert.equal(await page.locator('canvas').count(), 1);
     assert.equal(
         await page.locator('#scene').getAttribute('data-units'),
@@ -63,7 +70,11 @@ try {
         fullPage: true,
     });
     async function nav(name) {
-        await page.locator(`[data-live-page="${name}"]`).click();
+        await page
+            .locator(
+                `.main-nav [data-live-page="${name}"]:not(.nav-galaxy-card)`,
+            )
+            .click();
         await page.waitForFunction(
             (name) =>
                 document.querySelector('#live-heading').textContent ===
@@ -124,7 +135,7 @@ try {
         await page.locator('#live-planet').selectOption(first);
         await page.locator('[data-queue="unit"]').first().waitFor();
     }
-    for (const name of ['fleets', 'messages']) {
+    for (const name of ['fleets', 'messages', 'alliance']) {
         await nav(name);
         await page.waitForFunction(() => {
             const f = document.querySelector('#live-original');
@@ -142,6 +153,7 @@ try {
                             fleets: '/fleet',
                             galaxy: '/galaxy',
                             messages: '/messages',
+                            alliance: '/alliance',
                         }[name],
                     ),
             name,
@@ -204,6 +216,49 @@ try {
         path: `${artifacts}/live-command-overview.png`,
         fullPage: true,
     });
+    await page.evaluate(() =>
+        document
+            .querySelector('#scene canvas')
+            .getContext('webgl2')
+            .getExtension('WEBGL_lose_context')
+            .loseContext(),
+    );
+    await page.waitForFunction(
+        () =>
+            document.querySelector('#scene').dataset.renderer === 'software' &&
+            Number(document.querySelector('#scene').dataset.frames) > 0,
+    );
+    await page.locator('#live-colony').click();
+    await page.locator('#live-orbit').click();
+    const pixelsBefore = await page
+        .locator('#scene canvas')
+        .evaluate((c) => c.toDataURL());
+    await page.locator('#live-zoom-in').click();
+    await page.waitForTimeout(250);
+    assert.notEqual(
+        await page.locator('#scene canvas').evaluate((c) => c.toDataURL()),
+        pixelsBefore,
+    );
+    await page.screenshot({
+        path: `${artifacts}/live-software-recovery.png`,
+        fullPage: true,
+    });
+    await page.locator('#live-scene-retry').click();
+    await page.waitForFunction(
+        () =>
+            document.querySelector('#scene').dataset.renderer === 'webgl' &&
+            Number(document.querySelector('#scene').dataset.frames) > 0 &&
+            document.querySelector('#live-scene-recovery').hidden,
+    );
+    await page.evaluate(() => {
+        dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }));
+        dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    });
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('#scene canvas').count(), 1);
+    await nav('defense');
+    await page.locator('[data-object="rocket_launcher"]').click();
+    assert.ok(await page.locator('#live-quantity').count());
     await page.setViewportSize({ width: 390, height: 844 });
     for (const name of [
         'planet',
@@ -212,6 +267,8 @@ try {
         'ships',
         'fleets',
         'galaxy',
+        'defense',
+        'alliance',
         'messages',
     ]) {
         await nav(name);
@@ -263,7 +320,7 @@ try {
     await page.locator('[data-queue="unit"]').first().waitFor();
     assert.deepEqual(errors, []);
     console.log(
-        'PASS real Laravel login, live planet state, building/research creation and cancellation, paid ship queue, planet context, original fleet/message views, native galaxy navigation, dashboard queues and preserved quantity input, seven mobile sections and persistent server queues',
+        'PASS real Laravel login, live planet state, building/research creation and cancellation, paid ship queue, planet context, original fleet/message views, native galaxy navigation, dashboard queues and preserved quantity input, nine mobile sections and persistent server queues',
     );
     await context.close();
 } finally {

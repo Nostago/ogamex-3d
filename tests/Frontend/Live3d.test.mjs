@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createLiveClient } from '../../resources/js/live3d/client.js';
-import { visualState } from '../../resources/js/live3d/visualState.js';
+import {
+    visualState,
+    modelAliases,
+} from '../../resources/js/live3d/visualState.js';
 globalThis.location = { origin: 'https://ogamex.test' };
 const options = {
     stateUrl: 'https://ogamex.test/play-3d/state',
@@ -101,4 +104,35 @@ test('visual adapter preserves actual levels, bounds million-ship geometry and k
     assert.equal(model.formations[0].modelCount, 4);
     assert.equal(model.formations[0].count, 1000000);
     assert.deepEqual(snapshot, original);
+});
+
+test('small planets and moons can render every supported building without aborting startup', () => {
+    const objects = Object.keys(modelAliases).map((key, index) => ({
+        id: index + 1,
+        key,
+        amount: '40',
+    }));
+    for (const type of [1, 3])
+        for (const diameter of [
+            1000, 4000, 6000, 9000, 10000, 11000, 12000, 16000, 25000,
+        ]) {
+            const snapshot = {
+                planet: { id: 42, diameter, type },
+                shipTotal: '0',
+                objects,
+            };
+            const model = visualState(snapshot);
+            assert.equal(
+                model.buildings.length,
+                objects.length,
+                `type ${type}, diameter ${diameter}`,
+            );
+            assert.equal(
+                new Set(model.buildings.map((item) => item.siteId)).size,
+                objects.length,
+            );
+            assert.ok(
+                model.buildings.every((item) => item.displayLevel === '40'),
+            );
+        }
 });
