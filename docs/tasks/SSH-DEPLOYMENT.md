@@ -61,6 +61,35 @@ ssh ogame 'cd /home/ogamedev/OGameX && printf "=== GIT ===\n" && git status --sh
 ```
 **Keine** Ausgabe der `env`, Konfiguration mit Schlüsseln oder sensibler Dateien anfordern. Erst prüfen, ob mit bereits vorhandenem Codex CLI/Cloud-Integrationsweg ein **pull-basiertes** Deployment möglich ist, bevor zusätzlicher SSH-Zugang in GitHub Actions eingerichtet wird. Nutzer möchte möglichst nur eine einmalige Einrichtung und anschließend autonome Updates; ohne erreichbaren Netzwerkkanal und explizit konfigurierte Zugangsdaten kann Codex Cloud den privaten Host nicht direkt erreichen.
 
+## Zusätzliche tatsächliche Bestandsprüfung (13.11.2026, 12:55 UTC)
+Der Nutzer hat den nur lesenden SSH-Prüfbefehl im Ordner `/home/ogamedev/OGameX` erfolgreich ausgeführt. Bestätigt:
+- `git status --short` hat **keine Einträge** angezeigt, also keine gemeldeten lokalen getrackten/unge-trackten Änderungen (ignorierte Dateien sind dabei nicht erfasst).
+- Git-Branch `main`, HEAD-Kurz-SHA `3a6612bd`.
+- `docker-compose.prod.yml`, `docker-compose.yml` und eine bestehende **private** `docker-compose.override.yml` sind vorhanden.
+- `command -v codex` gibt **nichts** aus: Codex CLI liegt nicht im Standard-PATH.
+- Keine `/.dockerenv`-Kennung: dieser SSH-Zugang befindet sich zumindest nicht in einer auf diese Weise erkennbaren Docker-Umgebung.
+
+Wichtige Folgen:
+1. Nicht behaupten, dass die Codex-CLI auf dem Server bereits läuft. `.codex`-Ordner allein reicht nicht.
+2. **Git-Remote `origin` noch unbekannt.** `main` auf dem Host kann upstream OGameX statt des Forks `Nostago/ogamex-3d` sein; vor Änderungen remotes sicher feststellen. Kein `git pull` aus falschem Remote.
+3. **Aktive Compose-Dateienkombination ist noch unbekannt.** Das Vorhandensein einer benutzerspezifischen Override-Datei beweist nicht, dass diese mit der produktiven Compose-Datei geladen wird. Containerlabels `com.docker.compose.project.config_files` und `com.docker.compose.project.working_dir` nur lesend ermitteln. `docker compose config` kann Secrets enthalten und darf nicht ungefiltert ins Chat-Protokoll kopiert werden. Private `docker-compose.override.yml` **nicht** veröffentlichen.
+4. Keine Neuinstallation oder ungefragte Änderung der Produktionsdatenbank; sicheren Update-Prozess für die bereits laufenden Dienste vorbereiten.
+5. **Nächster sicherer Read-only-Test** auf dem Mac:
+```sh
+ssh ogame '
+cd /home/ogamedev/OGameX || exit 1
+printf "=== GIT REMOTE ===\\n"
+git remote get-url origin | sed -E "s#(https?://)[^/@]+@#\\1[REDACTED]@#"
+printf "=== COMPOSE CONFIG FILES ===\\n"
+docker inspect ogamex-ogamex-app-1 --format "{{ index .Config.Labels \\"com.docker.compose.project.config_files\\" }}"
+printf "=== COMPOSE WORKDIR ===\\n"
+docker inspect ogamex-ogamex-app-1 --format "{{ index .Config.Labels \\"com.docker.compose.project.working_dir\\" }}"
+printf "=== TAILSCALE ===\\n"
+command -v tailscale || true
+'
+```
+Bei Copy/Paste können Shell-Verschachtelungen von Anführungszeichen problematisch sein; alternativ jeden `docker inspect --format '{{ index .Config.Labels "com.docker.compose.project.config_files" }}'`-Befehl separat ausführen. Niemals `.env`, private SSH-Schlüssel oder die Inhalte vertraulicher Dateien ausgeben.
+
 ## SSH-Verbindung / Secrets
 Die private SSH-Schlüsseldatei des Nutzers liegt auf seinem Gerät; sie ist nicht automatisch in Codex Cloud oder GitHub Actions verfügbar. Keine Aufforderung, sie im Chat oder Repository zu teilen. Bevorzugt einen **separaten auf diesen Host beschränkten Deploy-Schlüssel** auf dem Client erstellen, dessen öffentlichen Teil autorisiert hinterlegen und den privaten Teil ausschließlich als geschütztes Secret eines GitHub Actions Environments verwalten. Wenn bereits ein dedizierter Deploy-Schlüssel vorhanden ist, kann er stattdessen verwendet werden. Zugriff nur auf das nötige Repository/Environment beschränken. Schlüsselrotation dokumentieren.
 
