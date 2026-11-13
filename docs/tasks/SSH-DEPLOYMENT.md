@@ -38,6 +38,29 @@ Für diesen privaten Host zunächst den Zugang vom Mac aus verifizieren und dann
 ## Bestätigter SSH-Preflight durch den Nutzer (13.11.2026)
 Auf dem Mac wurde erfolgreich `ssh ogame 'hostname; whoami; pwd; ls -ld /opt/ogamex'` ausgeführt. Ergebnis: `hostname=ogame`, `whoami=ogamedev`, `pwd=/home/ogamedev`, und `/opt/ogamex` existiert **auf diesem Zielhost nicht** (`No such file or directory`). Damit gilt die historische Angabe `/opt/ogamex` für diese konkrete SSH-Verbindung als widerlegt; es könnte eine andere Maschine bzw. ein abweichender Installationspfad gewesen sein. **Nicht annehmen, dass OGameX fehlt oder neu installiert werden muss.** Vor Deployment tatsächlichen Code- und Datenbankpfad per lesenden `find`/Docker-Containerinspektionen ermitteln und Nutzerinformation mit diesem Host abgleichen. Der Server wurde bislang nur über den lokalen Mac-SSH-Zugang erreicht, **nicht** direkt von Codex Cloud oder GitHub Actions. Keine Veränderungen an produktiven Dateien vorgenommen.
 
+## Bestätigte OGameX-Installation und Container (13.11.2026)
+Der Nutzer hat in seinem Mac-Terminal den read-only SSH-Aufruf `ssh ogame` ausgeführt. Laut Nutzer führt der Login als `ogamedev` direkt in eine containerisierte SSH-/Entwicklungsumgebung. Ergebnis der serverseitigen Verzeichnissuche:
+- **Tatsächlicher Quellcode:** `/home/ogamedev/OGameX` (existiert; nicht `/opt/ogamex`).
+- `/home/ogamedev/.codex` existiert (dies beweist **nicht**, dass Codex CLI installiert oder autorisiert ist); `/home/ogamedev/MAC-SETUP.md` und `/home/ogamedev/README.md` existieren. Diese können bereits existierende Setup-Anleitungen enthalten. `/home/ogamedev/WEBSITE-LOGIN.txt` enthält möglicherweise Zugangsdaten: **niemals öffnen, ausgeben, protokollieren oder in Chat/Repository kopieren**. Das gleiche gilt für `.ssh`, `.npmrc`, `.env`.
+- `docker ps` gelang unter Benutzer `ogamedev` und zeigte:
+  - `ogamex-ogamex-webserver-1` / `nginx:alpine` / Up
+  - `ogamex-ogamex-scheduler-1` / Up
+  - `ogamex-ogamex-reverb-1` / Up
+  - `ogamex-ogamex-queue-worker-1` / Up
+  - `ogamex-ogamex-app-1` / Up (healthy)
+  - `ogamex-ogamex-phpmyadmin-1` / `phpmyadmin` / Up
+  - `ogamex-ogamex-db-1` / `mariadb:11.3.2-jammy` / Up
+- Container liefen zum Prüfzeitpunkt ca. 24 Stunden. Das beweist **nicht** allein erfolgreiche HTTP-Funktion, Datenbankintegrität oder öffentliches TLS; separat verifizieren.
+- Die über `ssh ogame` erreichte Maschine identifizierte sich als Hostname `ogame`, Benutzer `ogamedev`, Home `/home/ogamedev`.
+- **Keine Neuinstallation**, kein neues Docker-Projekt, keine neuen Volumes; für alle Deploy-Skripte diesen Projektpfad nach erneuter Prüfung nutzen. Vor Änderungen `git status`, aktive Compose-Datei, reale Container-Volumes, aktuelle Branch-/Commit-Zuordnung und Backups klären.
+
+### Empfohlene nächste rein lesende Prüfung
+Auf dem **Mac** folgenden Befehl ausführen und ausschließlich die Ausgabe prüfen:
+```sh
+ssh ogame 'cd /home/ogamedev/OGameX && printf "=== GIT ===\n" && git status --short && git branch --show-current && git rev-parse --short HEAD && printf "=== COMPOSE ===\n" && ls -l docker-compose*.yml && printf "=== CODEX ===\n" && (command -v codex || true) && printf "=== CONTAINER ===\n" && (test -f /.dockerenv && echo "Docker environment detected" || echo "No /.dockerenv")'
+```
+**Keine** Ausgabe der `env`, Konfiguration mit Schlüsseln oder sensibler Dateien anfordern. Erst prüfen, ob mit bereits vorhandenem Codex CLI/Cloud-Integrationsweg ein **pull-basiertes** Deployment möglich ist, bevor zusätzlicher SSH-Zugang in GitHub Actions eingerichtet wird. Nutzer möchte möglichst nur eine einmalige Einrichtung und anschließend autonome Updates; ohne erreichbaren Netzwerkkanal und explizit konfigurierte Zugangsdaten kann Codex Cloud den privaten Host nicht direkt erreichen.
+
 ## SSH-Verbindung / Secrets
 Die private SSH-Schlüsseldatei des Nutzers liegt auf seinem Gerät; sie ist nicht automatisch in Codex Cloud oder GitHub Actions verfügbar. Keine Aufforderung, sie im Chat oder Repository zu teilen. Bevorzugt einen **separaten auf diesen Host beschränkten Deploy-Schlüssel** auf dem Client erstellen, dessen öffentlichen Teil autorisiert hinterlegen und den privaten Teil ausschließlich als geschütztes Secret eines GitHub Actions Environments verwalten. Wenn bereits ein dedizierter Deploy-Schlüssel vorhanden ist, kann er stattdessen verwendet werden. Zugriff nur auf das nötige Repository/Environment beschränken. Schlüsselrotation dokumentieren.
 
