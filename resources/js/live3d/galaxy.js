@@ -12,13 +12,16 @@ export function createGalaxy({
         systemInput = document.querySelector('#live-system-number'),
         host = document.querySelector('#live-galaxy-rows'),
         status = document.querySelector('#live-galaxy-status')
-    let controller,
+    let debounce,
+        controller,
         selectedPlanet = '',
         currentGalaxy = 1,
         currentSystem = 1,
         maxGalaxies = 1,
         maxSystems = 499
     async function load(galaxy = currentGalaxy, system = currentSystem) {
+        // A blur/change event can queue the old coordinates just before a navigation click.
+        clearTimeout(debounce)
         controller?.abort()
         controller = new AbortController()
         const request = controller,
@@ -43,6 +46,7 @@ export function createGalaxy({
             if (!response.ok) throw { code: 'request' }
             const data = await response.json()
             if (
+                request.signal.aborted ||
                 request !== controller ||
                 String(context().id) !== String(own.id)
             )
@@ -134,11 +138,32 @@ export function createGalaxy({
             onError(error)
         }
     }
+    function changed(delay = 350) {
+        clearTimeout(debounce)
+        controller?.abort()
+        const galaxy = Number(galaxyInput.value),
+            system = Number(systemInput.value)
+        if (
+            !galaxyInput.checkValidity() ||
+            !systemInput.checkValidity() ||
+            !Number.isInteger(galaxy) ||
+            !Number.isInteger(system)
+        ) {
+            host.inert = false
+            status.textContent = t.coordinate_hint
+            return
+        }
+        debounce = setTimeout(() => load(galaxy, system), delay)
+    }
+    for (const input of [galaxyInput, systemInput]) {
+        input.addEventListener('input', () => changed())
+        input.addEventListener('change', () => changed(0))
+    }
     document
         .querySelector('#live-galaxy-form')
         .addEventListener('submit', (event) => {
             event.preventDefault()
-            load(Number(galaxyInput.value), Number(systemInput.value))
+            changed(0)
         })
     document
         .querySelector('#live-system-prev')
@@ -175,6 +200,7 @@ export function createGalaxy({
             }
         },
         dispose() {
+            clearTimeout(debounce)
             controller?.abort()
         },
     }

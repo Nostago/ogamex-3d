@@ -5,7 +5,7 @@ import { createSoftwareScene } from './softwareScene.js'
 export function createSceneHost({ host, labels, names, select, t, onStatus }) {
     let renderer,
         snapshot,
-        mode = 'orbit',
+        mode = 'overview',
         rotation = false,
         generation = 0,
         disposed = false,
@@ -80,6 +80,7 @@ export function createSceneHost({ host, labels, names, select, t, onStatus }) {
             if (disposed || attempt !== generation) return
             renderer = createPlanetScene(host, labels, select, names, {
                 orbitalStyle: true,
+                planetTexture: '/img/live3d/planet-atlas.png',
             })
             apply()
             // Shader compilation and the first render happen asynchronously.

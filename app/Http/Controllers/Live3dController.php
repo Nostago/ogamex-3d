@@ -22,6 +22,7 @@ class Live3dController extends Controller
     {
         return response()->view('live3d.index', [
             'initial' => $view->snapshot($player, $player->planets->current()),
+            'adminAccess' => $player->isAdmin(),
         ])->header('Cache-Control', 'private, no-store');
     }
 

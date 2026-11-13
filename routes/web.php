@@ -20,6 +20,7 @@ use OGame\Http\Controllers\GalaxyController;
 use OGame\Http\Controllers\HighscoreController;
 use OGame\Http\Controllers\JumpGateController;
 use OGame\Http\Controllers\LanguageController;
+use OGame\Http\Controllers\Live3dAdminController;
 use OGame\Http\Controllers\Live3dController;
 use OGame\Http\Controllers\MerchantController;
 use OGame\Http\Controllers\MessagesController;
@@ -73,6 +74,7 @@ Route::middleware(['auth', 'banned', 'globalgame', 'locale', 'firstlogin'])->gro
     Route::get('/play-3d', [Live3dController::class, 'index'])->name('live3d.index');
     Route::get('/play-3d/galaxy', [Live3dController::class, 'galaxy'])->name('live3d.galaxy');
     Route::get('/play-3d/state', [Live3dController::class, 'state'])->name('live3d.state');
+    Route::post('/play-3d/admin/command', [Live3dAdminController::class, 'command'])->name('live3d.admin.command');
     Route::post('/play-3d/command', [Live3dController::class, 'command'])->name('live3d.command');
 
     // Overview

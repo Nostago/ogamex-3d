@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from '../../resources/js/prototype3d/vendor/three.module.min.js';
+import { createShipVariant } from '../../resources/js/prototype3d/shipVariants.js';
 import { createShip } from '../../resources/js/prototype3d/ships.js';
 import { shipCatalog } from '../../resources/js/prototype3d/shipCatalog.js';
 import {
@@ -74,4 +75,49 @@ test('new facilities follow the existing field and automatic location contract; 
         provider.build('fusion'),
         (e) => e.code === 'already_built',
     );
+});
+
+test('live capital ships, transports and deathstar have finite bounded distinct silhouettes', () => {
+    const signatures = new Set();
+    for (const type of [
+        'heavyFighter',
+        'cruiser',
+        'battleShip',
+        'battlecruiser',
+        'bomber',
+        'destroyer',
+        'deathstar',
+        'reaper',
+        'largeCargo',
+        'colonyShip',
+        'recycler',
+        'pathfinder',
+    ]) {
+        const group = createShipVariant(type, palette);
+        const size = new THREE.Box3()
+            .setFromObject(group)
+            .getSize(new THREE.Vector3());
+        assert.ok(
+            size
+                .toArray()
+                .every(
+                    (value) => Number.isFinite(value) && value > 0 && value < 5,
+                ),
+        );
+        let triangles = 0,
+            meshes = 0;
+        group.traverse((mesh) => {
+            if (mesh.geometry) {
+                meshes++;
+                triangles +=
+                    (mesh.geometry.index?.count ??
+                        mesh.geometry.attributes.position.count) / 3;
+                mesh.geometry.dispose();
+            }
+        });
+        assert.ok(meshes < 60);
+        assert.ok(triangles < 6000);
+        signatures.add(`${meshes}:${triangles}:${size.x}`);
+    }
+    assert.ok(signatures.size >= 4);
 });

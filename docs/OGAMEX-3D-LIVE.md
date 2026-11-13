@@ -52,6 +52,83 @@ Benutzer. Es wird durch diesen Branch kein öffentlicher Server bereitgestellt.
   Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese beiden
   Bereiche sind weiterhin Übergangsansichten mit einem Link zur separaten Originalseite.
 
+## Aktuelle Etappe: Verwaltung und sichtbare Kolonie
+
+Branch: `codex/ogamex-3d-admin-colony`.
+
+Die Übersicht startet jetzt mit **Kolonie und Orbit gemeinsam**. Die vorhandenen
+Gebäude bleiben auch beim Wechsel in den Orbit sichtbar; Kolonie bietet weiterhin
+die nähere Kamera. Der bisherige Standard-Orbit hatte sie ausgeblendet – sie wurden
+nicht gelöscht und ihre Modelle nicht neu begonnen.
+
+Die Kugel erhält eine eigens generierte Oberflächentextur, die Werft zusätzliche
+Geometriedetails und die Übersicht einen lokal erzeugten Weltraumhintergrund.
+Die Szene bleibt vollständig interaktiv. Fünfzehn flugfähige Original-Schiffstypen
+haben nun visuelle Repräsentationen, darunter Kreuzer, Schlachtschiffe, Zerstörer,
+Transporter und Todesstern. Insgesamt werden höchstens zwölf Modelle gleichzeitig
+gezeichnet; vollständige Bestände bleiben in den Katalogen sichtbar. Crawler und
+Solarsatelliten werden nicht als fliegende Schiffe dargestellt.
+
+**Galaxie:** Koordinatenänderungen laden automatisch (350 ms Schreibpause,
+Auswahländerungen unmittelbar). Kein „System anzeigen“-Knopf. Ungültige oder
+unvollständige Werte werden nicht angefragt. Alte Antworten werden verworfen;
+Heimatsystem/Vor/Zurück löschen auch noch ausstehende Eingabetimer.
+
+### Testen ohne Rohstoffmangel
+
+Als bestehender OGameX-Administrator unter `/play-3d#admin` **Verwaltung →
+Testwerkzeuge** öffnen. Oben den eigenen Zielplaneten oder Mond auswählen.
+**Rohstoffe hinzufügen** vergibt standardmäßig jeweils 10 Millionen Metall,
+Kristall und Deuterium; alternativ 1/10/100 Millionen als Vorgabe oder eigene Werte.
+Es wird zum vorhandenen Bestand addiert. Die Änderung liegt wirklich im Backend
+und bleibt nach Neuladen erhalten. Die UI kann außerdem Gebäude-/Forschungsstufen
+setzen und Schiffe/Verteidigung hinzufügen. Einheiten werden addiert, Stufen gesetzt.
+
+Der Zugang verwendet ausschließlich die originale **admin**-Rolle. Fehlt der Menüpunkt,
+kann der Betreiber auf seinem Testserver den vorhandenen OGameX-Befehl verwenden:
+
+```sh
+cd /home/ogamedev/OGameX
+php artisan ogamex:admin:assign-role "DEIN_SPIELERNAME"
+```
+
+Den tatsächlichen Spielnamen aus der Kopfzeile einsetzen, anschließend neu laden.
+Es gibt keine automatische Rechtevergabe und keine Rohstoffknöpfe für normale Spieler.
+
+### Umfang der Verwaltung
+
+- **Testwerkzeuge:** native, übersichtliche Rohstoff- und Objektformulare für eigene Himmelskörper.
+- **Universum & Expeditionen:** alle originalen Geschwindigkeiten, Grundproduktion,
+  Trümmerfelder, Expeditionen, Klassen und weiteren Universumseinstellungen.
+- **Spieler & Sicherheit:** originale Sperren, Bot-/Multiaccount-Erkennung,
+  Angriffssperren, Cache- und Missionsverwaltung.
+- **Spielregeln & Rechtliches:** die vorhandenen Text- und Regelwerkzeuge.
+- **Flottenzeiten:** die bestehende Verwaltungsansicht und ihre Aktionen.
+- **Erweiterte Werkzeuge:** alle originalen Entwicklerfunktionen, fremde Koordinaten,
+  Monde, Dunkle Materie und weitere Werkzeuge.
+
+Die fünf umfangreichen Originalbereiche behalten ihre vollständigen Formulare,
+Actions, CSRF-Tokens und Skripte. Sie erhalten eine einheitliche Gestaltung und bei
+langen Formularen eine Abschnittsnavigation. Die explizite Planeten-ID wird an
+Formulare gebunden. Es werden keine unvollständigen Einstellungsformulare nachgebaut,
+die beim Speichern andere Werte versehentlich leeren könnten.
+
+`POST /play-3d/admin/command` prüft serverseitig Rolle, Sitzungstoken, Eigentum,
+Objekt-ID und Wertebereiche. Er delegiert an `DeveloperShortcutsController::updateResources`
+oder `::update` und ersetzt die Eingabe durch die benötigten Originalfelder. Preise,
+Forschung, Produktion, Missionen und Kämpfe werden nicht neu implementiert.
+
+**Bots:** Das vorhandene Projekt enthält Erkennung automatisierter Aktivitäten,
+aber keinen eigenständig spielenden NPC-Botdienst. Die Erkennung ist integriert;
+eine NPC-Simulation wird nicht als angeblich vorhandene Originalfunktion ausgegeben.
+
+Prüfstand dieser Etappe: Rector/Pint/PHPStan erfolgreich; **74 PHP-Tests mit
+1.268 Assertions**, **72 Frontendtests**. Browser: automatische Koordinaten,
+Kolonie mit Gebäuden und geladener Textur, Rohstoffvergabe aus einem zunächst
+rohstofflosen isolierten Admin-Testkonto, Stufenänderung, Millionenbestand an Kreuzern,
+alle fünf Original-Adminbereiche, CSRF/Planetenbindung und mobile Bedienung.
+Grafikausfälle und die vorhandene Offline-Demo werden separat geprüft.
+
 ## Etappe: Orbital Command
 
 Branch: `codex/ogamex-3d-orbital-command`, aufbauend auf der bereits getesteten
@@ -136,8 +213,8 @@ Rohstoffberechnungen oder Spielstandsresets. Die Browserspeicherstände der
 Offline-Version werden nicht gelesen. Alle Aktionen betreffen den angemeldeten
 OGameX-Account und werden nach dessen Universumseinstellungen verarbeitet.
 
-Die 3D-Szene verwendet die vorhandenen 15 Gebäudemodelle und drei
-Schiffstypmodelle. Andere Anlagen und Schiffe bleiben vollständig in den Listen
+Die 3D-Szene verwendet die vorhandenen 15 Gebäudemodelle und zusätzliche
+Schiffsmodelle für die fünfzehn flugfähigen Originaltypen. Andere Anlagen und Schiffe bleiben vollständig in den Listen
 verfügbar. Grafische Stufen werden auf acht begrenzt, Beschriftungen zeigen aber
 den tatsächlichen Ausbaustand. Diese Begrenzung beeinflusst keine Spielregel.
 Millionen Schiffe sind Zahlen mit höchstens zwölf repräsentativen Orbitmodellen.
@@ -145,7 +222,7 @@ Ein WebGL-Fehler blockiert weder die Listen noch die Spielaktionen.
 
 ## Schnittstelle und Verantwortlichkeiten
 
-Die vier neuen Routen liegen in derselben Middlewaregruppe wie das Original:
+Die fünf neuen Routen liegen in derselben Middlewaregruppe wie das Original:
 `auth`, `banned`, `globalgame`, `locale`, `firstlogin`, zusätzlich Web-Sitzung/CSRF.
 
 | Route | Aufgabe |
@@ -153,6 +230,7 @@ Die vier neuen Routen liegen in derselben Middlewaregruppe wie das Original:
 | `GET /play-3d` | Angemeldete Oberfläche und initialer eigener Spielstand |
 | `GET /play-3d/state?planet=ID` | Server-Snapshot eines eigenen Planeten/Mondes |
 | `GET /play-3d/galaxy?planet=ID&galaxy=G&system=S` | Originale Galaxiedaten im Kontext eines eigenen Planeten |
+| `POST /play-3d/admin/command` | Originale Testwerkzeuge, ausschließlich für bestehende Administratoren |
 | `POST /play-3d/command` | Validierter Auftrag für einen ausdrücklich eigenen Himmelskörper |
 
 `Live3dViewService` liefert ausschließlich ein Lesemodell aus `PlanetService`,

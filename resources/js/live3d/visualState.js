@@ -21,6 +21,18 @@ const ships = {
     light_fighter: 'lightFighter',
     small_cargo: 'smallCargo',
     espionage_probe: 'probe',
+    heavy_fighter: 'heavyFighter',
+    cruiser: 'cruiser',
+    battle_ship: 'battleShip',
+    battlecruiser: 'battlecruiser',
+    bomber: 'bomber',
+    destroyer: 'destroyer',
+    deathstar: 'deathstar',
+    reaper: 'reaper',
+    large_cargo: 'largeCargo',
+    colony_ship: 'colonyShip',
+    recycler: 'recycler',
+    pathfinder: 'pathfinder',
 }
 export function visualState(snapshot) {
     const radius = Math.min(12, Math.max(6, snapshot.planet.diameter / 1700))
@@ -46,16 +58,28 @@ export function visualState(snapshot) {
             displayLevel: item.amount,
         })
     }
-    const formations = snapshot.objects
+    // At most twelve representative models across every supported ship type.
+    const visible = snapshot.objects
         .filter((item) => ships[item.key] && BigInt(item.amount) > 0n)
-        .map((item) => ({
-            id: `ship-${ships[item.key]}`,
+        .slice(0, 12)
+    let budget = 12
+    const formations = visible.map((item, index) => {
+        const modelCount = Number(
+            BigInt(item.amount) > 4n ? 4n : BigInt(item.amount),
+        )
+        const count = Math.min(
+            modelCount,
+            budget - (visible.length - index - 1),
+        )
+        budget -= count
+        return {
+            id: `ship-${item.id}`,
             type: ships[item.key],
+            name: item.name,
             count: Number(item.amount),
-            modelCount: Number(
-                BigInt(item.amount) > 4n ? 4n : BigInt(item.amount),
-            ),
-        }))
+            modelCount: count,
+        }
+    })
     return {
         planet: {
             id: String(snapshot.planet.id),

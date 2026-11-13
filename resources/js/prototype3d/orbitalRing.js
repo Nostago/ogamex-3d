@@ -4,7 +4,7 @@ import * as THREE from './vendor/three.module.min.js'
 export function createOrbitalRing(palette) {
     const group = new THREE.Group()
     const hull = new THREE.MeshStandardMaterial({
-        color: 0x233c50,
+        color: 0x60758a,
         map: palette.steel.map,
         roughness: 0.4,
         metalness: 0.72,
@@ -27,7 +27,7 @@ export function createOrbitalRing(palette) {
     const rail = add(new THREE.TorusGeometry(1, 0.004, 4, 128), lights)
     rail.rotation.x = Math.PI / 2
     rail.position.y = 0.025
-    const platformGeometry = new THREE.BoxGeometry(0.16, 0.04, 0.1),
+    const platformGeometry = new THREE.BoxGeometry(0.195, 0.035, 0.1),
         windowsGeometry = new THREE.BoxGeometry(0.14, 0.006, 0.102)
     const decks = new THREE.InstancedMesh(platformGeometry, hull, 32),
         windows = new THREE.InstancedMesh(windowsGeometry, lights, 32)
@@ -35,7 +35,7 @@ export function createOrbitalRing(palette) {
     for (let i = 0; i < 32; i++) {
         const angle = (i * Math.PI * 2) / 32
         transform.position.set(Math.cos(angle), 0, Math.sin(angle))
-        transform.rotation.y = -angle
+        transform.rotation.y = Math.PI / 2 - angle
         transform.updateMatrix()
         decks.setMatrixAt(i, transform.matrix)
         transform.position.y = 0.014
@@ -43,6 +43,24 @@ export function createOrbitalRing(palette) {
         windows.setMatrixAt(i, transform.matrix)
     }
     group.add(decks, windows)
+    const details = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(0.018, 0.024, 0.03),
+        hull,
+        256,
+    )
+    for (let i = 0; i < 256; i++) {
+        const angle = (i * Math.PI * 2) / 256,
+            radius = 1 + ((i % 3) - 1) * 0.028
+        transform.position.set(
+            Math.cos(angle) * radius,
+            0.027,
+            Math.sin(angle) * radius,
+        )
+        transform.rotation.y = Math.PI / 2 - angle
+        transform.updateMatrix()
+        details.setMatrixAt(i, transform.matrix)
+    }
+    group.add(details)
     for (let i = 0; i < 6; i++) {
         const angle = (i * Math.PI) / 3,
             hub = new THREE.Group()

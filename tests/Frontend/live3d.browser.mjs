@@ -56,6 +56,17 @@ try {
         await page.locator('#scene').getAttribute('data-renderer'),
         'webgl',
     );
+    assert.equal(
+        await page.locator('#live-overview-mode').getAttribute('aria-pressed'),
+        'true',
+    );
+    assert.ok(
+        Number(await page.locator('#scene').getAttribute('data-buildings')) >=
+            4,
+    );
+    await page.waitForFunction(
+        () => document.querySelector('#scene').dataset.texture === 'atlas',
+    );
     assert.equal(await page.locator('canvas').count(), 1);
     assert.equal(
         await page.locator('#scene').getAttribute('data-units'),
@@ -179,6 +190,16 @@ try {
             firstSystem + 1,
         );
     }
+    await page.locator('#live-system-number').fill('42');
+    await page.waitForFunction(() =>
+        document
+            .querySelector('#live-galaxy-status')
+            .textContent.startsWith('[1:42]'),
+    );
+    assert.equal(
+        await page.locator('#live-galaxy-form button[type="submit"]').count(),
+        0,
+    );
     await page.locator('#live-system-home').click();
     await page.waitForFunction(
         (value) =>

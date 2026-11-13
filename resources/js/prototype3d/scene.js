@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three.module.min.js'
 import { createColonyMaterials } from './materials.js'
 import { createShip } from './ships.js'
+import { createShipVariant } from './shipVariants.js'
 import { createBuilding } from './buildings.js'
 import { surfacePosition } from './layout.js'
 import { createInfrastructure } from './infrastructure.js'
@@ -101,6 +102,28 @@ export function createPlanetScene(
         }),
         world,
     )
+    // Optional authored map is a texture on the real sphere, never a static UI.
+    let authoredTexture = null,
+        disposed = false
+    if (options.planetTexture)
+        new THREE.TextureLoader().load(
+            options.planetTexture,
+            (texture) => {
+                if (disposed) {
+                    texture.dispose()
+                    return
+                }
+                texture.colorSpace = THREE.SRGBColorSpace
+                texture.anisotropy = 4
+                host.dataset.texture = 'atlas'
+                authoredTexture = texture
+                globe.material.map = texture
+                globe.material.bumpMap = null
+                globe.material.needsUpdate = true
+            },
+            undefined,
+            () => {},
+        ) // Keep the locally generated map if this optional image cannot load.
     globe.receiveShadow = true
     const clouds = mesh(
         new THREE.SphereGeometry(8.065, 64, 48),
@@ -216,6 +239,7 @@ export function createPlanetScene(
         radius = data.planet.renderRadius
         orbitRadius = radius + 3.4
         layout = data.layout
+        host.dataset.buildings = String(data.buildings.length)
         host.dataset.radius = String(radius)
         host.dataset.planet = renderPlanet
         globe.scale.setScalar(radius / 8)
@@ -258,7 +282,7 @@ export function createPlanetScene(
                 radius,
             )
             infrastructure.group.visible =
-                !options.orbitalStyle || mode === 'colony'
+                !options.orbitalStyle || mode !== 'orbit'
             world.add(infrastructure.group)
             networkKey = key
         }
@@ -391,7 +415,9 @@ export function createPlanetScene(
         for (const [index, item] of data.formations.entries()) {
             const ship = new THREE.Group()
             for (let index = 0; index < item.modelCount; index++) {
-                const model = createShip(item.type, materials.palette)
+                const model = options.orbitalStyle
+                    ? createShipVariant(item.type, materials.palette)
+                    : createShip(item.type, materials.palette)
                 if (item.modelCount > 1)
                     model.position.set(
                         ((index % 2) - 0.5) * 1.5,
@@ -425,7 +451,7 @@ export function createPlanetScene(
             ships.push(ship)
             const label = document.createElement('span')
             label.className = 'building-label ship-label'
-            label.textContent = `${names[item.type]} × ${new Intl.NumberFormat('de-DE').format(item.count)}`
+            label.textContent = `${item.name || names[item.type]} × ${new Intl.NumberFormat('de-DE').format(item.count)}`
             labelsHost.append(label)
             shipLabels.set(item.id, label)
         }
@@ -488,16 +514,16 @@ export function createPlanetScene(
             angle:
                 angle +
                 Math.atan2(Math.sin(0.55 - angle), Math.cos(0.55 - angle)),
-            elevation: options.orbitalStyle && mode === 'orbit' ? 0.28 : 0.82,
+            elevation: options.orbitalStyle && mode !== 'colony' ? 0.46 : 0.82,
             distance:
-                mode === 'orbit'
+                mode !== 'colony'
                     ? options.orbitalStyle
                         ? Math.max(30, radius * 3.8)
                         : Math.max(37, radius * 3 + 5)
                     : Math.max(25, radius * 2 + 10),
             target: new THREE.Vector3(
                 0,
-                mode === 'orbit' ? 0 : radius * 0.18,
+                mode !== 'colony' ? 0 : radius * 0.18,
                 0,
             ),
         })
@@ -542,10 +568,11 @@ export function createPlanetScene(
     }
     const setMode = (value) => {
         mode = value
-        orbit.visible = value === 'orbit'
+        orbit.visible = value !== 'colony'
         if (options.orbitalStyle) {
-            colony.visible = value !== 'orbit'
+            colony.visible = true
             if (infrastructure) infrastructure.group.visible = value !== 'orbit'
+            renderer.shadowMap.needsUpdate = true
         }
         resetCamera()
     }
@@ -569,9 +596,8 @@ export function createPlanetScene(
         const hits = raycaster.intersectObjects(
             [
                 globe,
-                ...(mode === 'orbit'
-                    ? ships
-                    : Array.from(buildings.values()).map((item) => item.group)),
+                ...(mode === 'colony' ? [] : ships),
+                ...Array.from(buildings.values()).map((item) => item.group),
             ],
             true,
         )
@@ -776,7 +802,7 @@ export function createPlanetScene(
                 .project(camera)
             const label = shipLabels.get(ship.userData.shipId)
             const visible =
-                mode === 'orbit' &&
+                mode !== 'colony' &&
                 worldPosition.dot(towardCamera) > 0 &&
                 Math.abs(projected.x) < 0.94 &&
                 Math.abs(projected.y) < 0.9
@@ -817,6 +843,8 @@ export function createPlanetScene(
             if (value) stopFlight()
         },
         dispose() {
+            disposed = true
+            authoredTexture?.dispose()
             cancelConstruction()
             cancelAnimationFrame(frame)
             resize.disconnect()

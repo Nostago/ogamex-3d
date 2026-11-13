@@ -8,6 +8,8 @@ import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
 import { renderIcons } from './icons.js'
 import { createFleetMonitor } from './fleetMonitor.js'
+import { createAdmin } from './admin.js'
+import { paintSpaceBackdrop } from './spaceBackdrop.js'
 
 const config = JSON.parse(
         document.querySelector('#live-bootstrap').textContent,
@@ -31,12 +33,13 @@ const pages = [
     'alliance',
     'messages',
 ]
+if (config.isAdmin) pages.push('admin')
 let state = config.initial,
     page = routePage(),
     planet = String(state.planet.id),
     busy = false,
     scene = null,
-    mode = 'orbit',
+    mode = 'overview',
     rotating = false,
     selected = {},
     group = 'building',
@@ -95,6 +98,7 @@ function show(name, fromFrame = false) {
         'ships',
         'defense',
     ].includes(page)
+    document.querySelector('#live-page-admin').hidden = page !== 'admin'
     document.querySelector('#live-page-galaxy').hidden = page !== 'galaxy'
     document.querySelector('#live-page-original').hidden = ![
         'fleets',
@@ -175,6 +179,7 @@ function render() {
     document.querySelector('#live-world-name').textContent = state.planet.name
     document.querySelector('#live-world-coordinates').textContent =
         `[${state.planet.coordinates}] · ${state.planet.type === 3 ? t.moon : t.planet}`
+    adminPanel?.renderContext()
     renderFleetStock()
     const visual = visualState(state),
         signature = JSON.stringify(visual)
@@ -594,12 +599,18 @@ function setMode(next) {
     root.dataset.mode = mode
     scene?.setMode(mode)
     document
+        .querySelector('#live-overview-mode')
+        .setAttribute('aria-pressed', String(mode === 'overview'))
+    document
         .querySelector('#live-colony')
         .setAttribute('aria-pressed', String(mode === 'colony'))
     document
         .querySelector('#live-orbit')
         .setAttribute('aria-pressed', String(mode === 'orbit'))
 }
+document
+    .querySelector('#live-overview-mode')
+    .addEventListener('click', () => setMode('overview'))
 document
     .querySelector('#live-colony')
     .addEventListener('click', () => setMode('colony'))
@@ -639,7 +650,22 @@ const galaxy = createGalaxy({
         document.querySelector('#live-original-link').href = contextUrl(url)
     },
 })
+const adminPanel = config.isAdmin
+    ? createAdmin({
+          config,
+          t,
+          el,
+          number,
+          state: () => state,
+          setBusy(value) {
+              busy = value
+              render()
+          },
+          refresh,
+      })
+    : null
 renderIcons()
+paintSpaceBackdrop(document.querySelector('.orbital-stage'))
 const fleetMonitor = createFleetMonitor({
     url: config.fleetEventsUrl,
     t,
@@ -660,8 +686,17 @@ scene = createSceneHost({
     t,
     onStatus: (text) => (status.textContent = text),
     select(id) {
-        const object = state.objects.find((o) => String(o.id) === id)
-        if (object) {
+        const object = state.objects.find(
+            (o) => String(o.id) === String(id).replace(/^ship-/, ''),
+        )
+        if (!object) return
+        if (object.type === 'ship') {
+            selected.ships = object.id
+            show('ships')
+        } else if (object.type === 'defense') {
+            selected.defense = object.id
+            show('defense')
+        } else {
             group = object.type
             selected.buildings = object.id
             show('buildings')

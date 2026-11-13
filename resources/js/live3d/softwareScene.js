@@ -14,7 +14,7 @@ export function createSoftwareScene(host, labels, select, names) {
         angle = 0.6,
         tilt = 0.25,
         scale = 1,
-        mode = 'orbit',
+        mode = 'overview',
         rotating = false,
         pointer,
         frame,
@@ -127,12 +127,12 @@ export function createSoftwareScene(host, labels, select, names) {
             }
             context.stroke()
         }
-        if (mode === 'orbit') ring(false)
+        if (mode !== 'colony') ring(false)
         sphere()
         context.drawImage(surface, width / 2 - r, height / 2 - r, r * 2, r * 2)
-        if (mode === 'orbit') ring(true)
+        if (mode !== 'colony') ring(true)
         targets = []
-        if (mode === 'colony')
+        if (mode !== 'orbit')
             for (const building of snapshot.buildings) {
                 const site = snapshot.layout.find(
                     (item) => item.id === building.siteId,
@@ -165,7 +165,7 @@ export function createSoftwareScene(host, labels, select, names) {
                     id: building.id,
                 })
             }
-        if (mode === 'orbit')
+        if (mode !== 'colony')
             for (
                 let i = 0;
                 i <

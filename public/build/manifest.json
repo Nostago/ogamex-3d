@@ -14,8 +14,8 @@
     "file": "assets/layout-SWFQj27H.js",
     "name": "layout"
   },
-  "_scene-BmTXDnus.js": {
-    "file": "assets/scene-BmTXDnus.js",
+  "_scene-sUenjWiu.js": {
+    "file": "assets/scene-sUenjWiu.js",
     "name": "scene",
     "imports": [
       "_layout-SWFQj27H.js"
@@ -40,7 +40,7 @@
     "isEntry": true
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-CYHsks4W.js",
+    "file": "assets/index-DxZXmKUS.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
@@ -52,27 +52,27 @@
       "resources/js/prototype3d/scene.js"
     ],
     "css": [
-      "assets/index-B7znjIaT.css"
+      "assets/index-BHvKBfVW.css"
     ]
   },
   "resources/js/prototype3d/index.js": {
-    "file": "assets/index-BXTT8-eM.js",
+    "file": "assets/index-DRBNX2dt.js",
     "name": "index",
     "src": "resources/js/prototype3d/index.js",
     "isEntry": true,
     "imports": [
       "_catalog-sCOHZ3bQ.js",
       "_layout-SWFQj27H.js",
-      "_scene-BmTXDnus.js"
+      "_scene-sUenjWiu.js"
     ]
   },
   "resources/js/prototype3d/scene.js": {
-    "file": "assets/scene-Chj2vUZW.js",
+    "file": "assets/scene-BUPbiuhq.js",
     "name": "scene",
     "src": "resources/js/prototype3d/scene.js",
     "isDynamicEntry": true,
     "imports": [
-      "_scene-BmTXDnus.js"
+      "_scene-sUenjWiu.js"
     ]
   },
   "resources/js/ingame.js": {

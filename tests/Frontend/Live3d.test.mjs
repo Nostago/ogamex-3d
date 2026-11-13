@@ -136,3 +136,42 @@ test('small planets and moons can render every supported building without aborti
             );
         }
 });
+
+test('all live fleet types share a fixed twelve-model budget while catalog totals stay intact', () => {
+    const keys = [
+        'light_fighter',
+        'heavy_fighter',
+        'cruiser',
+        'battle_ship',
+        'battlecruiser',
+        'bomber',
+        'destroyer',
+        'deathstar',
+        'reaper',
+        'small_cargo',
+        'large_cargo',
+        'colony_ship',
+        'recycler',
+        'espionage_probe',
+        'pathfinder',
+    ];
+    const snapshot = {
+        planet: { id: 42, diameter: 10000, type: 1 },
+        shipTotal: '15000000',
+        objects: keys.map((key, id) => ({
+            id,
+            key,
+            name: key,
+            amount: '1000000',
+        })),
+    };
+    const before = structuredClone(snapshot),
+        model = visualState(snapshot);
+    assert.ok(
+        model.formations.reduce((count, item) => count + item.modelCount, 0) <=
+            12,
+    );
+    assert.ok(model.formations.some((item) => item.type === 'deathstar'));
+    assert.equal(model.fleetSummary.total, '15000000');
+    assert.deepEqual(snapshot, before);
+});
