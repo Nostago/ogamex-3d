@@ -1,58 +1,65 @@
-# OGameX-3D: Sichere Installation und Updates auf eigenem Server per SSH
+# OGameX-3D: Bestehende Installation sicher per SSH aktualisieren
 
-## Nutzerziel und Priorität
-Codex soll die vorhandene OGameX-3D-Installation auf einem vom Nutzer bereitgestellten Linux-Server **eigenständig per SSH installieren, aktualisieren, prüfen und bei Fehlern kontrolliert zurückrollen können**. Der Nutzer möchte möglichst keine manuellen Kopier-/Befehlsabläufe. Hauptziel bleibt ein nutzbares neues 3D-UI; Bot- und Admin-Featurebranches sind **noch nicht integriert** und dürfen nicht als fertig angenommen werden.
+## Verbindliche Korrektur des Auftrags
+**Der Nutzer hat bestätigt: OGameX ist auf dem Zielserver BEREITS installiert. Er besitzt einen funktionierenden SSH-Schlüssel.**
+Daher **KEINE Neuinstallation**, **KEINE neue Datenbank**, **KEINE neuen Docker-Volumes**, **KEINE neue Standard-Compose-Installation** und keine Änderung an bestehender Domain/Spielwelt, sofern die Bestandsprüfung nicht ausdrückliche Notwendigkeit belegt und die Änderung freigegeben wurde.
 
-Quellbasis: `Nostago/ogamex-3d`, dieser Deployment-Branch auf `codex/ogamex-3d-live-backend`. Bitte keinen Merge in `main`, bevor Änderungen und produktive Bereitstellung geprüft sind.
+Ziel ist ein eigenständig von Codex vorbereiteter, **wiederholbarer, sicherer Deployment-/Updateprozess**, der die bestehende OGameX-Installation inklusive Accounts, Planeten, Ressourcen, Konfiguration und Datenbanken erhält und das neue Live-3D-UI aus `Nostago/ogamex-3d` nutzbar macht. Bot- und Admin-Erweiterungen bleiben separate Entwicklungsbranches und sind noch nicht automatisch Teil eines Rollouts.
 
-## Technische Realität Codex Cloud
-Die aktuelle Codex-Cloud-Dokumentation (https://learn.chatgpt.com/docs/environments/cloud-environments) beschreibt SSH/TCP-Zugriff aus der Cloud über konfiguriertes Tailscale-VPN, IPv4-Routen und einen HTTP-CONNECT-Proxy `proxy:8088`. Eine bloße Domain-Freigabe oder ein HTTP-Network-Secret für Port 443 ergibt **keinen normalen TCP/SSH-Kanal**. Nicht behaupten, eine direkte SSH-Verbindung aus Codex Cloud funktioniere ungeprüft.
+Der aktuelle Branch `codex/ogamex-3d-ssh-deployment` basiert auf `codex/ogamex-3d-live-backend`. Arbeite nur hier, keine direkten Änderungen an `main`, kein automatischer Merge.
 
-**Bevorzugte Lösung für gewöhnliche öffentliche SSH-Server:** Codex erstellt in diesem Repository einen **sicheren GitHub-Actions-Deployment-Workflow**, der bei expliziter Anforderung und nur nach den nötigen Freigaben einen SSH-Zugriff auf den Host nutzt. Codex kann Code, Tests und Deploymentvorbereitung autonom bearbeiten; der GitHub Actions Runner führt die SSH-Befehle aus. GitHub Environment `ogamex-staging` und später `ogamex-production` mit getrennten Secrets, Berechtigungsschutz und sinnvoller Branchbeschränkung. SSH-Daten im Repository werden nur als Variablennamen referenziert. Workflows nicht auf untrusted PRs mit Secrets laufen lassen. Production Deploy nur bei expliziter Nutzerfreigabe. Verwende möglichst GitHub-eigene Standardwerkzeuge (openssh-client) statt fremder Actions ohne Pinning.
+## Bekannte ältere Bestandsinformationen – NICHT als heutigen Zustand voraussetzen
+Frühere Serverausgaben des Nutzers (Stand August 2026) nannten:
+- Hostname am Shellprompt: `24fire` (nicht notwendigerweise eine öffentlich auflösbare SSH-Adresse).
+- OGameX-Verzeichnis: `/opt/ogamex`.
+- Produktions-Compose-Datei: `/opt/ogamex/docker-compose.prod.yml`.
+- Compose-Dienste für PHP, Webserver, MariaDB, Scheduler, Queue, Reverb und phpMyAdmin.
+- Persistentes Datenbank-Volume: `ogamex_ogame-dbdata`.
+- Früherer Serverzugang als `root`; für Automatisierung nach Möglichkeit einen getrennten Deploy-Account mit minimalen Rechten nutzen.
+**Vor jeder Änderung alle Angaben und deren Aktualität lesend per SSH bestätigen.** Insbesondere keine Daten oder Volumes mit diesen alten Namen überschreiben, entfernen oder neu initialisieren.
 
-**Falls der Host nur über ein privates Heimnetz erreichbar ist:** Verbindungen und Sicherheitsanforderungen prüfen. Sinnvolle Alternativen (vom Codex-Agenten nach Evidenz wählen): ein vom Nutzer genehmigtes Tailscale-GitHub-Actions-Setup mit restriktiven ACLs; Tailscale-Anbindung der Codex-Cloud-Umgebung falls für das Konto verfügbar; oder ein abgesicherter Self-Hosted-Runner/Agent auf der Zielmaschine mit expliziter Freigabe. **Keine heimliche oder unnötige globale SSH-Portöffnung.**
+## SSH-Verbindung / Secrets
+Die private SSH-Schlüsseldatei des Nutzers liegt auf seinem Gerät; sie ist nicht automatisch in Codex Cloud oder GitHub Actions verfügbar. Keine Aufforderung, sie im Chat oder Repository zu teilen. Bevorzugt einen **separaten auf diesen Host beschränkten Deploy-Schlüssel** auf dem Client erstellen, dessen öffentlichen Teil autorisiert hinterlegen und den privaten Teil ausschließlich als geschütztes Secret eines GitHub Actions Environments verwalten. Wenn bereits ein dedizierter Deploy-Schlüssel vorhanden ist, kann er stattdessen verwendet werden. Zugriff nur auf das nötige Repository/Environment beschränken. Schlüsselrotation dokumentieren.
 
-## Vorbedingungen / benötigte Informationen
-Ohne geheime Daten im Chat/Repo den SSH-Zielhost, Port, SSH-Benutzernamen, öffentliche URL/Subdomain und Ziel-Umgebung (staging/production) erfahren. Falls vorhanden, Pfad und Zustand einer alten OGameX-Installation erkennen. Zugangsdaten als GitHub Actions **Environment Secrets** (z. B. `DEPLOY_SSH_KEY`) ablegen. `DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER`, `DEPLOY_PATH` als passend geschützte Environment Variables; verbindlichen SSH-Hostkey-Fingerprint als `DEPLOY_KNOWN_HOSTS` oder vorher verifizierten `known_hosts`-Eintrag bereitstellen. Keine Passwörter/Private Keys in Logs, `git`, Shell-History oder Chatnachrichten. Keinen SSH-Hostkey unvalidiert über `ssh-keyscan` akzeptieren; `StrictHostKeyChecking=no` verboten. Privater Deploy-Schlüssel muss spezifisch für die Bereitstellung sein und minimale Rechte haben. Sichere Aufbewahrung/Rotation dokumentieren.
+GitHub Actions ist der bevorzugte SSH-Transport für regulär erreichbare Server: Codex erstellt Workflow/Skripte und prüft sie; der Workflow verbindet sich per SSH. Direkter SSH/TCP-Zugriff von Codex Cloud ist **nicht automatisch gegeben** und erfordert gegebenenfalls VPN/Proxy-Konfiguration. Nicht so tun, als könne Codex ohne hergestellten und geprüften Kanal eine SSH-Verbindung öffnen. Bei nur privater Erreichbarkeit vor Freigabe eine passende sichere VPN-/Runner-Lösung wählen, keine unaufgeforderte SSH-Portfreigabe.
 
-## Schritt 1 – Nur lesende Bestandsaufnahme vor jeder Installation
-Per abgesichertem SSH zunächst nur prüfen: OS/Architektur, Benutzerrechte, RAM/CPU/Plattenplatz, Docker/Compose, vorhandene Webserver/Reverse Proxy/Ports, bestehende Spielserver/Container, Firewall/SSH, freie Ressourcen, OGameX-Checkout und Git-Status, Datenbank-Volumes und Backups, Domain/TLS, DNS, bestehende OGameX-Konfiguration. **Keine Änderung**, solange unklar ist, ob bereits produktive Dienste dort laufen. Ergebnis knapp dokumentieren. Falls Kollisionen/Backups/Ressourcenprobleme auftreten, vor riskantem Eingriff stoppen.
+Secrets: `DEPLOY_SSH_KEY`, validierter `DEPLOY_KNOWN_HOSTS`; geschützte Variablen `DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER`, `DEPLOY_PATH` und ggf. Ziel-Domain. Hostschlüssel-Fingerprint über einen unabhängigen, vertrauenswürdigen Weg vergleichen; niemals `StrictHostKeyChecking=no` oder ungesehenes Vertrauen auf `ssh-keyscan`. Keine Schlüssel/Passwörter/`.env` in Git/Logs/Chat.
 
-## Schritt 2 – Sichere Zielarchitektur
-- Bestehendes OGameX-README lesen: offizieller Produktionsweg ist `docker-compose.prod.yml`, mit Laravel 13/PHP 8.5, MariaDB, Nginx, Scheduler, Queue, Reverb (und Rust/FFI).
-- Niemals `scripts/codex/install.sh` oder `scripts/codex/start.sh` unbesehen gegen Produktionsdaten ausführen: sie sind ausschließlich für isolierte Cloud-Entwicklung gedacht.
-- Keine unsicheren Produktionsvorlagen übernehmen: Standarddatenbankpasswort `toor` ersetzen, Applikations-/DB-/Reverb-Schlüssel einzigartig erzeugen, `APP_ENV=production`, `APP_DEBUG=false`, nur HTTPS. Standard-PhpMyAdmin **nicht öffentlich**, am besten deaktivieren. Keine öffentliche MariaDB-Anbindung. Dienste/Ports gezielt an Loopback oder interne Compose-Netze binden.
-- Bei vorhandenen Diensten standardmäßig **separates Compose-Projekt und eigene Volumes** unter eigenem Verzeichnis verwenden; vorhandene Dienste auf 80/443 nicht überschreiben. Wenn ein geeigneter Reverse Proxy existiert, OGameX auf lokalen Port 127.0.0.1:... binden und über die vereinbarte Domain mit gültigem TLS/HTTP->HTTPS-Rewrite bereitstellen. Existierende nginx/Apache/andere Gameserver-Konfigurationen nicht ungefragt verändern.
-- Eindeutig zwischen `staging` und `production` trennen. Keine stillschweigende Migration/Übernahme einer fremden Datenbank.
-- Assets mit reproduzierbarem Lockfile-Build; PHP-Dependencies mit gesperrten Versionen. Nutze `npm ci`/`composer install` passend zur bestehenden Architektur, kein unkontrolliertes Update.
-- Bei Rollout der Live-3D-Oberfläche zwingend Login/CSRF, `/play-3d` und `/play-3d/state` mit autorisiertem Testkonto verifizieren. Erreichbarkeit der klassischen Oberfläche sicherstellen.
-- Scheduler/Queue/Reverb müssen laufen und kontrollierbar sein. Laravel `APP_KEY` und Volumes dürfen bei Updates nicht neu erstellt/gelöscht werden.
+## Phase A: Nur lesende Bestandsaufnahme (ohne Downtime)
+Nach Einrichtung der einmaligen Verbindung zuerst per SSH verifizieren und protokollieren:
+1. System, Rechte, verfügbare Ressourcen, laufende Dienste, Docker-/Compose-Version und tatsächliche Prozesse/Portbindungen.
+2. Vorhandene OGameX-Dateien und Git-Status unter dem **ermittelten** Installationspfad (historisch `/opt/ogamex`), tatsächliches Deployment-Ref, uncommittete Serveränderungen, Dateirechte.
+3. Aktive Produktions-Compose-Datei, Volumes, Datenbank, Backup-Stand und Speicherplatz, ohne `.env`/Secrets offenzulegen.
+4. Domain/HTTPS, Webserver/Reverse Proxy, Registrierung, laufender Login, Datenbank-/Migrationsstatus und Authentifizierung des aktuellen Universums.
+5. Prüfen, ob ein Release direkt aus einem Git-Checkout läuft und ob bisherige Anpassungen im Repository fehlen. Keine ungefragte Übernahme von Upstream-Versionen, keine Überschreibung lokaler Dateien.
+6. Ausgangszustand der bestehenden Accounts/Planeten/Queues/Flotten für spätere Integritätsvergleiche protokollieren, ohne private Inhalte zu exportieren.
 
-## Schritt 3 – Automatisierung und Deploy-Rollback
-1. GitHub Actions Workflow mit manueller Auslösung (`workflow_dispatch`), Umgebungsschranken und parametrisierbarem **festem Commit-SHA**, statt automatisch jedes experimentelle Codex-Branch-Update live zu schalten. Wiederholbare SSH-Preflight-/Install-/Update-/Verify- und Rollback-Skripte im Repository.
-2. Installation muss **idempotent** sein: erneutes Ausführen verändert nur erlaubte Artefakte, nicht alte Accounts/Datenbanken.
-3. Vor jedem datenverändernden Update: Datenbank-Backup plus sichere Metadaten zu Dateistand/.env (Secrets nicht im CI-Artifact veröffentlichen) auf dem Server, restriktive Zugriffsrechte und Aufbewahrung. Restore-Prozedur tatsächlich in Testumgebung prüfen. Achtung: Rollback von Datenbankmigrationen nicht blind automatisch durchführen; vor irreversiblen Migrationen stoppen.
-4. Deploy per versioniertem Release-Verzeichnis oder gleichwertig atomarer Commit-Versionierung, Health Checks/Smoke Tests, automatische Rücknahme auf vorherigen Code bei fehlgeschlagenem Health Check. Keine `docker compose down -v`, kein `rm -rf` auf unbestätigten Pfaden, keine Änderung fremder Docker-Stacks.
-5. Logs/Zustand (Spezifikation, ausgewählter Commit, Komponenten, Health Checks, Backup-ID, Deploymentergebnis) maschinen- und menschenlesbar liefern. Keine Secrets in Workflow-Ausgaben.
-6. Für GitHub Actions GitHub-Umgebungssecrets und ggf. Required Reviewers nach https://docs.github.com/en/actions/concepts/workflows-and-actions/deployment-environments nutzen.
-7. Trenne `deploy:prepare` (lokal ohne Serververänderung), `deploy:preflight` (SSH read-only), `deploy:staging` (staging), `deploy:production` (nur nach explizitem Approval), `deploy:rollback` (auf abgesicherten vorherigen Stand) oder sinnvolle funktionale Äquivalente.
-8. Server darf nicht durch Build-lastige parallele Jobs überlastet werden; wenn nötig Assets/Container vorbauen und signierte Images/Artefakte verteilen.
+**Stop-Regel:** Bei unklaren Volumes, bestehenden lokalen Änderungen, fehlendem Backup, falschen Zugriffsrechten oder Gefahr für den laufenden Server keine schreibenden Aktionen.
 
-## Test- und Abnahmekriterien
-- SSH-Verbindung nur via korrekt validiertem Host-Key und dafür vorgesehenem Deploy-Account; Credentials nie in Ausgaben/Git.
-- Staging-Installation erreichbar, TLS korrekt (sofern Domain verfügbar), Start/Login funktioniert, realer 3D-Client `/play-3d` erreichbar, originale OGameX-Oberfläche weiterhin verfügbar.
-- Migrationsstatus/DB, PHP-FPM, MariaDB, Nginx, Scheduler, Queue und WebSocket-Handshake geprüft.
-- Ausgewählte relevanten Featuretests/Browsertests (separater Testaccount, nicht mit Echtdaten) bestanden; Browser-Screenshots optional.
-- Wiederholter Deploy identisch; bewusst fehlerhafter Release löst geordneten Rollback aus, DB-Daten bleiben erhalten.
-- Bot/Admin-Funktionen **nicht** vorgeben, produktiv aktiv zu sein, solange separate Branches nicht integriert und getestet wurden.
-- Nicht versehentlich eine öffentlich erreichbare Installation mit Standard-Admin-/Testkonten oder Debug-/PhpMyAdmin-Zugang veröffentlichen. Keine öffentlichen Registrierungen vor Freigabe öffnen.
-- Dokumentation in Deutsch mit minimalem einmaligem Setup (Github Secrets, DNS, SSH-Deployuser), Notfallzugang, Backup und Restore.
+## Phase B: Bestehende Anwendung auf das neue Live-3D-UI aktualisieren
+- Die Originalinstallation **in place oder mit explizit dokumentiertem Release-Verzeichnis** sicher aktualisieren; vorhandene Datenbank, Persistent Volumes, `.env`, APP_KEY, Docker-Projektname, Webserverkonfiguration, Domains, Nutzer und realen Spielstand bewahren.
+- Basis ist der geprüfte Live-3D-Featurestand. Bot-/Admin-Branches nur nach separater Integration/Tests und explizitem Deployment-Entscheid aufnehmen. Keine unkontrollierten Merges.
+- Alle neuen Artefakte (Vite Assets/PHP/3D-Routen) vorher reproduzierbar bauen und testen. Nach Möglichkeit getrennte Staging-Prüfung über Kopie/isolierte Daten ohne aktuelle Produktiv-DB, aber keine zweite öffentliche OGameX-Installation als ungebetenen Ersatz.
+- Für einen produktiven Updatevorgang zuerst verifizierbares DB-Backup und gesicherten Ausgangscommit bereitstellen. **Nicht** `docker compose down -v`, keine Datenvolumes löschen und keine laufenden fremden Dienste neu konfigurieren.
+- Anwendung bei Bedarf kurz in Wartungsmodus setzen, migrationsbezogene Kompatibilität vorab prüfen; irreversible oder destruktive Migrationen niemals automatisch an Echtdaten ausführen.
+- Die vorhandene Compose-Konfiguration respektieren. Niemals Entwicklungsdateien `scripts/codex/install.sh` oder `scripts/codex/start.sh` in Production ausführen; sie enthalten Entwicklungs-DB/Proxyeinstellungen.
+- Vorhandene Secrets nicht blind ändern, keine standardisierten `toor`-Beispielpasswörter, `APP_DEBUG=false`; öffentlich zugängliches phpMyAdmin/DB-Ports im Rahmen der Bestandsprüfung identifizieren und Risiken zunächst dokumentieren, nicht unerwartet produktive Zugänge abschalten.
+- Deployment muss idempotent, versioniert und nachprüfbar sein; Login, klassisches OGameX, Auth/CSRF, /play-3d, /play-3d/state, PHP-FPM, MariaDB, Scheduler, Queue, Reverb und originale Spielfunktionen prüfen. Kein uneingeschränkter Test mit echten Nutzeraktionen.
 
-## Was Codex selbständig leisten und wo es stoppen soll
-- Repository untersuchen, sicheren Workflow und Skripte entwickeln, lokal/CI testen, alle unkritischen Automatisierungsschritte eigenständig ausführen und einen einzigen Draft Pull Request gegen `codex/ogamex-3d-live-backend` vorbereiten.
-- **Sobald die einmalige SSH-Verbindung und Zielinformationen bereitstehen:** lesenden Preflight ausführen, gefundene Ressourcen prüfen, dann **nach ausdrücklicher Zustimmung zur Staging-Installation** eine isolierte Instanz installieren und testen. Die ausdrückliche Zustimmung des Nutzers, dass Codex OGameX installieren soll, ist gegeben, aber **nicht** die Zustimmung, bestehende Dienste/Daten zu löschen oder bestehende produktive OGameX-Instanzen zu ersetzen.
-- Keine stillschweigende öffentliche Produktivinstallation oder DNS-/Firewalländerung, solange die genauen Folgen nicht aus der Bestandsaufnahme geklärt sind.
-- Ergebnis als einheitlichen Statusbericht liefern: Hostvoraussetzungen, installierter Commit, URL, Gesundheit, Tests, Admin-Erstanmeldung, Deployment-/Rollback-Anleitung, offene Punkte. Niemals erfolgreiche Installation behaupten, bevor dies auf dem echten Host verifiziert wurde.
+## Phase C: Eigenständige Codex-Updates über GitHub Actions
+Entwickle nur mit nachgewiesenen Rechten einen **manuell auslösbaren** GitHub-Actions-Workflow mit zwei Modi:
+- `preflight`: nur lesende Bestandsaufnahme und Gesundheitsprüfungen;
+- `deploy`: nur freigegebene Commits, Vorabtests, Backup, geordneter Deploy, Smoke Tests, dokumentierter Rollback;
+- optional `rollback`: kontrollierter Code-Rollback auf vorherigen Stand, ohne Migrationen blind zurückzudrehen.
 
-## Kurzer Codex-Ausführungsauftrag
-> Lies `docs/tasks/SSH-DEPLOYMENT.md`. Implementiere vollständig den sicheren GitHub-Actions-gestützten SSH-Deploy-Ablauf, prüfe unsere bestehende OGameX-3D-Live-Architektur und starte mit einem lesenden Server-Preflight, sobald die SSH-Umgebungssecrets verfügbar sind. Selbstständig installieren und testen, falls isoliertes Staging sicher möglich und freigegeben ist. Keine Eingriffe in andere Dienste und keine ungeprüfte Produktivschaltung. Entwickle ausschließlich auf `codex/ogamex-3d-ssh-deployment` und erstelle einen Draft PR.
+Abgesicherte `ogamex-production` Environment mit Required Reviewers (wo verfügbar), geschützten Variablen/Secrets, enger Branch-/SHA-Zulassung und Sperre gleichzeitiger Deployments. Keine SSH-Secrets bei untrusted PRs. Geschützten Host-Key verifizieren. Logs ohne Secrets, aber mit Commit, Backup-Referenz und Prüfresultaten. Der Nutzer möchte künftig wenig manuelle Bedienung: Codex soll alle **nicht privilegierten Vorarbeiten** eigenständig erledigen; der einmalige Schlüssel-/Zielzugang und die Freigabe eines produktiven Deployments sind notwendige Sicherheitsgrenzen.
+
+## Tests, Dokumentation und Ergebnis
+- Dokumentiere vorhandene Serverarchitektur und safe update procedure auf Deutsch, mit Notfall-Rollback.
+- Reproduziere und teste den Workflow soweit möglich ohne Produktionszugang; setze keine vorgetäuschten Erfolgsmeldungen ab.
+- Ziel ist: vorhandene Installation auf die 3D-Spieloberfläche aktualisiert, historische Spieldaten erhalten, Server erreichbar; Quellcode und tatsächliches Live-Deployment sind getrennt zu verifizieren.
+- Ein Draft PR gegen `codex/ogamex-3d-live-backend`, kein Merge ohne Freigabe.
+- Falls SSH-Zugang noch nicht bereitgestellt ist: Workflow und Skripte fertigstellen, danach konkrete fehlende Verbindungsvoraussetzungen benennen. **Nicht** behaupten, Codex habe den Server bereits erreicht oder aktualisiert.
+
+## Kurzer Codex-Startauftrag
+> Implementiere `docs/tasks/SSH-DEPLOYMENT.md` auf Branch `codex/ogamex-3d-ssh-deployment`. OGameX ist auf dem Server bereits installiert (früher `/opt/ogamex` auf Host `24fire`). Erstelle die sichere SSH-gestützte Update-Automation statt einer Neuinstallation, validiere alle Annahmen read-only, teste alles ohne Zwischenabnahmen und richte den Rollout des Live-3D-UI vor. Keine neue Datenbank, keine neuen Produktionsvolumes und keine ungeprüften Änderungen an echten Accounts.
