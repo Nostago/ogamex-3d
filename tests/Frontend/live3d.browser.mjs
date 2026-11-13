@@ -107,6 +107,33 @@ try {
     }
     await nav('buildings');
     await page.locator('[data-object="metal_mine"]').click();
+    await page.waitForFunction(
+        () =>
+            document.querySelector('.object-artwork')?.dataset.artwork ===
+                '3d' &&
+            Number(
+                document.querySelector('.object-artwork').dataset.previewFrames,
+            ) > 1,
+    );
+    assert.equal(await page.locator('.detail-image').count(), 0);
+    assert.equal(
+        await page
+            .locator('.object-artwork canvas')
+            .evaluate((c) => c.width >= c.clientWidth),
+        true,
+    );
+    await page.locator('[data-object="solar_plant"]').click();
+    await page.waitForFunction(
+        () =>
+            document.querySelector('.object-artwork').dataset.previewObject ===
+                'solar_plant' &&
+            document.querySelector('.object-artwork').dataset.artwork === '3d',
+    );
+    await page.screenshot({
+        path: `${artifacts}/sharp-solar-preview.png`,
+        fullPage: true,
+    });
+    await page.locator('[data-object="metal_mine"]').click();
     await page.locator('#live-start').click();
     await page.locator('[data-queue="building"]').waitFor();
     await cancel('building');

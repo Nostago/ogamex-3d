@@ -989,3 +989,174 @@
         padding-bottom: 130px;
     }
 }
+
+/* Clear administration: one category rail, one visible original tool section. */
+#prototype[data-page='admin'] .workspace-heading {
+    display: none;
+}
+#live-page-admin {
+    display: grid;
+    grid-template-columns: 205px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+#live-page-admin .admin-intro {
+    grid-column: 1/-1;
+    margin: 0;
+    padding: 18px 22px;
+}
+#live-page-admin .admin-intro h2 {
+    margin: 5px 0 8px;
+    font-size: 25px;
+}
+#live-page-admin .admin-intro p {
+    margin: 0;
+    font-size: 11px;
+}
+#live-admin-tabs {
+    display: grid;
+    gap: 7px;
+    position: sticky;
+    top: 18px;
+    margin: 0;
+}
+#live-admin-tabs button {
+    text-align: left;
+    line-height: 1.5;
+    padding: 13px 14px;
+    white-space: normal;
+}
+#live-admin-test,
+#live-admin-advanced {
+    min-width: 0;
+}
+#live-admin-shortcuts {
+    display: none;
+}
+.admin-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+}
+.admin-grid .card > p {
+    min-height: 0;
+}
+.admin-resource-fields {
+    margin: 14px 0;
+}
+.admin-frame-toolbar {
+    margin: 0 0 16px;
+    align-items: start;
+    line-height: 1.7;
+}
+.admin-frame-toolbar p {
+    margin: 0;
+    max-width: 600px;
+}
+.admin-section-switch {
+    display: grid;
+    grid-template-columns: auto minmax(160px, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 16px;
+    background: #0a2030;
+    border: 1px solid #2b5267;
+    border-bottom: 0;
+    font-size: 12px;
+    color: #99c7dd;
+}
+#live-admin-frame {
+    height: 500px;
+    min-height: 0;
+    border-radius: 0;
+    display: block;
+}
+.object-thumbnail {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+.orbital-command .planet-portrait {
+    width: 32px;
+    height: 32px;
+}
+.object-artwork {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid #2c6078;
+    border-radius: 6px;
+    background: radial-gradient(ellipse at 50% 45%, #20465c, #081723 70%);
+    touch-action: pan-y;
+}
+.object-artwork canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+    cursor: grab;
+}
+.object-artwork canvas:active {
+    cursor: grabbing;
+}
+.object-blueprint {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.orbital-command .object-blueprint {
+    width: 100%;
+    height: 100%;
+}
+@media (min-width: 1600px) {
+    .admin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 1000px) {
+    #live-page-admin {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    #live-admin-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        position: static;
+    }
+    #live-admin-tabs button {
+        flex: 1 1 150px;
+    }
+    .admin-section-switch {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .object-artwork {
+        height: 220px;
+    }
+}
+.admin-frame-notice {
+    grid-column: 1/-1;
+    margin: 0;
+    color: #85ddba;
+    font-size: 12px;
+}
+.admin-frame-notice:empty {
+    display: none;
+}
+.admin-frame-notice[data-tone='error'] {
+    color: #ffad96;
+}
+.object-artwork::after {
+    content: attr(data-caption);
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    max-width: calc(100% - 24px);
+    font-size: 10px;
+    line-height: 1.5;
+    color: #b0d7e6;
+    background: #071823c9;
+    padding: 5px 8px;
+    border-radius: 3px;
+    pointer-events: none;
+}

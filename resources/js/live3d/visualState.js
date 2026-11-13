@@ -17,7 +17,7 @@ export const modelAliases = Object.freeze({
     rocket_launcher: 'rocket',
     light_laser: 'laser',
 })
-const ships = {
+export const shipModelAliases = {
     light_fighter: 'lightFighter',
     small_cargo: 'smallCargo',
     espionage_probe: 'probe',
@@ -60,7 +60,9 @@ export function visualState(snapshot) {
     }
     // At most twelve representative models across every supported ship type.
     const visible = snapshot.objects
-        .filter((item) => ships[item.key] && BigInt(item.amount) > 0n)
+        .filter(
+            (item) => shipModelAliases[item.key] && BigInt(item.amount) > 0n,
+        )
         .slice(0, 12)
     let budget = 12
     const formations = visible.map((item, index) => {
@@ -74,7 +76,7 @@ export function visualState(snapshot) {
         budget -= count
         return {
             id: `ship-${item.id}`,
-            type: ships[item.key],
+            type: shipModelAliases[item.key],
             name: item.name,
             count: Number(item.amount),
             modelCount: count,

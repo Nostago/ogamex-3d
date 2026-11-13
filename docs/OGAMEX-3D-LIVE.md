@@ -52,7 +52,47 @@ Benutzer. Es wird durch diesen Branch kein öffentlicher Server bereitgestellt.
   Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese beiden
   Bereiche sind weiterhin Übergangsansichten mit einem Link zur separaten Originalseite.
 
-## Aktuelle Etappe: Verwaltung und sichtbare Kolonie
+## Aktuelle Etappe: Lesbare Verwaltung und scharfe Modellansichten
+
+Branch: `codex/ogamex-3d-visual-clarity`.
+
+Die Verwaltung hat links die Hauptbereiche und darüber einen Abschnittswähler.
+In langen Originalformularen ist jeweils eine Werkzeuggruppe sichtbar. Die alten
+festen Schaltflächenbreiten entfallen; Beschriftungen umbrechen vollständig.
+Der eingebettete klassische Kopf und die zusätzliche innere Navigationsleiste
+entfallen. Die Höhe passt sich dem ausgewählten Abschnitt an.
+
+Die ursprünglichen Formulare behalten alle Felder, Namen, Werte, Actions und
+CSRF-Tokens. Ausgeblendete Gruppen bleiben Bestandteil des Speichervorgangs.
+Der Speichern-Knopf bleibt erreichbar, Validierungsfehler öffnen die passende
+Gruppe, und Rückmeldungen erscheinen kompakt über dem Formular. Bei einem
+Original-POST bleibt der ausgewählte Werkzeugabschnitt erhalten.
+
+Die Originalbilder im Katalog sind nur **40 × 40 Pixel** groß. Sie bleiben als
+kleine Symbole erhalten und werden nicht mehr als großes unscharfes Detailbild
+verwendet. Gebäude und flugfähige Schiffe mit vorhandenen Modellen erhalten im
+Detail eine scharfe, drehbare 3D-Modellansicht (Maus oder Pfeiltasten). Forschung,
+weitere Objekte und Geräte ohne verfügbare WebGL-Grafik erhalten eine klare
+Vektorskizze. Diese ist ausdrücklich als Schema beschriftet. Es wird jeweils nur
+ein Detailrenderer wiederverwendet; ohne Interaktion läuft keine Endlosschleife.
+
+Die Hauptszene erhält feinere Wolken, zurückhaltendere Beleuchtung, kleinere
+Gebäude in der Übersicht und lichtabhängige Stadtlichter auf Landflächen.
+Die Nahansicht **Kolonie** behält die größere Modelldarstellung. Abstände großer
+Schiffsmodelle berücksichtigen deren tatsächliche Ausdehnung. Das verbessert
+Lesbarkeit und Größenverhältnisse, erreicht aber noch nicht den filmischen
+Detailgrad des Referenzbildes. Die Darstellung bleibt echtes interaktives 3D.
+
+Spielregeln, Datenbank, Abhängigkeiten und Lockfiles sind unverändert. Die gebauten
+Browserdateien sind enthalten; auf dem vorhandenen Testserver genügt der bisherige
+Updatehelfer. Es ist keine erneute Installation nötig.
+
+Geprüft: Rector, Pint, PHPStan; **74 PHP-Tests (1.268 Assertions)** und
+**72 Frontendtests**. Browserprüfungen umfassen scharfe Solarkraftwerk-Modelle,
+alle Adminbereiche, unveränderte vollständige Einstellungsdaten beim Gruppenwechsel,
+den echten Original-POST zum Hinzufügen von Einheiten sowie mobile Ansichten.
+
+## Etappe: Verwaltung und sichtbare Kolonie
 
 Branch: `codex/ogamex-3d-admin-colony`.
 

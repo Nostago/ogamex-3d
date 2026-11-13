@@ -10,11 +10,13 @@ import { renderIcons } from './icons.js'
 import { createFleetMonitor } from './fleetMonitor.js'
 import { createAdmin } from './admin.js'
 import { paintSpaceBackdrop } from './spaceBackdrop.js'
+import { createObjectArtwork } from './objectArtwork.js'
 
 const config = JSON.parse(
         document.querySelector('#live-bootstrap').textContent,
     ),
     t = config.t
+const objectArtwork = createObjectArtwork(t)
 const client = createLiveClient({
     ...config,
     token: document.querySelector('meta[name="csrf-token"]').content,
@@ -288,12 +290,7 @@ function renderCatalog() {
         detail.append(el('p', '', t.empty))
         return
     }
-    if (item.image) {
-        const image = el('img', 'detail-image')
-        image.src = item.image
-        image.alt = ''
-        detail.append(image)
-    }
+    detail.append(objectArtwork.set(item))
     detail.append(
         el('h2', '', item.name),
         el('p', '', item.description),
@@ -727,6 +724,7 @@ window.addEventListener('pagehide', (event) => {
     fleetMonitor.dispose()
     client.dispose()
     scene?.dispose()
+    objectArtwork.dispose()
 })
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) refresh()

@@ -126,6 +126,12 @@ try {
                 !!f.contentDocument.querySelector('style:last-child')
             );
         }, path);
+        await page.waitForFunction(
+            (path) =>
+                document.querySelector('#live-admin-frame').dataset
+                    .organized === path,
+            path,
+        );
         if (tab === 'settings') {
             const frame = page.frameLocator('#live-admin-frame');
             assert.ok(
@@ -136,12 +142,93 @@ try {
                 String(target),
             );
             assert.ok(await frame.locator('form [name="_token"]').count());
+            const beforeFields = await page
+                .locator('#live-admin-frame')
+                .evaluate((f) => [
+                    ...new FormData(
+                        f.contentDocument.querySelector(
+                            'form[action$="/admin/server-settings"]',
+                        ),
+                    ).entries(),
+                ]);
+            await page.locator('#live-admin-section').selectOption('1');
+            const afterFields = await page
+                .locator('#live-admin-frame')
+                .evaluate((f) => [
+                    ...new FormData(
+                        f.contentDocument.querySelector(
+                            'form[action$="/admin/server-settings"]',
+                        ),
+                    ).entries(),
+                ]);
+            assert.deepEqual(afterFields, beforeFields);
+            assert.equal(
+                await frame
+                    .locator('.live-admin-section:not([hidden])')
+                    .count(),
+                1,
+            );
+            assert.ok(
+                await frame
+                    .locator('form .footer button[type="submit"]')
+                    .isVisible(),
+            );
             await page.screenshot({
                 path: `${artifacts}/admin-universe.png`,
                 fullPage: true,
             });
         }
     }
+    await page
+        .locator('#live-admin-section')
+        .selectOption({ label: bootstrap.t.admin_units });
+    const tools = page.frameLocator('#live-admin-frame');
+    assert.equal(await tools.locator('#top').isVisible(), false);
+    assert.equal(await tools.locator('#chatBar').isVisible(), false);
+    assert.equal(
+        await tools.locator('.live-admin-section:not([hidden])').count(),
+        1,
+    );
+    assert.equal(await tools.locator('.live-admin-toc').count(), 0);
+    assert.ok(await tools.locator('button[name="unit_202"]').isVisible());
+    const previousCargo = BigInt(
+        snapshot.objects.find((o) => o.key === 'small_cargo').amount,
+    );
+    await tools.locator('[name="amount_of_units"]').fill('3');
+    const posted = page.waitForResponse(
+        (r) =>
+            r.request().method() === 'POST' &&
+            new URL(r.url()).pathname === '/admin/developer-shortcuts',
+    );
+    await tools.locator('button[name="unit_202"]').click();
+    assert.equal((await posted).status(), 302);
+    snapshot = await (
+        await context.request.get(`/play-3d/state?planet=${target}`)
+    ).json();
+    assert.equal(
+        snapshot.objects.find((o) => o.key === 'small_cargo').amount,
+        String(previousCargo + 3n),
+    );
+    await page.waitForFunction(() =>
+        document
+            .querySelector('#live-admin-frame')
+            .contentDocument?.querySelector('button[name="unit_202"]'),
+    );
+    assert.equal(
+        await page
+            .locator('#live-admin-frame')
+            .evaluate(
+                (f) =>
+                    f.contentDocument.documentElement.scrollWidth <=
+                    f.contentWindow.innerWidth + 1,
+            ),
+        true,
+    );
+    assert.equal(await tools.locator('#top').isVisible(), false);
+    await page.screenshot({
+        path: `${artifacts}/admin-clear-tools.png`,
+        fullPage: true,
+    });
     await page.locator('.main-nav [data-live-page="planet"]').click();
     await page.waitForFunction(
         () => Number(document.querySelector('#scene').dataset.frames) > 0,
@@ -175,7 +262,7 @@ try {
     });
     assert.deepEqual(errors, []);
     console.log(
-        'PASS admin original resource grant and object paths persist, million cruisers visible, five original admin areas retain forms/CSRF/planet binding, mobile workspace',
+        'PASS admin original resource grant and object paths persist, million cruisers visible, original advanced unit submission, unclipped section layout and complete unchanged settings payload, five original admin areas retain forms/CSRF/planet binding, mobile workspace',
     );
     await context.close();
 } finally {

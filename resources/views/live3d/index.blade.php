@@ -79,7 +79,7 @@
                     <div id="live-admin-shortcuts" class="admin-shortcuts"></div>
                     <section class="card admin-bot-note"><h2>{{ $t['admin_bots'] }}</h2><p>{{ $t['admin_bots_hint'] }}</p></section>
                 </div>
-                <section id="live-admin-advanced" hidden><div class="admin-frame-toolbar"><p id="live-admin-tab-hint"></p><a id="live-admin-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><iframe id="live-admin-frame" title="{{ $t['admin'] }}"></iframe></section>
+                <section id="live-admin-advanced" hidden><div class="admin-frame-toolbar"><p id="live-admin-tab-hint"></p><a id="live-admin-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-admin-sections" class="admin-section-switch" hidden></div><iframe id="live-admin-frame" title="{{ $t['admin'] }}"></iframe></section>
             </section>
             <section id="live-page-original" hidden>
                 <section id="live-fleet-stock" class="card" hidden></section>

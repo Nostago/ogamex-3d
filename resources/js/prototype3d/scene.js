@@ -24,7 +24,9 @@ export function createPlanetScene(
     renderer.debug.onShaderError = () => {
         throw new Error('scene_shader')
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+    renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, options.orbitalStyle ? 2 : 1.5),
+    )
     renderer.setClearColor(0x040b16, 0)
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
@@ -42,15 +44,21 @@ export function createPlanetScene(
         new THREE.HemisphereLight(
             0xcedbe5,
             0x37322b,
-            options.orbitalStyle ? 0.55 : 1.05,
+            options.orbitalStyle ? 0.28 : 1.05,
         ),
     )
-    const sun = new THREE.DirectionalLight(0xffe5c7, 3.4)
+    const sun = new THREE.DirectionalLight(
+        options.orbitalStyle ? 0xfff6e9 : 0xffe5c7,
+        3.4,
+    )
     sun.position.set(-12, 22, 18)
     sun.target.position.set(0, 6, 0)
     scene.add(sun.target)
     sun.castShadow = true
-    sun.shadow.mapSize.set(1024, 1024)
+    sun.shadow.mapSize.set(
+        options.orbitalStyle ? 2048 : 1024,
+        options.orbitalStyle ? 2048 : 1024,
+    )
     Object.assign(sun.shadow.camera, {
         left: -9,
         right: 9,
@@ -87,7 +95,9 @@ export function createPlanetScene(
             z,
         )
     const terrain = new THREE.SphereGeometry(8, 96, 64)
-    const planetTextures = createPlanetSurface()
+    const planetTextures = createPlanetSurface(
+        options.orbitalStyle ? 2048 : 1024,
+    )
     const globe = mesh(
         terrain,
         new THREE.MeshStandardMaterial({
@@ -103,7 +113,8 @@ export function createPlanetScene(
         world,
     )
     // Optional authored map is a texture on the real sphere, never a static UI.
-    let authoredTexture = null,
+    let authoredCities = null,
+        authoredTexture = null,
         disposed = false
     if (options.planetTexture)
         new THREE.TextureLoader().load(
@@ -119,6 +130,46 @@ export function createPlanetScene(
                 authoredTexture = texture
                 globe.material.map = texture
                 globe.material.bumpMap = null
+                // Derive decorative settlement lights from the actual atlas land mask.
+                // This keeps illumination off the oceans without inventing game entities.
+                try {
+                    const map = document.createElement('canvas')
+                    map.width = 1024
+                    map.height = 512
+                    const ctx = map.getContext('2d')
+                    ctx.drawImage(texture.image, 0, 0, map.width, map.height)
+                    const pixels = ctx.getImageData(0, 0, map.width, map.height)
+                    for (let y = 0; y < map.height; y++)
+                        for (let x = 0; x < map.width; x++) {
+                            const i = (y * map.width + x) * 4,
+                                r = pixels.data[i],
+                                g = pixels.data[i + 1],
+                                b = pixels.data[i + 2]
+                            const cluster =
+                                Math.sin(x * 0.073 + Math.sin(y * 0.12)) *
+                                Math.cos(y * 0.11)
+                            const light =
+                                y > 40 &&
+                                y < 472 &&
+                                r > 35 &&
+                                g > b * 0.95 &&
+                                r > b * 0.78 &&
+                                cluster > 0.55 &&
+                                (((x * 73856093) ^ (y * 19349663)) >>> 0) %
+                                    19 ===
+                                    0
+                            pixels.data[i] = light ? 255 : 0
+                            pixels.data[i + 1] = light ? 181 : 0
+                            pixels.data[i + 2] = light ? 88 : 0
+                            pixels.data[i + 3] = 255
+                        }
+                    ctx.putImageData(pixels, 0, 0)
+                    authoredCities = new THREE.CanvasTexture(map)
+                    authoredCities.colorSpace = THREE.SRGBColorSpace
+                    globe.material.emissiveMap = authoredCities
+                } catch {
+                    /* Optional emissive detail keeps the existing fallback if unavailable. */
+                }
                 globe.material.needsUpdate = true
             },
             undefined,
@@ -282,7 +333,7 @@ export function createPlanetScene(
                 radius,
             )
             infrastructure.group.visible =
-                !options.orbitalStyle || mode !== 'orbit'
+                !options.orbitalStyle || mode === 'colony'
             world.add(infrastructure.group)
             networkKey = key
         }
@@ -291,6 +342,10 @@ export function createPlanetScene(
         labels.forEach((label) => label.remove())
         labels.clear()
         data.buildings.forEach(buildModel)
+        if (options.orbitalStyle)
+            buildings.forEach(({ group }) =>
+                group.scale.setScalar(mode === 'colony' ? 1 : 0.46),
+            )
         syncFleet(data)
         renderer.shadowMap.needsUpdate = true
         if (changed) resetCamera()
@@ -418,11 +473,22 @@ export function createPlanetScene(
                 const model = options.orbitalStyle
                     ? createShipVariant(item.type, materials.palette)
                     : createShip(item.type, materials.palette)
+                const modelSize = options.orbitalStyle
+                    ? new THREE.Box3()
+                          .setFromObject(model)
+                          .getSize(new THREE.Vector3())
+                    : null
                 if (item.modelCount > 1)
                     model.position.set(
-                        ((index % 2) - 0.5) * 1.5,
+                        ((index % 2) - 0.5) *
+                            (modelSize
+                                ? Math.max(1.5, modelSize.x + 0.4)
+                                : 1.5),
                         0,
-                        (Math.floor(index / 2) - 0.5) * 1.7,
+                        (Math.floor(index / 2) - 0.5) *
+                            (modelSize
+                                ? Math.max(1.7, modelSize.z + 0.6)
+                                : 1.7),
                     )
                 ship.add(model)
             }
@@ -571,7 +637,11 @@ export function createPlanetScene(
         orbit.visible = value !== 'colony'
         if (options.orbitalStyle) {
             colony.visible = true
-            if (infrastructure) infrastructure.group.visible = value !== 'orbit'
+            if (infrastructure)
+                infrastructure.group.visible = value === 'colony'
+            buildings.forEach(({ group }) =>
+                group.scale.setScalar(value === 'colony' ? 1 : 0.46),
+            )
             renderer.shadowMap.needsUpdate = true
         }
         resetCamera()
@@ -845,6 +915,7 @@ export function createPlanetScene(
         dispose() {
             disposed = true
             authoredTexture?.dispose()
+            authoredCities?.dispose()
             cancelConstruction()
             cancelAnimationFrame(frame)
             resize.disconnect()

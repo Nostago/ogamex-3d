@@ -2,9 +2,8 @@ import * as THREE from './vendor/three.module.min.js'
 
 // Spherical coordinates make the generated maps seamless at the date line.
 // Fixed texture sizes and one cloud mesh keep GPU cost independent of fleet size.
-export function createPlanetSurface() {
-    const width = 1024,
-        height = 512
+export function createPlanetSurface(width = 1024) {
+    const height = width / 2
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
@@ -76,20 +75,16 @@ export function createPlanetSurface() {
             cityImage.data[index + 1] = settlement ? 180 : 0
             cityImage.data[index + 2] = settlement ? 85 : 0
             cityImage.data[index + 3] = 255
-            const cloud = Math.max(
-                0,
-                Math.min(
-                    1,
-                    (noise(x * 3 + y * 0.8, y * 5, z * 3) +
-                        0.25 * detail -
-                        0.4) *
-                        0.7,
-                ),
-            )
+            // Layered fine-scale turbulence gives sharp cloud filaments, not blurred blobs.
+            const weather =
+                noise(x * 5 + y * 0.5, y * 8, z * 5) +
+                0.5 * noise(x * 15, y * 19, z * 15) +
+                0.22 * noise(x * 42, y * 47, z * 42)
+            const cloud = Math.max(0, Math.min(1, (weather - 0.85) * 1.6))
             cloudImage.data[index] = 220
             cloudImage.data[index + 1] = 235
             cloudImage.data[index + 2] = 246
-            cloudImage.data[index + 3] = cloud * 140
+            cloudImage.data[index + 3] = cloud * 210
         }
     }
     context.putImageData(image, 0, 0)

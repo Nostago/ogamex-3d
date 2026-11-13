@@ -1,3 +1,4 @@
+import { organizeAdminSections } from './adminSections.js'
 // Native test controls delegate to the existing admin controller. Advanced forms
 // stay intact: the original action, CSRF token and all settings fields are preserved.
 export function createAdmin({
@@ -14,7 +15,8 @@ export function createAdmin({
         kind = document.querySelector('#live-admin-kind'),
         object = document.querySelector('#live-admin-object'),
         amount = document.querySelector('#live-admin-amount')
-    let tab = 'test',
+    let sectionCleanup,
+        tab = 'test',
         pending = false,
         framePlanet = '',
         frameTab = ''
@@ -50,10 +52,17 @@ export function createAdmin({
                     String(button.dataset.adminTab === key),
                 ),
             )
-        if (key === 'test') return
+        if (key === 'test') {
+            document.querySelector('#live-admin-sections').hidden = true
+            return
+        }
+        document.querySelector('#live-admin-sections').hidden = false
         document.querySelector('#live-admin-tab-hint').textContent = hints[key]
         document.querySelector('#live-admin-original').href = url(key)
         if (frameTab !== key || framePlanet !== String(state().planet.id)) {
+            if (frameTab !== key) delete frame.dataset.section
+            delete frame.dataset.organized
+            frame.inert = true
             frameTab = key
             framePlanet = String(state().planet.id)
             frame.src = url(key)
@@ -64,15 +73,6 @@ export function createAdmin({
         button.dataset.adminTab = key
         button.addEventListener('click', () => show(key))
         document.querySelector('#live-admin-tabs').append(button)
-        if (key !== 'test') {
-            const card = el('button', 'card admin-shortcut')
-            card.append(
-                el('strong', '', name + ' ›'),
-                el('span', '', hints[key]),
-            )
-            card.addEventListener('click', () => show(key))
-            document.querySelector('#live-admin-shortcuts').append(card)
-        }
     }
     function catalog() {
         const previous = object.value
@@ -174,6 +174,7 @@ export function createAdmin({
         })
     frame.addEventListener('load', () => {
         try {
+            sectionCleanup?.()
             const doc = frame.contentDocument
             if (!doc?.body) return
             const path = frame.contentWindow.location.pathname
@@ -207,29 +208,13 @@ export function createAdmin({
                 }
                 cp.value = framePlanet
             }
-            const headings = [
-                ...doc.querySelectorAll('p.box_highlight'),
-            ].filter(
-                (node) =>
-                    node.textContent.trim() && node.textContent.length < 100,
+            frame.inert = false
+            sectionCleanup = organizeAdminSections(
+                frame,
+                doc,
+                document.querySelector('#live-admin-sections'),
+                t,
             )
-            if (headings.length > 2) {
-                const toc = doc.createElement('nav')
-                toc.className = 'live-admin-toc'
-                for (const heading of headings) {
-                    const button = doc.createElement('button')
-                    button.type = 'button'
-                    button.textContent = heading.textContent.trim()
-                    button.addEventListener('click', () =>
-                        heading.scrollIntoView({
-                            block: 'start',
-                            behavior: 'smooth',
-                        }),
-                    )
-                    toc.append(button)
-                }
-                doc.body.prepend(toc)
-            }
         } catch {
             status.textContent = t.frame_fallback
         }
