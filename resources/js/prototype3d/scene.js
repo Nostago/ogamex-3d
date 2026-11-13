@@ -4,6 +4,7 @@ import { createShip } from './ships.js'
 import { createBuilding } from './buildings.js'
 import { surfacePosition } from './layout.js'
 import { createInfrastructure } from './infrastructure.js'
+import { createPlanetSurface } from './planetSurface.js'
 
 // Procedural scene only. No remote textures, models, game services or mutations.
 export function createPlanetScene(host, labelsHost, onSelect, names) {
@@ -68,33 +69,30 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             z,
         )
     const terrain = new THREE.SphereGeometry(8, 96, 64)
-    const colors = []
-    const position = terrain.attributes.position
-    for (let index = 0; index < position.count; index++) {
-        const x = position.getX(index),
-            y = position.getY(index),
-            z = position.getZ(index)
-        const noise =
-            Math.sin(x * 0.8 + Math.sin(z)) +
-            Math.cos(z * 0.7 + y * 0.6) +
-            Math.sin(y * 1.4) * 0.45
-        const color = new THREE.Color(
-            noise > 0.35 ? 0x3a6970 : noise > -0.05 ? 0x426571 : 0x133f62,
-        )
-        color.multiplyScalar(0.82 + 0.18 * Math.sin(x * 3 + z * 2) ** 2)
-        colors.push(color.r, color.g, color.b)
-    }
-    terrain.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+    const planetTextures = createPlanetSurface()
     const globe = mesh(
         terrain,
         new THREE.MeshStandardMaterial({
-            vertexColors: true,
-            roughness: 0.95,
-            metalness: 0.1,
+            map: planetTextures.surface,
+            bumpMap: planetTextures.surface,
+            bumpScale: 0.035,
+            roughness: 0.84,
+            metalness: 0.02,
         }),
         world,
     )
     globe.receiveShadow = true
+    const clouds = mesh(
+        new THREE.SphereGeometry(8.065, 64, 48),
+        new THREE.MeshStandardMaterial({
+            map: planetTextures.clouds,
+            transparent: true,
+            depthWrite: false,
+            roughness: 1,
+            opacity: 0.8,
+        }),
+        world,
+    )
     const atmosphere = mesh(
         new THREE.SphereGeometry(8.22, 64, 48),
         new THREE.ShaderMaterial({
@@ -201,7 +199,10 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
         host.dataset.radius = String(radius)
         host.dataset.planet = renderPlanet
         globe.scale.setScalar(radius / 8)
-        globe.material.color.setHex(data.planet.tint)
+        globe.material.color
+            .setHex(data.planet.tint)
+            .lerp(new THREE.Color(0xffffff), 0.82)
+        clouds.scale.setScalar(radius / 8)
         atmosphere.scale.setScalar((radius + 0.22) / 8.22)
         orbitPath.scale.setScalar(orbitRadius / 11.4)
         station.position.x = orbitRadius
@@ -773,10 +774,14 @@ export function createPlanetScene(host, labelsHost, onSelect, names) {
             scene.traverse((object) => {
                 object.geometry?.dispose()
             })
-            ;[selectionMat, globe.material, atmosphere.material].forEach(
-                (mat) => mat.dispose(),
-            )
+            ;[
+                selectionMat,
+                globe.material,
+                clouds.material,
+                atmosphere.material,
+            ].forEach((mat) => mat.dispose())
             infrastructure?.dispose()
+            planetTextures.dispose()
             materials.dispose()
             renderer.dispose()
         },

@@ -71,6 +71,7 @@ Route::get('/ajax/main/contact', [RulesController::class, 'ajaxContact'])->name(
 Route::middleware(['auth', 'banned', 'globalgame', 'locale', 'firstlogin'])->group(function () {
     // Authenticated 3D interface: original backend, separate public demo.
     Route::get('/play-3d', [Live3dController::class, 'index'])->name('live3d.index');
+    Route::get('/play-3d/galaxy', [Live3dController::class, 'galaxy'])->name('live3d.galaxy');
     Route::get('/play-3d/state', [Live3dController::class, 'state'])->name('live3d.state');
     Route::post('/play-3d/command', [Live3dController::class, 'command'])->name('live3d.command');
 

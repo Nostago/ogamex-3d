@@ -124,7 +124,7 @@ try {
         await page.locator('#live-planet').selectOption(first);
         await page.locator('[data-queue="unit"]').first().waitFor();
     }
-    for (const name of ['fleets', 'galaxy', 'messages']) {
+    for (const name of ['fleets', 'messages']) {
         await nav(name);
         await page.waitForFunction(() => {
             const f = document.querySelector('#live-original');
@@ -152,6 +152,58 @@ try {
             fullPage: true,
         });
     }
+    await nav('galaxy');
+    await page.locator('.galaxy-row[data-position="15"]').waitFor();
+    assert.equal(await page.locator('#live-page-original').isVisible(), false);
+    const firstSystem = Number(
+        await page.locator('#live-system-number').inputValue(),
+    );
+    if (firstSystem < 499) {
+        await page.locator('#live-system-next').click();
+        await page.waitForFunction(
+            (value) =>
+                Number(document.querySelector('#live-system-number').value) ===
+                value,
+            firstSystem + 1,
+        );
+    }
+    await page.locator('#live-system-home').click();
+    await page.waitForFunction(
+        (value) =>
+            Number(document.querySelector('#live-system-number').value) ===
+            value,
+        firstSystem,
+    );
+    await page.screenshot({
+        path: `${artifacts}/live-galaxy.png`,
+        fullPage: true,
+    });
+    await nav('ships');
+    await page.locator('[data-object="light_fighter"]').click();
+    assert.match(
+        await page.locator('[data-object="light_fighter"]').textContent(),
+        /in Produktion/,
+    );
+    await page.locator('#live-quantity').fill('12');
+    await page.locator('#live-refresh').click();
+    await page.waitForTimeout(750);
+    assert.equal(await page.locator('#live-quantity').inputValue(), '12');
+    // Background snapshots preserve focused input, not just its value.
+    await page.locator('#live-quantity').focus();
+    await page.waitForTimeout(5500);
+    assert.equal(await page.locator('#live-quantity').inputValue(), '12');
+    assert.equal(
+        await page
+            .locator('#live-quantity')
+            .evaluate((n) => n === document.activeElement),
+        true,
+    );
+    await nav('planet');
+    assert.ok(await page.locator('#live-dock .dock-order').count());
+    await page.screenshot({
+        path: `${artifacts}/live-command-overview.png`,
+        fullPage: true,
+    });
     await page.setViewportSize({ width: 390, height: 844 });
     for (const name of [
         'planet',
@@ -163,6 +215,35 @@ try {
         'messages',
     ]) {
         await nav(name);
+        if (
+            await page.evaluate(
+                () => document.documentElement.scrollWidth > innerWidth,
+            )
+        ) {
+            await page.screenshot({
+                path: `${artifacts}/overflow-${name}.png`,
+                fullPage: true,
+            });
+            console.log(
+                'Overflow',
+                name,
+                await page.evaluate(() =>
+                    [...document.querySelectorAll('body *')]
+                        .filter(
+                            (n) =>
+                                n.getBoundingClientRect().right >
+                                innerWidth + 1,
+                        )
+                        .slice(0, 20)
+                        .map((n) => [
+                            n.tagName,
+                            n.id,
+                            n.className,
+                            n.getBoundingClientRect().right,
+                        ]),
+                ),
+            );
+        }
         assert.equal(
             await page.evaluate(
                 () => document.documentElement.scrollWidth <= innerWidth,
@@ -182,7 +263,7 @@ try {
     await page.locator('[data-queue="unit"]').first().waitFor();
     assert.deepEqual(errors, []);
     console.log(
-        'PASS real Laravel login, live planet state, building/research creation and cancellation, paid ship queue, planet context, complete original fleet/galaxy/message views, seven mobile sections and persistent server queues',
+        'PASS real Laravel login, live planet state, building/research creation and cancellation, paid ship queue, planet context, original fleet/message views, native galaxy navigation, dashboard queues and preserved quantity input, seven mobile sections and persistent server queues',
     );
     await context.close();
 } finally {

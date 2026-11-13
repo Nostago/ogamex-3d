@@ -6,12 +6,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use OGame\Factories\PlanetServiceFactory;
 use OGame\GameObjects\Models\Abstracts\GameObject;
 use OGame\GameObjects\Models\Enums\GameObjectType;
 use OGame\Services\Live3dViewService;
 use OGame\Services\ObjectService;
+use OGame\Services\PhalanxService;
 use OGame\Services\PlanetService;
 use OGame\Services\PlayerService;
+use OGame\Services\SettingsService;
 
 class Live3dController extends Controller
 {
@@ -28,6 +31,22 @@ class Live3dController extends Controller
         $planet = $this->ownedPlanet($player, (int)($input['planet'] ?? $player->planets->current()->getPlanetId()));
         $planet->update();
         return response()->json($view->snapshot($player, $planet))->header('Cache-Control', 'private, no-store');
+    }
+
+    public function galaxy(Request $request, PlayerService $player, SettingsService $settings, PlanetServiceFactory $planets, PhalanxService $phalanx): JsonResponse
+    {
+        $input = $request->validate([
+            'planet' => ['required', 'integer', 'min:1'],
+            'galaxy' => ['required', 'integer', 'min:1', 'max:'.$settings->numberOfGalaxies()],
+            'system' => ['required', 'integer', 'min:1', 'max:499'],
+        ]);
+        $planet = $this->ownedPlanet($player, (int)$input['planet']);
+        $player->setCurrentPlanetId($planet->getPlanetId());
+        return response()->json([
+            'galaxy' => (int)$input['galaxy'], 'system' => (int)$input['system'],
+            'maxGalaxies' => $settings->numberOfGalaxies(), 'maxSystems' => 499,
+            'rows' => resolve(GalaxyController::class)->getGalaxyArray((int)$input['galaxy'], (int)$input['system'], $player, $planets, $phalanx),
+        ])->header('Cache-Control', 'private, no-store');
     }
 
     /** Delegate writes to the exact controllers used by the original interface. */

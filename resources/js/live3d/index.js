@@ -3,6 +3,8 @@ import '../../css/live3d.css'
 import { createPlanetScene } from '../prototype3d/scene.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
+import { renderDashboard } from './dashboard.js'
+import { createGalaxy } from './galaxy.js'
 
 const config = JSON.parse(
         document.querySelector('#live-bootstrap').textContent,
@@ -83,8 +85,18 @@ function show(name, fromFrame = false) {
         'research',
         'ships',
     ].includes(page)
-    document.querySelector('#live-page-original').hidden = !config.links[page]
-    if (config.links[page]) {
+    document.querySelector('#live-page-galaxy').hidden = page !== 'galaxy'
+    document.querySelector('#live-page-original').hidden = ![
+        'fleets',
+        'messages',
+    ].includes(page)
+    if (page === 'galaxy') {
+        document.querySelector('#live-galaxy-original').href = contextUrl(
+            config.links.galaxy,
+        )
+        galaxy.show()
+    }
+    if (['fleets', 'messages'].includes(page)) {
         document.querySelector('#live-original-link').href = contextUrl(
             config.links[page],
         )
@@ -94,6 +106,7 @@ function show(name, fromFrame = false) {
             frame.src = contextUrl(config.links[page])
         }
     } else renderCatalog()
+    if (!fromFrame) window.scrollTo({ top: 0, behavior: 'instant' })
 }
 function render() {
     const selector = document.querySelector('#live-planet')
@@ -116,13 +129,7 @@ function render() {
     for (const key of ['metal', 'crystal', 'deuterium']) {
         const value = state.resources[key],
             span = el('span', '', `${t[key]} `)
-        span.append(
-            el(
-                'strong',
-                '',
-                `${number(value.amount)} / ${number(value.limit)}`,
-            ),
-        )
+        span.append(el('strong', '', number(value.amount)))
         span.append(
             el(
                 'small',
@@ -130,30 +137,26 @@ function render() {
                 `${value.hour >= 0 ? '+' : ''}${number(value.hour)} / h`,
             ),
         )
+        span.title = `${t.storage}: ${number(value.amount)} / ${number(value.limit)}`
+        span.classList.add(`resource-${key}`)
         span.dataset.resource = key
         balances.append(span)
     }
-    balances.append(
+    const energy = el('span', 'resource-energy', t.energy)
+    energy.append(
         el(
-            'span',
+            'strong',
             '',
-            `${t.energy}: ${number(state.energy.made)} / ${number(state.energy.used)}`,
+            `${number(state.energy.made)} / ${number(state.energy.used)}`,
+        ),
+        el(
+            'small',
+            'live-rate',
+            `${t.energy_factor}: ${number(state.energy.factor)} %`,
         ),
     )
-    const summary = document.querySelector('#live-overview')
-    summary.replaceChildren(
-        el('h2', '', state.planet.name),
-        el(
-            'p',
-            '',
-            `${t.fields}: ${state.planet.fieldsUsed} / ${state.planet.fieldsMax}`,
-        ),
-    )
-    for (const key of ['metal', 'crystal', 'deuterium'])
-        summary.append(
-            el('p', '', `${t[key]}: ${number(state.resources[key].hour)} / h`),
-        )
-    summary.append(el('p', '', `${t.energy_factor}: ${state.energy.factor} %`))
+    balances.append(energy)
+    renderDashboard(state, t, el, number, navigate)
     document.querySelector('#live-production-link').href = contextUrl(
         '/resources/settings',
     )
@@ -174,6 +177,8 @@ function render() {
     document.querySelector('#live-refresh').disabled = busy || stopped
 }
 function renderCatalog() {
+    const focus = document.activeElement?.id === 'live-quantity'
+    const scroll = document.querySelector('#live-catalog').scrollTop
     const list = document.querySelector('#live-catalog'),
         detail = document.querySelector('#live-detail'),
         groups = document.querySelector('#live-groups')
@@ -196,7 +201,15 @@ function renderCatalog() {
         const button = el('button', 'live-object')
         button.dataset.object = item.key
         button.setAttribute('aria-pressed', String(item.id === selected[page]))
-        button.append(
+        if (item.image) {
+            const image = el('img', 'object-thumbnail')
+            image.src = item.image
+            image.alt = ''
+            image.loading = 'lazy'
+            button.append(image)
+        }
+        const text = el('span', 'object-text')
+        text.append(
             el('strong', '', item.name),
             el(
                 'small',
@@ -204,6 +217,21 @@ function renderCatalog() {
                 `${['ship', 'defense'].includes(item.type) ? t.ready : t.level}: ${number(item.amount)}`,
             ),
         )
+        const pending =
+            item.type === 'ship' || item.type === 'defense'
+                ? state.queues.unit
+                      .filter((q) => q.objectId === item.id)
+                      .reduce((total, q) => total + BigInt(q.quantity), 0n)
+                : 0n
+        if (pending > 0n)
+            text.append(
+                el(
+                    'small',
+                    'production-count',
+                    `${number(String(pending))} ${t.in_production}`,
+                ),
+            )
+        button.append(text, el('span', 'object-chevron', '›'))
         button.addEventListener('click', () => {
             selected[page] = item.id
             quantity = '1'
@@ -218,6 +246,12 @@ function renderCatalog() {
         detail.append(el('p', '', t.empty))
         return
     }
+    if (item.image) {
+        const image = el('img', 'detail-image')
+        image.src = item.image
+        image.alt = ''
+        detail.append(image)
+    }
     detail.append(
         el('h2', '', item.name),
         el('p', '', item.description),
@@ -227,14 +261,16 @@ function renderCatalog() {
             `${['ship', 'defense'].includes(item.type) ? t.ready : t.level}: ${number(item.amount)}`,
         ),
     )
+    detail.append(el('h3', '', t.single_cost))
+    const costs = el('div', 'cost-grid')
+    for (const [key, value] of Object.entries(item.cost)) {
+        if (!value) continue
+        const row = el('div', `cost-item resource-${key}`, t[key])
+        row.append(el('strong', '', number(value)))
+        costs.append(row)
+    }
     detail.append(
-        el(
-            'p',
-            '',
-            `${t.cost}: ${Object.entries(item.cost)
-                .map(([key, value]) => `${t[key]} ${number(value)}`)
-                .join(' · ')}`,
-        ),
+        costs,
         el('p', '', `${t.duration}: ${number(item.seconds)} s`),
     )
     const unit = ['ship', 'defense'].includes(item.type)
@@ -284,6 +320,26 @@ function renderCatalog() {
         })
         label.append(input)
         detail.append(label)
+        const presets = el('div', 'quantity-presets')
+        for (const value of ['1', '10', '100', String(item.maxAmount)]) {
+            const preset = el(
+                'button',
+                '',
+                value === String(item.maxAmount) ? t.max : value,
+            )
+            preset.disabled =
+                busy ||
+                stopped ||
+                BigInt(value) < 1n ||
+                BigInt(value) > BigInt(item.maxAmount)
+            preset.addEventListener('click', () => {
+                quantity = value
+                input.value = value
+                validate()
+            })
+            presets.append(preset)
+        }
+        detail.append(presets)
         validate()
     }
     const action =
@@ -297,6 +353,9 @@ function renderCatalog() {
     detail.append(start)
     const note = el('p', '', t.server_checks)
     detail.append(note)
+    list.scrollTop = scroll
+    if (focus)
+        document.querySelector('#live-quantity')?.focus({ preventScroll: true })
 }
 function renderQueues() {
     const host = document.querySelector('#live-queues')
@@ -341,6 +400,18 @@ function renderQueues() {
     updateCountdowns()
 }
 function updateCountdowns() {
+    for (const node of document.querySelectorAll('[data-progress-remaining]')) {
+        if (node.dataset.active === 'true')
+            node.value = Math.min(
+                node.max,
+                Math.max(
+                    0,
+                    Number(node.dataset.total) -
+                        Number(node.dataset.progressRemaining) +
+                        (Date.now() - received) / 1000,
+                ),
+            )
+    }
     for (const node of document.querySelectorAll('[data-remaining]')) {
         const left = Math.max(
             0,
@@ -429,7 +500,8 @@ frame.addEventListener('load', () => {
         document.head.append(style)
         // A late load from a hidden original view must not undo navigation or
         // a planet selection in the surrounding interface.
-        if (!config.links[page] || framePlanet !== planet) return
+        if (!['fleets', 'messages'].includes(page) || framePlanet !== planet)
+            return
         const cp = url.searchParams.get('cp')
         if (
             cp &&
@@ -446,6 +518,10 @@ frame.addEventListener('load', () => {
               : url.pathname.startsWith('/messages')
                 ? 'messages'
                 : null
+        if (area === 'galaxy') {
+            show('galaxy')
+            return
+        }
         if (area && area !== page) {
             framePage = area
             show(area, true)
@@ -467,7 +543,10 @@ window.addEventListener('hashchange', () => {
 document
     .querySelector('#live-planet')
     .addEventListener('change', (e) => switchPlanet(e.target.value))
-document.querySelector('#live-refresh').addEventListener('click', refresh)
+document.querySelector('#live-refresh').addEventListener('click', () => {
+    refresh()
+    if (page === 'galaxy') galaxy.show(true)
+})
 function setMode(next) {
     mode = next
     root.dataset.mode = mode
@@ -498,6 +577,25 @@ document.querySelector('#live-rotate').addEventListener('click', (e) => {
     rotating = !rotating
     scene?.setRotation(rotating)
     e.currentTarget.setAttribute('aria-pressed', String(rotating))
+})
+function navigate(target, category, id) {
+    if (category && ['building', 'station', 'defense'].includes(category))
+        group = category
+    if (id) selected[target] = id
+    show(target)
+}
+const galaxy = createGalaxy({
+    url: config.galaxyUrl,
+    t,
+    el,
+    number,
+    context: () => state.planet,
+    onError: failure,
+    openFleet(url) {
+        show('fleets')
+        frame.src = contextUrl(url)
+        document.querySelector('#live-original-link').href = contextUrl(url)
+    },
 })
 render()
 show(page)
@@ -540,6 +638,7 @@ const poll = setInterval(() => {
 window.addEventListener('pagehide', () => {
     clearInterval(poll)
     clearInterval(clock)
+    galaxy.dispose()
     client.dispose()
     scene?.dispose()
 })

@@ -3,8 +3,8 @@
     "file": "assets/scene-BC_hx_BB.css",
     "src": "_scene-BC_hx_BB.css"
   },
-  "_scene-BETdDy0N.js": {
-    "file": "assets/scene-BETdDy0N.js",
+  "_scene-BZZujxIT.js": {
+    "file": "assets/scene-BZZujxIT.js",
     "name": "scene",
     "css": [
       "assets/scene-BC_hx_BB.css"
@@ -29,24 +29,24 @@
     "isEntry": true
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-CDHwU7oj.js",
+    "file": "assets/index-Ddveaf2A.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
     "imports": [
-      "_scene-BETdDy0N.js"
+      "_scene-BZZujxIT.js"
     ],
     "css": [
-      "assets/index-BOdYvRFK.css"
+      "assets/index-CvUIgTMF.css"
     ]
   },
   "resources/js/prototype3d/index.js": {
-    "file": "assets/index-CQIBzpsu.js",
+    "file": "assets/index-C0MSi_va.js",
     "name": "index",
     "src": "resources/js/prototype3d/index.js",
     "isEntry": true,
     "imports": [
-      "_scene-BETdDy0N.js"
+      "_scene-BZZujxIT.js"
     ]
   },
   "resources/js/ingame.js": {

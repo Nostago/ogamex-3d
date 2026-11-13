@@ -36,6 +36,7 @@ class Live3dViewService
                 'key' => $object->machine_name,
                 'name' => $object->title,
                 'description' => strip_tags($object->description),
+                'image' => isset($object->assets->imgSmall) ? asset('img/objects/'.($unit ? 'units' : ($object->type === GameObjectType::Research ? 'research' : 'buildings')).'/'.$object->assets->imgSmall) : null,
                 'type' => $object->type->value,
                 'amount' => (string)$level,
                 'cost' => ['metal' => $cost->metal->get(), 'crystal' => $cost->crystal->get(), 'deuterium' => $cost->deuterium->get(), 'energy' => $cost->energy->get()],
@@ -56,6 +57,7 @@ class Live3dViewService
             'planet' => [
                 'id' => $planet->getPlanetId(), 'name' => $planet->getPlanetName(),
                 'coordinates' => $planet->getPlanetCoordinates()->asString(), 'diameter' => $planet->getPlanetDiameter(),
+                'image' => asset('img/planets/small/'.$planet->getPlanetBiomeType().'_'.$planet->getPlanetImageType().'.png'), 'temperature' => $planet->getPlanetTempAvg(),
                 'type' => $planet->getPlanetType()->value, 'fieldsUsed' => $planet->getBuildingCount(), 'fieldsMax' => $planet->getPlanetFieldMax(),
             ],
             'planets' => array_map(fn (PlanetService $item): array => [
@@ -67,6 +69,9 @@ class Live3dViewService
                 'deuterium' => ['amount' => $planet->deuterium()->get(), 'limit' => $planet->deuteriumStorage()->get(), 'hour' => $planet->getDeuteriumProductionPerHour()],
             ],
             'energy' => ['made' => $planet->energyProduction()->get(), 'used' => $planet->energyConsumption()->get(), 'factor' => $planet->getResourceProductionFactor()],
+            'unread' => (new MessageService($player))->getUnreadMessagesCount(),
+            'fleetSlots' => ['used' => $player->getFleetSlotsInUse(), 'max' => $player->getFleetSlotsMax()],
+            'defenseTotal' => (string)$planet->getDefenseUnits()->getAmount(),
             'shipTotal' => (string)$planet->getShipUnits()->getAmount(),
             'objects' => $objects,
             'queues' => [

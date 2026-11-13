@@ -27,6 +27,45 @@ class Live3dTest extends IsolatedAccountTestCase
         $this->getJson('/play-3d/state?planet='.$this->secondPlanetService->getPlanetId())->assertOk()->assertJsonPath('planet.id', $this->secondPlanetService->getPlanetId());
     }
 
+    public function testDashboardIncludesOriginalAssetsAndLiveCounters(): void
+    {
+        $this->planetAddUnit('rocket_launcher', 18);
+        $this->planetAddUnit('light_fighter', 1000000);
+        $response = $this->getJson('/play-3d/state')->assertOk()
+            ->assertJsonPath('shipTotal', '1000000')->assertJsonPath('defenseTotal', '18');
+        $this->assertIsInt($response->json('unread'));
+        $this->assertIsInt($response->json('fleetSlots.used'));
+        $this->assertGreaterThan(0, $response->json('fleetSlots.max'));
+        $this->assertStringContainsString('/img/planets/small/', $response->json('planet.image'));
+        /** @var array<int, array<string, mixed>> $objectData */
+        $objectData = $response->json('objects');
+        $objects = collect($objectData);
+        $this->assertStringContainsString('/img/objects/buildings/', (string)($objects->firstWhere('key', 'metal_mine')['image'] ?? ''));
+        $this->assertStringContainsString('/img/objects/units/', (string)($objects->firstWhere('key', 'light_fighter')['image'] ?? ''));
+    }
+
+    public function testGalaxyReadModelUsesOriginalVisibilityAndRejectsForeignPlanetAndInvalidCoordinates(): void
+    {
+        $coordinates = $this->planetService->getPlanetCoordinates();
+        $query = '?planet='.$this->currentPlanetId.'&galaxy='.$coordinates->galaxy.'&system='.$coordinates->system;
+        $response = $this->getJson('/play-3d/galaxy'.$query)->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+        $this->assertSame($coordinates->galaxy, $response->json('galaxy'));
+        $this->assertSame(499, $response->json('maxSystems'));
+        /** @var array<int, array<string, mixed>> $rows */
+        $rows = $response->json('rows');
+        $this->assertGreaterThanOrEqual(15, count($rows));
+        $row = collect($rows)->firstWhere('position', $coordinates->position);
+        $this->assertNotNull($row);
+        $this->assertSame($this->currentPlanetId, $row['planets'][0]['planetId']);
+        $this->assertSame($this->planetService->getPlanetName(), $row['planets'][0]['planetName']);
+        $foreign = $this->createForeignPlanet();
+        $this->getJson('/play-3d/galaxy?planet='.$foreign->getPlanetId().'&galaxy=1&system=1')->assertNotFound();
+        $this->getJson('/play-3d/galaxy?planet='.$this->currentPlanetId.'&galaxy=0&system=1')->assertUnprocessable();
+        $this->getJson('/play-3d/galaxy?planet='.$this->currentPlanetId.'&galaxy=1&system=500')->assertUnprocessable();
+        Auth::logout();
+        $this->getJson('/play-3d/galaxy'.$query)->assertUnauthorized();
+    }
+
     public function testForeignPlanetsAndUnauthenticatedAccessAreRejected(): void
     {
         $foreign = $this->createForeignPlanet();

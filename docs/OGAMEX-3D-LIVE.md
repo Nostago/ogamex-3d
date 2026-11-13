@@ -13,7 +13,7 @@ importiert und verändern keinen echten Account.
 
 Eine laufende, bereits eingerichtete OGameX-Installation verwenden. Änderungen
 dieses Entwicklungsbranches übernehmen, vorhandene Abhängigkeiten weiterverwenden
-und `npm run build` ausführen. Es gibt keine neuen Abhängigkeiten, Migrationen oder
+und bei eigener Entwicklung `npm run build` ausführen. Der Entwicklungsbranch enthält bereits gebaute Browserdateien; auf dem Testserver ist kein Node-Build nötig. Es gibt keine neuen Abhängigkeiten, Migrationen oder
 Lockfile-Änderungen und keinen Wechsel des bestehenden Datenbanksystems.
 
 Am OGameX-Server anmelden und oben in der Originaloberfläche **3D-Oberfläche**
@@ -41,12 +41,53 @@ Benutzer. Es wird durch diesen Branch kein öffentlicher Server bereitgestellt.
   serverseitig berechnete maximal baubare Mengen. Mengenaufträge verwenden den
   bestehenden Schiffsbau. Der Server arbeitet angenommene Warteschlangen automatisch
   ab; es gibt keine zusätzliche lokale Start-/Pause-/Erstattungslogik für Einheiten.
-- **Flotten, Galaxie, Nachrichten:** vollständige angemeldete Originalansichten
+- **Galaxie:** eigene Systemübersicht im neuen Stil, Galaxie-/Systemeingabe,
+  Vor-/Zurücknavigation, Heimatsystem, Planeten, Monde und Trümmerfelder.
+  Sichtbarkeit und angebotene Missionen kommen vom originalen `GalaxyController`.
+  Missionslinks öffnen die originale Flottenplanung mit vorausgefülltem Ziel;
+  die Auswahl verschickt keine Flotte. Spezialaktionen (z. B. Phalanx, direktes
+  Spionieren, Umsiedeln und Kolonisieren) bleiben über die vollständige Originalansicht erreichbar.
+- **Flotten und Nachrichten:** vollständige angemeldete Originalansichten
   innerhalb desselben Oberflächenrahmens. Originales Dispatching, Missionen,
-  Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese Seiten
-  sind bewusst noch Übergangsansichten; die spätere vollständige Neugestaltung
-  kann getrennt von der Spiellogik erfolgen. Ein Link öffnet jede Originalansicht
-  auch separat. Die klassische Oberfläche bleibt insgesamt benutzbar.
+  Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese beiden
+  Bereiche sind weiterhin Übergangsansichten mit einem Link zur separaten Originalseite.
+
+## Etappe: Kommandooberfläche
+
+Branch: `codex/ogamex-3d-command-interface` (Fortsetzung des bereits eingebundenen
+Live-Backends, zusammenhängender Oberflächenumbau).
+
+- Dunkler blau/türkiser Rahmen, klare Bereichsnavigation, Rohstoffleiste mit
+  Beständen, Produktionsraten und Lagerinformationen im Tooltip.
+- Interaktiver Planet mit lokal generierter, nahtloser Oberflächentextur und
+  Wolkenschicht; keine fremden Bilddienste oder Downloads zur Laufzeit.
+- Planetensteckbrief, Produktion/Lagerfüllung, echte Flottenslots, Verteidigung und
+  ungelesene Nachrichten. Keine erfundenen Bevölkerungswerte oder zusätzlichen Währungen.
+- Auftragsleiste auf der Übersicht: Bau, Forschung und Einheiten, Restzeiten,
+  Fortschritt und direkter Sprung zum betreffenden Katalogobjekt. Der Server
+  arbeitet Aufträge weiterhin nach den Originalregeln automatisch ab.
+- Bebilderte Gebäude-, Forschungs- und Schiffskataloge mit Original-Assets,
+  getrennten Kostenfeldern, Voraussetzungen, Mengenwahl und Mengen-Voreinstellungen.
+  Ein Schiffstyp zeigt Bestand und noch ausstehende Produktionsmenge gemeinsam.
+- Automatische Aktualisierung erhält eingegebene Mengen und Eingabefokus.
+  Desktop und schmale Mobilansichten werden im Browser geprüft.
+
+### Bestehenden nativen Testserver aktualisieren
+
+Das Hilfsskript `scripts/codex/update-test-interface.sh` ist ausschließlich für
+`/home/ogamedev/OGameX` auf dem bereits eingerichteten Testbranch vorgesehen. Erst
+Branch/Commit von GitHub holen, dann die Skriptversion **aus genau diesem Commit**
+mit dessen vollständiger SHA aufrufen. Das Skript verweigert `main`/`master`,
+ungeprüfte lokale Änderungen und Mergekonflikte; es sichert Commit und gebaute
+Assets vor dem Merge. Es installiert nichts, führt keine Migrationen aus und
+startet keine Dienste neu. Der bestehende lokale Reverb-Commit bleibt beim Merge erhalten.
+
+Bei einem Fehler nach dem Merge ist der letzte Commit unter dem ausgegebenen
+Sicherungsverzeichnis in `commit.txt` dokumentiert, zusätzlich existiert ein
+`backup/vor-command-interface-*`-Branch. Nicht blind zurücksetzen: erst Git-Status
+und Fehlermeldung prüfen. Die gesicherten Browserdateien liegen in
+`public-build.tar.gz`, eine vorhandene Vite-Hot-Datei gegebenenfalls unter `public-hot`.
+
 
 Der Live-Bereich besitzt keine Demo-Zeitsprünge, Testbestandsknöpfe, lokalen
 Rohstoffberechnungen oder Spielstandsresets. Die Browserspeicherstände der
@@ -62,13 +103,14 @@ Ein WebGL-Fehler blockiert weder die Listen noch die Spielaktionen.
 
 ## Schnittstelle und Verantwortlichkeiten
 
-Die drei neuen Routen liegen in derselben Middlewaregruppe wie das Original:
+Die vier neuen Routen liegen in derselben Middlewaregruppe wie das Original:
 `auth`, `banned`, `globalgame`, `locale`, `firstlogin`, zusätzlich Web-Sitzung/CSRF.
 
 | Route | Aufgabe |
 |---|---|
 | `GET /play-3d` | Angemeldete Oberfläche und initialer eigener Spielstand |
 | `GET /play-3d/state?planet=ID` | Server-Snapshot eines eigenen Planeten/Mondes |
+| `GET /play-3d/galaxy?planet=ID&galaxy=G&system=S` | Originale Galaxiedaten im Kontext eines eigenen Planeten |
 | `POST /play-3d/command` | Validierter Auftrag für einen ausdrücklich eigenen Himmelskörper |
 
 `Live3dViewService` liefert ausschließlich ein Lesemodell aus `PlanetService`,
@@ -146,7 +188,8 @@ npm run build
 `Live3dTest` verwendet isolierte Originalaccounts mit Datenbanktransaktionen:
 Anmeldung/Eigentum, CSRF, vollständiger Katalog, Stufen über acht, Millionenbestand,
 explizite Planetenbindung, Eingabevalidierung, Urlaubsmodus, echte Bau-/Forschungs-
-und Schiffsaufträge, Zeitfortschritt sowie Originalabbruch. Die übrigen Tests
+und Schiffsaufträge, Zeitfortschritt sowie Originalabbruch. Zusätzlich: Original-Assets,
+Dashboard-Zähler und Eigentums-/Koordinatenprüfung der Galaxiedaten. Die übrigen Tests
 prüfen die weiterhin verwendeten Originalabläufe. Frontendtests decken verspätete
 Antworten, Sitzungsausfall, Mehrfachklicks, fehlende automatische Schreibwiederholung
 und begrenzte Geometrie bei unveränderten Servermengen ab.
@@ -168,7 +211,8 @@ node tests/Frontend/live3d.browser.mjs
 Die Loopbackadresse hier ist ausschließlich die Ausführungsadresse des
 Browser-Testprozesses auf dem Server, kein Benutzerlink. Der Lauf prüft echte
 Anmeldung, Darstellung und Aufträge gegen Laravel, Abbruch, Planetenwechsel,
-Originalansichten, alle sieben mobilen Bereiche und serverseitigen Fortbestand
+Originalansichten, native Galaxienavigation, Bestands-/Produktionsanzeigen,
+Auftragsleiste, Erhalt von Mengen und Eingabefokus, alle sieben mobilen Bereiche und serverseitigen Fortbestand
 nach Neuladen. Temporäre Testaccounts werden nach der Prüfung wieder entfernt.
 Die vorhandenen Race-Condition-Tests für Erteilung und Abarbeitung von Unitqueues
 werden unverändert gegen den lokalen Docker-Webserver ausgeführt. Bei gesetztem
@@ -189,7 +233,7 @@ das alte Testsetup muss separat untersucht werden. Der Prüfer und die originale
 Spiellogik wurden in diesem Branch nicht verändert. Die regulären Queue-Tests
 sowie der neue Live-Test mit echter serverseitiger Fertigstellung bestehen.
 
-## Nächste Gestaltung
+## Gestaltungsrichtung
 
 Die beiden vom Benutzer gezeigten Referenzen sind das visuelle Ziel: dunkler,
 ruhiger Weltraum-Hintergrund, große interaktive Planetenübersicht, kompakte
@@ -202,3 +246,12 @@ Höherer Detailgrad benötigt eigene Modelle, Materialien, Texturen und Beleucht
 die Vorlagen werden nicht als statische Spieloberfläche eingesetzt. Anzeigen wie
 Bevölkerung, Zufriedenheit oder zusätzliche Währungen werden nur übernommen,
 wenn das vorhandene OGameX dafür tatsächlich Daten und Regeln bereitstellt.
+
+
+### Ergebnis der Kommandoetappe
+
+Rector, Pint und PHPStan: erfolgreich. PHP-Auswahl: **68 Tests, 1.229 Assertions**.
+Frontend-Logik: **69 Tests**. Browserprüfungen gegen echte Laravel-Testkonten
+umfassen die oben beschriebenen Abläufe; kein echter Spieleraccount wird dafür verwendet.
+Die vorhandene Offline-Demo wird zusätzlich exportiert und im Browser auf
+Kompatibilität der gemeinsamen 3D-Module geprüft; veröffentlichte ZIP-Dateien bleiben unverändert.
