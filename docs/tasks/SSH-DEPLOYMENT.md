@@ -25,6 +25,16 @@ Der Nutzer verbindet sich von seinem **Mac** über `ssh ogame`. Ausgabe von `ssh
 
 Separaten Deploy-Schlüssel mit minimalen Berechtigungen verwenden und dessen öffentlichen Teil am Host autorisieren, privaten Teil ausschließlich als geschütztes Secret der Deploy-Umgebung; Hostkey-Fingerprint gegen vertrauenswürdige Quelle prüfen. Keine Behauptung, der Server sei bereits erreicht oder aktualisiert worden.
 
+## Aktueller lokaler Routing-Befund (13.11.2026)
+Der Nutzer hat auf seinem Mac `route -n get 10.77.0.10 | grep -E '(gateway|interface):'` ausgeführt:
+```text
+gateway: 192.168.178.1
+interface: en0
+```
+Das heißt ausschließlich, dass macOS die Pakete über die lokale Netzwerkschnittstelle `en0` an das Gateway `192.168.178.1` übergibt. Es belegt **weder** einen öffentlich erreichbaren Server **noch** bereits eine spezifische WireGuard-/Tailscale-Verbindung; das weitere Routing liegt am Gateway oder wird durch mögliche SSH-Proxykonfiguration bestimmt. Die tatsächliche Verbindung kann mit einem read-only `ssh ogame`-Befehl und einer Kontrolle auf `ProxyJump`/`ProxyCommand` überprüft werden.
+
+Für diesen privaten Host zunächst den Zugang vom Mac aus verifizieren und dann eine Lösung mit **ausgehender** Verbindung bzw. einem eingeschränkten internen Runner oder genehmigter VPN-Verbindung auswählen, nicht einfach einen GitHub-hosted Runner gegen `10.77.0.10:22` schicken. Die SSH-Schlüssel des Nutzers befinden sich lokal auf seinem Mac und dürfen nicht im Chat/Git veröffentlicht werden.
+
 ## SSH-Verbindung / Secrets
 Die private SSH-Schlüsseldatei des Nutzers liegt auf seinem Gerät; sie ist nicht automatisch in Codex Cloud oder GitHub Actions verfügbar. Keine Aufforderung, sie im Chat oder Repository zu teilen. Bevorzugt einen **separaten auf diesen Host beschränkten Deploy-Schlüssel** auf dem Client erstellen, dessen öffentlichen Teil autorisiert hinterlegen und den privaten Teil ausschließlich als geschütztes Secret eines GitHub Actions Environments verwalten. Wenn bereits ein dedizierter Deploy-Schlüssel vorhanden ist, kann er stattdessen verwendet werden. Zugriff nur auf das nötige Repository/Environment beschränken. Schlüsselrotation dokumentieren.
 
