@@ -2,6 +2,7 @@ import * as THREE from '../prototype3d/vendor/three.module.min.js'
 import { createColonyMaterials } from '../prototype3d/materials.js'
 import { createBuilding } from '../prototype3d/buildings.js'
 import { createShipVariant } from '../prototype3d/shipVariants.js'
+import { fitModelCamera } from '../prototype3d/modelCamera.js'
 import { modelAliases, shipModelAliases } from './visualState.js'
 
 // One reusable renderer, not a new context for each selection or background poll.
@@ -20,11 +21,17 @@ export function createObjectPreview(host) {
     scene.add(new THREE.HemisphereLight(0xaedbff, 0x12202c, 1.1))
     const key = new THREE.DirectionalLight(0xfff3df, 3.2)
     key.position.set(-5, 9, 7)
+    key.castShadow = true
+    key.shadow.mapSize.set(1024, 1024)
+    Object.assign(key.shadow.camera, { left: -4, right: 4, top: 5, bottom: -4, near: 0.1, far: 30 })
+    key.shadow.bias = -0.0002
+    key.shadow.normalBias = 0.02
     scene.add(key)
     const rim = new THREE.DirectionalLight(0x5bbfff, 2)
     rim.position.set(5, 3, -7)
     scene.add(rim)
     let model,
+        modelSize,
         width = 1,
         height = 1,
         pointer,
@@ -42,6 +49,7 @@ export function createObjectPreview(host) {
         if (width && height) {
             renderer.setSize(width, height, false)
             camera.aspect = width / height
+            if (modelSize) fitModelCamera(camera, modelSize)
             camera.updateProjectionMatrix()
             draw()
         }
@@ -72,9 +80,9 @@ export function createObjectPreview(host) {
         model.position.sub(center)
         model.rotation.y = -0.3
         scene.add(model)
-        const radius = Math.max(...size.toArray()) * 0.68
-        camera.position.set(radius * 1.5, radius * 1.05, radius * 1.7)
-        camera.lookAt(0, 0, 0)
+        host.dataset.modelRevision = model.userData.modelRevision || 'ship'
+        modelSize = size
+        fitModelCamera(camera, modelSize)
         camera.near = 0.05
         camera.far = 100
         camera.updateProjectionMatrix()

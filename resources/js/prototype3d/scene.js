@@ -291,6 +291,8 @@ export function createPlanetScene(
         orbitRadius = radius + 3.4
         layout = data.layout
         host.dataset.buildings = String(data.buildings.length)
+        host.dataset.modelRevision = 'colony-2'
+        host.dataset.buildingScale = '1'
         host.dataset.radius = String(radius)
         host.dataset.planet = renderPlanet
         globe.scale.setScalar(radius / 8)
@@ -332,9 +334,8 @@ export function createPlanetScene(
                 sites,
                 radius,
             )
-            infrastructure.group.visible =
-                !options.orbitalStyle || mode === 'colony'
             world.add(infrastructure.group)
+            host.dataset.roads = String(infrastructure.roadCount)
             networkKey = key
         }
         buildings.forEach(({ group }) => disposeGroup(group))
@@ -342,10 +343,6 @@ export function createPlanetScene(
         labels.forEach((label) => label.remove())
         labels.clear()
         data.buildings.forEach(buildModel)
-        if (options.orbitalStyle)
-            buildings.forEach(({ group }) =>
-                group.scale.setScalar(mode === 'colony' ? 1 : 0.46),
-            )
         syncFleet(data)
         renderer.shadowMap.needsUpdate = true
         if (changed) resetCamera()
@@ -580,16 +577,16 @@ export function createPlanetScene(
             angle:
                 angle +
                 Math.atan2(Math.sin(0.55 - angle), Math.cos(0.55 - angle)),
-            elevation: options.orbitalStyle && mode !== 'colony' ? 0.46 : 0.82,
+            elevation: options.orbitalStyle ? (mode === 'colony' ? 0.64 : 0.46) : 0.82,
             distance:
                 mode !== 'colony'
                     ? options.orbitalStyle
                         ? Math.max(30, radius * 3.8)
                         : Math.max(37, radius * 3 + 5)
-                    : Math.max(25, radius * 2 + 10),
+                    : options.orbitalStyle ? 14.5 : Math.max(25, radius * 2 + 10),
             target: new THREE.Vector3(
                 0,
-                mode !== 'colony' ? 0 : radius * 0.18,
+                mode !== 'colony' ? 0 : options.orbitalStyle ? radius * 0.86 : radius * 0.18,
                 0,
             ),
         })
@@ -628,7 +625,7 @@ export function createPlanetScene(
         stopFlight()
         distance = THREE.MathUtils.clamp(
             distance + delta,
-            focused ? 6 : mode === 'orbit' ? radius * 2 + 1 : radius + 9,
+            focused ? 6 : options.orbitalStyle && mode === 'colony' ? 9 : mode === 'orbit' ? radius * 2 + 1 : radius + 9,
             Math.max(52, radius * 4 + 6),
         )
     }
@@ -637,11 +634,6 @@ export function createPlanetScene(
         orbit.visible = value !== 'colony'
         if (options.orbitalStyle) {
             colony.visible = true
-            if (infrastructure)
-                infrastructure.group.visible = value === 'colony'
-            buildings.forEach(({ group }) =>
-                group.scale.setScalar(value === 'colony' ? 1 : 0.46),
-            )
             renderer.shadowMap.needsUpdate = true
         }
         resetCamera()
@@ -828,6 +820,8 @@ export function createPlanetScene(
                 Math.cos(angle) * Math.cos(elevation) * framedDistance,
             )
             .add(target)
+        if (options.orbitalStyle && camera.position.length() < radius + 0.65)
+            camera.position.normalize().multiplyScalar(radius + 0.65)
         camera.lookAt(target)
         camera.updateMatrixWorld()
         const trafficMoving =

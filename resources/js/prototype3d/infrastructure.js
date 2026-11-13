@@ -4,13 +4,15 @@ import { surfacePosition } from './layout.js'
 export function createInfrastructure(palette, colonySites, radius) {
     const group = new THREE.Group(),
         positions = [],
-        lines = []
+        lines = [],
+        markers = []
     const nodes = [{ id: 'hub', normal: [0, 1, 0] }, ...colonySites]
     const point = (node, radius) =>
         new THREE.Vector3(...surfacePosition(node, radius))
     const edges = [],
         seen = new Set()
     function connect(a, b) {
+        if (!a || !b || a.id === b.id) return
         const key = [a.id, b.id].sort().join(':')
         if (seen.has(key)) return
         seen.add(key)
@@ -51,7 +53,7 @@ export function createInfrastructure(palette, colonySites, radius) {
             const side = new THREE.Vector3()
                 .crossVectors(normal, tangent)
                 .normalize()
-                .multiplyScalar(0.13)
+                .multiplyScalar(0.2)
             const left = p.clone().add(side),
                 right = p.clone().sub(side)
             if (previous) {
@@ -84,6 +86,11 @@ export function createInfrastructure(palette, colonySites, radius) {
                     .normalize()
                     .multiplyScalar(radius + 0.085),
             )
+            if (step % 3 === 1) {
+                // Inset lane dashes and edge lights follow the surface normal.
+                const orientation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
+                markers.push({ position: p.clone().normalize().multiplyScalar(radius + 0.055), orientation })
+            }
             previous = { left, right }
         }
         if (
@@ -112,6 +119,15 @@ export function createInfrastructure(palette, colonySites, radius) {
     const roads = new THREE.Mesh(geometry, palette.dark)
     roads.receiveShadow = true
     group.add(roads)
+    if (markers.length) {
+        const lane = new THREE.InstancedMesh(new THREE.BoxGeometry(0.07, 0.012, 0.09), palette.gold, markers.length)
+        const transform = new THREE.Matrix4()
+        markers.forEach(({ position, orientation }, i) => {
+            transform.compose(position, orientation, new THREE.Vector3(1, 1, 1))
+            lane.setMatrixAt(i, transform)
+        })
+        group.add(lane)
+    }
     const utilityGeometry = new THREE.BufferGeometry()
     utilityGeometry.setAttribute(
         'position',
@@ -132,8 +148,17 @@ export function createInfrastructure(palette, colonySites, radius) {
     block(hub, palette.painted, 0, 0.32, 0, 0.65, 0.45, 0.65)
     block(hub, palette.window, 0, 0.43, 0.34, 0.5, 0.12, 0.02)
     block(hub, palette.steel, 0, 0.6, 0, 0.04, 0.3, 0.04)
+    // A decorative traffic-control tower marks the connected settlement centre.
+    for (const side of [-1, 1]) {
+        block(hub, palette.painted, side * 0.28, 0.97, -0.1, 0.16, 1.45, 0.2)
+        block(hub, palette.cyan, side * 0.28, 1.12, 0.01, 0.025, 1.2, 0.015)
+        block(hub, palette.steel, side * 0.28, 1.87, -0.1, 0.025, 0.48, 0.025)
+        block(hub, palette.warmWindow, side * 0.28, 2.12, -0.1, 0.055, 0.04, 0.055)
+    }
+    block(hub, palette.insulation, 0, 1.31, -0.1, 0.7, 0.27, 0.48)
+    block(hub, palette.window, 0, 1.33, 0.15, 0.62, 0.12, 0.02)
     const vehicles = []
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < Math.min(3, edges.length); i++) {
         const vehicle = new THREE.Group()
         block(vehicle, palette.steel, 0, 0.08, 0, 0.25, 0.12, 0.4)
         block(vehicle, palette.gold, 0, 0.18, -0.07, 0.23, 0.13, 0.23)
@@ -151,17 +176,13 @@ export function createInfrastructure(palette, colonySites, radius) {
         group.add(vehicle)
         vehicles.push(vehicle)
     }
-    const route = [
-        colonySites[0],
-        colonySites[1],
-        colonySites[3],
-        colonySites[2],
-    ]
     function animate(time, moving) {
         vehicles.forEach((vehicle, index) => {
-            const phase = ((moving ? time * 0.06 : 0) + index * 1.3) % 4
-            const start = point(route[Math.floor(phase)], radius),
-                end = point(route[(Math.floor(phase) + 1) % 4], radius)
+            // Shuttle along an existing road, reversing at its endpoints.
+            const phase = ((moving ? time * 0.06 : 0) + index * 0.55) % 2
+            const edge = edges[index % edges.length]
+            const start = point(edge[phase < 1 ? 0 : 1], radius),
+                end = point(edge[phase < 1 ? 1 : 0], radius)
             const normal = start
                 .clone()
                 .lerp(end, phase % 1)
@@ -180,6 +201,7 @@ export function createInfrastructure(palette, colonySites, radius) {
     animate(0, false)
     return {
         group,
+        roadCount: edges.length,
         animate,
         dispose() {
             utilityMaterial.dispose()

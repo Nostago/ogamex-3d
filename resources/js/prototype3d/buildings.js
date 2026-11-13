@@ -1,853 +1,357 @@
 import * as THREE from './vendor/three.module.min.js'
 
-// Compact industrial assemblies, all procedural and using shared materials.
+// Shared architecture for the live globe, detail inspection and offline demo.
+export const buildingModelTypes = Object.freeze([
+    'metal', 'crystal', 'deuterium', 'solar', 'fusion',
+    'metalStorage', 'crystalStorage', 'deuteriumStorage',
+    'robotics', 'shipyard', 'research', 'nanite', 'terraformer',
+    'depot', 'silo', 'dock', 'lunar', 'phalanx', 'jumpGate',
+    'rocket', 'laser', 'heavyLaser', 'gauss', 'ion', 'plasma',
+    'smallShield', 'largeShield', 'interceptor', 'missile',
+])
+
+// Bake hundreds of architectural details into a few material batches.
+function consolidate(root) {
+    root.updateMatrixWorld(true)
+    const batches = new Map()
+    for (const object of [...root.children]) {
+        const geometry = object.geometry.index
+            ? object.geometry.toNonIndexed() : object.geometry.clone()
+        geometry.applyMatrix4(object.matrixWorld)
+        if (!batches.has(object.material)) batches.set(object.material, [])
+        batches.get(object.material).push(geometry)
+        object.geometry.dispose()
+        root.remove(object)
+    }
+    for (const [material, parts] of batches) {
+        const geometry = new THREE.BufferGeometry()
+        for (const [name, size] of [['position', 3], ['normal', 3], ['uv', 2]]) {
+            const count = parts.reduce((n, part) => n + part.attributes.position.count, 0)
+            const array = new Float32Array(count * size)
+            let offset = 0
+            for (const part of parts) {
+                if (part.getAttribute(name)) array.set(part.getAttribute(name).array, offset)
+                offset += part.attributes.position.count * size
+            }
+            geometry.setAttribute(name, new THREE.BufferAttribute(array, size))
+        }
+        parts.forEach((part) => part.dispose())
+        geometry.computeBoundingSphere()
+        const object = new THREE.Mesh(geometry, material)
+        object.castShadow = object.receiveShadow = true
+        root.add(object)
+    }
+}
+
 export function createBuilding(id, level, palette) {
-    const group = new THREE.Group(),
-        motion = []
-    const {
-        steel,
-        painted,
-        dark,
-        concrete,
-        insulation,
-        gold,
-        cyan,
-        window: glass,
-        warmWindow,
-        panel,
-        purple,
-        ore,
-    } = palette
-    function mesh(geometry, material, parent, x = 0, y = 0, z = 0) {
+    if (!buildingModelTypes.includes(id)) throw new Error(`Unknown model: ${id}`)
+    const group = new THREE.Group(), motion = [],
+        tier = Math.min(3, Math.max(0, Math.floor((Math.max(1, level) - 1) / 2)))
+    const { steel, painted, dark, concrete, insulation, gold, cyan,
+        window: glass, warmWindow, panel, purple, ore } = palette
+    function mesh(geometry, material, x, y, z) {
         const object = new THREE.Mesh(geometry, material)
         object.position.set(x, y, z)
-        object.castShadow = object.receiveShadow = true
-        parent.add(object)
+        group.add(object)
         return object
     }
-    function box(parent, material, x, y, z, width, height, depth) {
-        return mesh(
-            new THREE.BoxGeometry(width, height, depth),
-            material,
-            parent,
-            x,
-            y,
-            z,
-        )
-    }
-    function housing(parent, material, x, y, z, width, height, depth) {
-        const shape = new THREE.Shape()
-        shape.moveTo(-width / 2, -height / 2)
-        shape.lineTo(width / 2, -height / 2)
-        shape.lineTo(width / 2, height / 2)
-        shape.lineTo(-width / 2, height / 2)
+    const box = (m, x, y, z, w, h, d) => mesh(new THREE.BoxGeometry(w, h, d), m, x, y, z)
+    function hull(m, x, y, z, w, h, d) {
+        const shape = new THREE.Shape(), b = Math.min(w, h, d, 0.16) * 0.25
+        shape.moveTo(-w / 2 + b, -h / 2)
+        for (const p of [[w / 2 - b, -h / 2], [w / 2, -h / 2 + b],
+            [w / 2, h / 2 - b], [w / 2 - b, h / 2], [-w / 2 + b, h / 2],
+            [-w / 2, h / 2 - b], [-w / 2, -h / 2 + b]]) shape.lineTo(...p)
         shape.closePath()
         const geometry = new THREE.ExtrudeGeometry(shape, {
-            depth: depth - 0.04,
-            bevelEnabled: true,
-            bevelThickness: 0.02,
-            bevelSize: 0.02,
-            bevelSegments: 1,
-            steps: 1,
+            depth: d - b * 2, steps: 1, bevelEnabled: true,
+            bevelThickness: b, bevelSize: b, bevelSegments: 2,
         })
-        geometry.translate(0, 0, -depth / 2 + 0.02)
-        return mesh(geometry, material, parent, x, y, z)
+        geometry.translate(0, 0, -d / 2 + b)
+        return mesh(geometry, m, x, y, z)
     }
-    function cylinder(
-        parent,
-        material,
-        x,
-        y,
-        z,
-        radius,
-        height,
-        segments = 16,
-    ) {
-        return mesh(
-            new THREE.CylinderGeometry(radius, radius, height, segments),
-            material,
-            parent,
-            x,
-            y,
-            z,
-        )
+    const cylinder = (m, x, y, z, r, h) =>
+        mesh(new THREE.CylinderGeometry(r, r, h, 24), m, x, y, z)
+    function ring(m, x, y, z, r, thickness = 0.025) {
+        const object = mesh(new THREE.TorusGeometry(r, thickness, 6, 48), m, x, y, z)
+        object.rotation.x = Math.PI / 2
+        return object
     }
-    function beam(parent, material, from, to, width = 0.04) {
-        const a = new THREE.Vector3(...from),
-            b = new THREE.Vector3(...to)
-        const member = cylinder(
-            parent,
-            material,
-            0,
-            0,
-            0,
-            width,
-            a.distanceTo(b),
-            6,
-        )
-        member.position.copy(a).add(b).multiplyScalar(0.5)
-        member.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0),
-            b.sub(a).normalize(),
-        )
-        return member
+    function beam(m, a, b, radius = 0.025) {
+        const from = new THREE.Vector3(...a), to = new THREE.Vector3(...b)
+        const object = cylinder(m, 0, 0, 0, radius, from.distanceTo(to))
+        object.position.copy(from).add(to).multiplyScalar(0.5)
+        object.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.sub(from).normalize())
+        return object
     }
-    function pipe(parent, material, points, radius = 0.045) {
-        const curve = new THREE.CatmullRomCurve3(
-            points.map((point) => new THREE.Vector3(...point)),
-        )
-        return mesh(
-            new THREE.TubeGeometry(curve, 12, radius, 6, false),
-            material,
-            parent,
-        )
+    function pipe(points, radius = 0.035, material = steel) {
+        return mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(
+            points.map((p) => new THREE.Vector3(...p))), 18, radius, 6, false), material, 0, 0, 0)
     }
-    function fan(parent, x, y, z, radius = 0.16) {
-        cylinder(parent, dark, x, y, z, radius * 1.15, 0.06).rotation.x =
-            Math.PI / 2
-        const rotor = new THREE.Group()
-        rotor.position.set(x, y, z + 0.04)
-        parent.add(rotor)
-        for (let blade = 0; blade < 3; blade++) {
-            const vane = box(rotor, steel, 0, 0, 0, radius * 1.7, 0.045, 0.025)
-            vane.rotation.z = (blade * Math.PI) / 3
-            vane.castShadow = false
+    function rail(x, y, z, length) {
+        for (let i = 0; i <= 4; i++) box(steel, x - length / 2 + i * length / 4, y + 0.11, z, 0.018, 0.22, 0.018)
+        for (const h of [0.11, 0.22]) box(steel, x, y + h, z, length, 0.015, 0.015)
+    }
+    function windows(x, y, z, width, rows = 2) {
+        for (let row = 0; row < rows; row++) {
+            box(dark, x, y + row * 0.15, z, width, 0.085, 0.025)
+            for (let i = 0; i < 5; i++) box((i + row) % 3 ? warmWindow : glass,
+                x - width * 0.4 + i * width * 0.2, y + row * 0.15,
+                z + 0.016, width * 0.13, 0.052, 0.012)
         }
-        motion.push((time) => {
-            rotor.rotation.z = time * 1.4
-        })
     }
-    function ladder(parent, x, bottom, top, z) {
-        for (const side of [-1, 1])
-            beam(
-                parent,
-                steel,
-                [x + side * 0.1, bottom, z],
-                [x + side * 0.1, top, z],
-                0.018,
-            )
-        for (let y = bottom + 0.08; y < top; y += 0.13)
-            beam(parent, steel, [x - 0.1, y, z], [x + 0.1, y, z], 0.012)
+    function vents(x, y, z, width = 0.4) {
+        box(dark, x, y, z, width, 0.27, 0.035)
+        for (let i = 0; i < 6; i++) box(steel, x, y - 0.1 + i * 0.04, z + 0.025, width * 0.86, 0.015, 0.025)
     }
-    function railing(parent, x, y, z, width) {
-        for (const side of [-1, 0, 1])
-            beam(
-                parent,
-                gold,
-                [x + (side * width) / 2, y, z],
-                [x + (side * width) / 2, y + 0.27, z],
-                0.014,
-            )
-        for (const h of [0.14, 0.27])
-            beam(
-                parent,
-                gold,
-                [x - width / 2, y + h, z],
-                [x + width / 2, y + h, z],
-                0.012,
-            )
+    function tower(x, z, height, width = 0.5) {
+        hull(painted, x, 0.18 + height / 2, z, width, height, width * 0.8)
+        hull(dark, x, height + 0.12, z, width * 1.2, 0.12, width)
+        for (const side of [-1, 1]) {
+            box(steel, x + side * width * 0.43, height / 2 + 0.2, z + width * 0.43, 0.04, height, 0.05)
+            box(cyan, x + side * width * 0.34, height / 2 + 0.2, z + width * 0.44, 0.018, height * 0.7, 0.025)
+        }
+        windows(x, height * 0.6, z + width * 0.41, width * 0.7, 2 + tier)
+        beam(steel, [x, height + 0.2, z], [x, height + 0.65, z], 0.013)
+        box(warmWindow, x, height + 0.66, z, 0.06, 0.045, 0.06)
     }
-    const foot = cylinder(group, concrete, 0, 0.03, 0, 1.38, 0.34, 16)
-    foot.receiveShadow = true
-    const contact = mesh(
-        new THREE.CircleGeometry(1.65, 40),
-        palette.contact,
-        group,
-        0,
-        0.012,
-        0,
-    )
-    contact.rotation.x = -Math.PI / 2
-    contact.castShadow = contact.receiveShadow = false
-    mesh(
-        new THREE.TorusGeometry(1.29, 0.025, 6, 48),
-        steel,
-        group,
-        0,
-        0.21,
-        0,
-    ).rotation.x = Math.PI / 2
-    for (let stripe = 0; stripe < 6; stripe++) {
-        const a = (stripe * Math.PI) / 3
-        const marking = box(
-            group,
-            gold,
-            Math.cos(a) * 1.21,
-            0.207,
-            Math.sin(a) * 1.21,
-            0.15,
-            0.01,
-            0.06,
-        )
-        marking.rotation.y = -a
+    function tank(x, z, height, radius = 0.29, material = insulation) {
+        cylinder(dark, x, 0.25, z, radius * 1.1, 0.13)
+        cylinder(material, x, height / 2 + 0.27, z, radius, height)
+        const cap = mesh(new THREE.SphereGeometry(radius, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), steel, x, height + 0.27, z)
+        cap.scale.y = 0.45
+        for (const y of [0.4, height * 0.5 + 0.27, height + 0.19]) ring(steel, x, y, z, radius + 0.006, 0.018)
+        for (let y = 0.4; y < height + 0.2; y += 0.14) box(steel, x + radius * 0.86, y, z + radius * 0.65, 0.13, 0.013, 0.025)
+        box(gold, x, 0.65, z + radius + 0.005, radius * 0.6, 0.15, 0.014)
+        pipe([[x, height + 0.3, z], [x, height + 0.46, z], [x * 0.5, height + 0.46, z * 0.5]])
     }
-    const h = 1.15 + level * 0.085
+    function hall(x, z, width = 1, depth = 0.6, height = 0.6) {
+        hull(painted, x, 0.2 + height / 2, z, width, height, depth)
+        hull(steel, x, 0.24 + height, z, width + 0.06, 0.08, depth + 0.05)
+        windows(x, height * 0.65, z + depth / 2 + 0.025, width * 0.8)
+        vents(x, 0.37, z + depth / 2 + 0.03, width * 0.38)
+        for (const s of [-1, 1]) box(dark, x + s * width * 0.35, height + 0.32, z, width * 0.18, 0.09, depth * 0.7)
+    }
+    // Terraced industrial plot; the open entrance meets the road network.
+    hull(concrete, 0, 0.065, 0, 2.65, 0.16, 2.55)
+    hull(dark, 0, 0.15, 0, 2.55, 0.065, 2.45)
+    for (const s of [-1, 1]) {
+        box(steel, s * 1.26, 0.22, 0, 0.035, 0.12, 2.4)
+        box(cyan, s * 1.28, 0.23, -0.3, 0.018, 0.025, 1.3)
+        rail(s * 0.9, 0.2, -1.15, 0.6)
+        for (let i = 0; i < 4; i++) box(gold, s * 0.55 + (i - 1.5) * 0.09, 0.191, 1.08, 0.04, 0.009, 0.18).rotation.y = -0.45
+        beam(steel, [s * 1.15, 0.18, 0.9], [s * 1.15, 0.68, 0.9], 0.018)
+        box(warmWindow, s * 1.15, 0.69, 0.9, 0.12, 0.035, 0.07)
+    }
+    box(dark, 0, 0.19, 1.22, 0.5, 0.04, 0.24)
+    hull(painted, -1.05, 0.37, -0.93, 0.25, 0.34, 0.28)
+    box(warmWindow, -1.05, 0.43, -0.78, 0.13, 0.065, 0.012)
+
     if (id === 'metal') {
-        cylinder(group, dark, -0.32, 0.22, 0, 0.38, 0.04, 20)
-        for (const x of [-0.72, 0.08]) {
-            for (const z of [-0.38, 0.38]) {
-                beam(group, painted, [x, 0.23, z], [x, h + 0.3, z], 0.055)
-            }
-            beam(group, steel, [x, 0.3, -0.38], [x, h + 0.2, 0.38], 0.025)
-            beam(group, steel, [x, 0.3, 0.38], [x, h + 0.2, -0.38], 0.025)
+        cylinder(ore, -0.43, 0.2, 0.12, 0.64, 0.035)
+        for (let i = 0; i < 3; i++) ring(dark, -0.43, 0.22 + i * 0.015, 0.12, 0.55 - i * 0.12, 0.045)
+        const h = 1.65 + tier * 0.26
+        for (const x of [-0.84, -0.05]) for (const z of [-0.27, 0.45]) {
+            beam(steel, [x, 0.22, z], [x * 0.8 - 0.09, h, z * 0.8], 0.045)
+            beam(steel, [x, 0.4, z], [x === -0.84 ? -0.13 : -0.76, h - 0.15, z], 0.022)
         }
-        box(group, steel, -0.32, h + 0.32, 0, 1, 0.11, 0.85)
-        box(group, dark, -0.32, h - 0.08, 0, 0.95, 0.08, 0.86)
-        railing(group, -0.32, h - 0.04, 0.44, 0.95)
-        ladder(group, -0.86, 0.25, h - 0.02, 0.25)
-        const wheel = mesh(
-            new THREE.TorusGeometry(0.24, 0.04, 8, 24),
-            gold,
-            group,
-            -0.32,
-            h + 0.54,
-            0,
-        )
-        for (let spoke = 0; spoke < 4; spoke++)
-            box(wheel, steel, 0, 0, 0, 0.45, 0.022, 0.025).rotation.z =
-                (spoke * Math.PI) / 4
-        wheel.castShadow = false
-        motion.push((time) => {
-            wheel.rotation.z = -time * 0.65
-        })
-        beam(group, dark, [-0.54, 0.35, 0], [-0.54, h + 0.54, 0], 0.014)
-        beam(group, dark, [-0.1, 0.35, 0], [-0.1, h + 0.54, 0], 0.014)
-        const drill = cylinder(group, steel, -0.32, 0.64, 0, 0.12, 0.68, 8)
-        box(drill, dark, 0, 0, 0, 0.32, 0.08, 0.08)
-        motion.push((time) => {
-            drill.rotation.y = time * 0.8
-        })
-        housing(group, painted, 0.69, 0.56, -0.22, 0.52, 0.64, 1.04)
-        box(group, dark, 0.69, 0.9, -0.22, 0.62, 0.06, 1.12)
-        for (let i = 0; i < 3; i++)
-            box(
-                group,
-                warmWindow,
-                0.69,
-                0.69,
-                0.313 + i * 0.002,
-                0.34,
-                0.035,
-                0.02,
-            )
-        fan(group, 0.69, 0.44, 0.32)
-        const conveyor = new THREE.Group()
-        conveyor.position.set(-0.28, 0.35, 0.73)
-        group.add(conveyor)
-        conveyor.rotation.x = -0.14
-        box(conveyor, dark, 0, 0, 0, 0.46, 0.09, 0.94)
-        for (const side of [-1, 1])
-            box(conveyor, steel, side * 0.25, 0, 0, 0.04, 0.17, 1)
-        for (let i = 0; i < 4; i++) {
-            const rock = mesh(
-                new THREE.IcosahedronGeometry(0.08 + (i % 2) * 0.025),
-                ore,
-                conveyor,
-                ((i % 2) - 0.5) * 0.12,
-                0.13,
-                0,
-            )
-            rock.castShadow = false
-            motion.push((time) => {
-                rock.position.z = (((time * 0.18 + i / 4) % 1) - 0.5) * 0.8
-            })
+        hull(painted, -0.44, h, 0.06, 1.05, 0.22, 0.85)
+        rail(-0.44, h + 0.13, 0.51, 1.02)
+        windows(-0.44, h, 0.5, 0.65, 1)
+        ring(gold, -0.44, h + 0.35, 0.06, 0.23, 0.035).rotation.x = 0
+        for (let i = 0; i < 6; i++) box(steel, -0.44, h + 0.35, 0.06, 0.42, 0.018, 0.025).rotation.z = i * Math.PI / 6
+        beam(dark, [-0.53, 0.25, 0.08], [-0.53, h + 0.35, 0.08], 0.012)
+        hall(0.67, -0.25, 0.73, 1.35, 0.9 + tier * 0.1)
+        for (let i = 0; i < 5; i++) {
+            box(dark, -0.43, 0.32 + i * 0.025, 0.57 + i * 0.12, 0.4, 0.04, 0.1).rotation.x = -0.18
+            mesh(new THREE.DodecahedronGeometry(0.055), ore, -0.48 + (i % 2) * 0.09, 0.39 + i * 0.025, 0.57 + i * 0.12)
         }
+        tank(0.85, -0.82, 0.95, 0.13, steel)
     } else if (id === 'crystal') {
-        cylinder(group, dark, 0, 0.36, 0, 0.78, 0.3, 24)
-        cylinder(group, painted, 0, 0.52, 0, 0.72, 0.18, 24)
-        const count = 3 + Math.floor(level / 2)
-        for (let i = 0; i < count; i++) {
-            const a = (i * Math.PI * 2) / count,
-                x = Math.cos(a) * 0.44,
-                z = Math.sin(a) * 0.44
-            cylinder(group, steel, x, 0.65, z, 0.145, 0.15, 12)
-            const mineral = mesh(
-                new THREE.ConeGeometry(0.125, 0.4 + level * 0.045, 5),
-                i % 2 ? purple : cyan,
-                group,
-                x,
-                0.8 + level * 0.0225,
-                z,
-            )
-            mineral.rotation.z = Math.cos(a) * 0.12
+        cylinder(dark, 0, 0.28, 0.08, 0.67, 0.18)
+        ring(steel, 0, 0.41, 0.08, 0.69, 0.05)
+        for (let i = 0; i < 6 + tier * 2; i++) {
+            const a = i * 2.39996, r = 0.18 + (i % 3) * 0.13
+            mesh(new THREE.ConeGeometry(0.1 + i % 2 * 0.03, 0.52 + (i % 3) * 0.2, 6), i % 2 ? purple : cyan, Math.cos(a) * r, 0.65, 0.08 + Math.sin(a) * r).rotation.z = Math.cos(a) * 0.2
         }
-        for (const side of [-1, 1]) {
-            beam(
-                group,
-                painted,
-                [side * 0.9, 0.25, -0.6],
-                [side * 0.9, h, -0.6],
-                0.055,
-            )
-            beam(
-                group,
-                steel,
-                [side * 0.9, h, -0.6],
-                [side * 0.48, h + 0.15, 0],
-                0.04,
-            )
+        for (const s of [-1, 1]) {
+            tower(s * 0.91, -0.57, 1.2 + tier * 0.16, 0.31)
+            beam(steel, [s * 0.91, 1.4, -0.57], [s * 0.35, 1.75, 0.12], 0.04)
+            pipe([[s * 0.9, 0.4, -0.4], [s * 0.9, 0.4, 0.66], [s * 0.3, 0.4, 0.66]])
         }
-        const collector = mesh(
-            new THREE.TorusGeometry(0.74, 0.045, 8, 36),
-            steel,
-            group,
-            0,
-            h - 0.08,
-            0,
-        )
-        collector.rotation.x = Math.PI / 2
-        box(collector, cyan, 0.74, 0, 0, 0.12, 0.14, 0.06)
-        motion.push((time) => {
-            collector.rotation.z = time * 0.3
-        })
-        housing(group, insulation, 0.93, 0.48, 0.45, 0.37, 0.48, 0.5)
-        fan(group, 0.93, 0.5, 0.72, 0.11)
-        pipe(group, steel, [
-            [0.8, 0.5, 0.4],
-            [0.65, 0.38, 0.65],
-            [0, 0.38, 0.75],
-        ])
-        railing(group, 0, 0.23, 0.97, 1.2)
-        ladder(group, -0.95, 0.25, h - 0.1, -0.43)
-    } else if (id === 'deuterium') {
-        const count = 2 + Math.floor(level / 3),
-            tankHeight = 0.7 + level * 0.08
-        for (let i = 0; i < count; i++) {
-            const a = (i * Math.PI * 2) / count,
-                x = Math.cos(a) * 0.6,
-                z = Math.sin(a) * 0.6 - 0.12
-            cylinder(group, dark, x, 0.3, z, 0.31, 0.15)
-            cylinder(
-                group,
-                insulation,
-                x,
-                0.4 + tankHeight / 2,
-                z,
-                0.28,
-                tankHeight,
-                24,
-            )
-            mesh(
-                new THREE.SphereGeometry(0.28, 20, 10),
-                steel,
-                group,
-                x,
-                0.4 + tankHeight,
-                z,
-            ).scale.y = 0.5
-            for (const y of [0.48, 0.32 + tankHeight])
-                cylinder(group, steel, x, y, z, 0.29, 0.045)
-            box(group, gold, x, 0.7, z + 0.282, 0.14, 0.11, 0.01)
-            pipe(group, steel, [
-                [x, 0.55 + tankHeight, z],
-                [x, 0.68 + tankHeight, z],
-                [x * 0.5, 0.68 + tankHeight, 0.05],
-            ])
-        }
-        housing(group, painted, 0, 0.5, 0.74, 0.58, 0.48, 0.36)
-        fan(group, 0, 0.5, 0.94)
-        pipe(group, steel, [
-            [-0.75, 0.43, 0.4],
-            [-0.75, 0.35, 0.75],
-            [-0.3, 0.35, 0.75],
-        ])
-        const valve = mesh(
-            new THREE.TorusGeometry(0.12, 0.023, 6, 20),
-            gold,
-            group,
-            -0.7,
-            0.53,
-            0.72,
-        )
-        box(valve, steel, 0, 0, 0, 0.23, 0.025, 0.025)
-        motion.push((time) => {
-            valve.rotation.z = Math.sin(time * 0.4) * 0.15
-        })
-        ladder(group, 0.97, 0.24, tankHeight + 0.4, -0.13)
+        hall(0, -0.85, 1.15, 0.45, 0.5)
+        rail(0, 0.22, 0.84, 1.5)
+    } else if (id === 'deuterium' || id === 'deuteriumStorage') {
+        for (let i = 0; i < 3 + (tier > 1 ? 1 : 0); i++) tank((i % 2 - 0.5) * 0.85, Math.floor(i / 2) * 0.86 - 0.55, (id === 'deuteriumStorage' ? 1.45 : 1.1) + tier * 0.18, 0.31)
+        hall(0.6, 0.68, 0.66, 0.45, 0.44)
+        pipe([[-0.9, 0.32, -0.6], [-0.9, 0.32, 0.85], [0.6, 0.32, 0.85]], 0.055)
     } else if (id === 'solar') {
-        const count = 2 + Math.floor(level / 2)
-        const mountHeight = 0.62 + level * 0.035
-        for (let i = 0; i < count; i++) {
-            const x = ((i % 2) - 0.5) * 1.04,
-                z = (Math.floor(i / 2) - 0.5) * 0.64
-            for (const side of [-1, 1])
-                beam(
-                    group,
-                    steel,
-                    [x + side * 0.3, 0.24, z],
-                    [x, mountHeight, z],
-                    0.026,
-                )
-            const array = new THREE.Group()
-            array.position.set(x, mountHeight + 0.04, z)
-            group.add(array)
-            array.rotation.x = -0.3
-            box(array, steel, 0, 0, 0, 0.98, 0.055, 0.56)
-            box(array, panel, 0, 0.035, 0, 0.92, 0.02, 0.5)
-            motion.push((time) => {
-                array.rotation.x = -0.3 + Math.sin(time * 0.25) * 0.07
-            })
-            pipe(
-                group,
-                dark,
-                [
-                    [x, 0.55, z],
-                    [x * 0.7, 0.28, z],
-                    [0, 0.27, -0.7],
-                ],
-                0.025,
-            )
+        for (let i = 0; i < 4 + tier * 2; i++) {
+            const x = (i % 2 - 0.5) * 1.12, z = Math.floor(i / 2) * 0.39 - 0.78, h = 0.58 + Math.floor(i / 2) * 0.08
+            for (const s of [-1, 1]) beam(steel, [x + s * 0.37, 0.2, z], [x + s * 0.37, h, z], 0.02)
+            box(steel, x, h, z, 1.04, 0.055, 0.35).rotation.x = -0.32
+            box(panel, x, h + 0.035, z, 0.99, 0.015, 0.31).rotation.x = -0.32
         }
-        housing(group, insulation, 0, 0.43, -0.82, 0.45, 0.38, 0.4)
-        box(group, glass, 0, 0.5, -0.6, 0.24, 0.1, 0.02)
-        for (let i = 0; i < 4; i++)
-            box(group, dark, 0, 0.35 + i * 0.035, -0.605, 0.26, 0.012, 0.02)
-    } else if (id === 'shipyard') {
-        housing(
-            group,
-            painted,
-            0,
-            0.65,
-            -0.35,
-            1.65,
-            0.85 + level * 0.035,
-            1.15,
-        )
-        box(group, dark, 0, 0.62, 0.24, 1.25, 0.65, 0.025)
-        box(group, steel, 0, 0.26, 0.7, 1.35, 0.08, 0.95)
-        for (const side of [-1, 1]) {
-            beam(
-                group,
-                steel,
-                [side * 0.94, 0.25, 0.8],
-                [side * 0.94, h, 0.8],
-                0.045,
-            )
-            beam(
-                group,
-                gold,
-                [side * 0.94, h, -0.8],
-                [side * 0.94, h, 0.8],
-                0.045,
-            )
-        }
-        beam(group, steel, [-0.94, h, 0.8], [0.94, h, 0.8], 0.055)
-        // Open assembly apron; the actual ship appears here during demo construction.
-        for (const side of [-1, 1]) {
-            for (let i = 0; i < 5; i++) {
-                box(
-                    group,
-                    steel,
-                    side * 0.86,
-                    0.58,
-                    -0.74 + i * 0.22,
-                    0.06,
-                    0.58,
-                    0.035,
-                )
-                box(
-                    group,
-                    warmWindow,
-                    side * 0.64,
-                    1.08 + level * 0.01,
-                    -0.77 + i * 0.2,
-                    0.14,
-                    0.08,
-                    0.025,
-                )
+        hall(0, 1.02, 0.75, 0.22, 0.36)
+        pipe([[-1.04, 0.24, -0.85], [-1.04, 0.24, 0.94], [0, 0.24, 0.94]], 0.025, dark)
+    } else if (id === 'shipyard' || id === 'dock') {
+        hull(steel, 0, 0.28, 0.08, 1.35, 0.22, 2.12)
+        box(dark, 0, 0.4, 0.08, 0.94, 0.03, 1.96)
+        for (const s of [-1, 1]) {
+            box(cyan, s * 0.53, 0.42, 0.08, 0.035, 0.02, 1.9)
+            for (const z of [-0.75, 0.55]) {
+                hull(painted, s * 0.98, 0.88, z, 0.28, 1.4, 0.34)
+                beam(steel, [s * 0.98, 0.35, z], [s * 0.98, 1.43, z + 0.27])
             }
-            beam(
-                group,
-                steel,
-                [side * 0.94, 0.27, 0.8],
-                [side * 0.94, h - 0.1, -0.75],
-                0.025,
-            )
-            const arm = new THREE.Group()
-            arm.position.set(side * 0.77, 0.6, 0.65)
-            group.add(arm)
-            cylinder(arm, dark, 0, 0, 0, 0.12, 0.12)
-            beam(arm, gold, [0, 0, 0], [-side * 0.19, 0.32, 0], 0.04)
-            beam(
-                arm,
-                steel,
-                [-side * 0.19, 0.32, 0],
-                [-side * 0.36, 0.24, 0],
-                0.025,
-            )
-            box(arm, cyan, -side * 0.36, 0.23, 0, 0.08, 0.09, 0.11)
-            motion.push((time) => {
-                arm.rotation.y = Math.sin(time * 0.5 + side) * 0.18
-            })
-            for (let i = 0; i < 4; i++)
-                box(
-                    group,
-                    gold,
-                    side * 0.6,
-                    0.31,
-                    0.35 + i * 0.19,
-                    0.04,
-                    0.015,
-                    0.09,
-                )
+            hall(s * 0.98, -0.09, 0.31, 0.55, 0.7)
         }
-        fan(group, -0.4, 1.11 + level * 0.0175, -0.48, 0.14)
-        fan(group, 0.4, 1.11 + level * 0.0175, -0.48, 0.14)
-        const hoist = box(group, gold, 0, h - 0.1, 0.8, 0.22, 0.16, 0.18)
-        motion.push((time) => {
-            hoist.position.x = Math.sin(time * 0.3) * 0.65
-        })
-    } else if (id === 'research') {
-        cylinder(group, insulation, 0, 0.48, 0, 0.7, 0.5)
-        const dome = mesh(
-            new THREE.SphereGeometry(
-                0.68,
-                20,
-                12,
-                0,
-                Math.PI * 2,
-                0,
-                Math.PI / 2,
-            ),
-            glass,
-            group,
-            0,
-            0.73,
-            0,
-        )
-        dome.scale.y = 0.8 + level * 0.04
-        for (const side of [-1, 1])
-            housing(group, painted, side * 0.85, 0.47, 0.25, 0.3, 0.45, 0.75)
-        const scanner = new THREE.Group()
-        scanner.position.set(0, 1.3 + level * 0.03, 0)
-        group.add(scanner)
-        mesh(
-            new THREE.TorusGeometry(0.38, 0.025, 6, 28),
-            steel,
-            scanner,
-        ).rotation.x = 0.5
-        box(scanner, cyan, 0, 0, 0, 0.6, 0.035, 0.035)
-        motion.push((time) => {
-            scanner.rotation.y = time * 0.22
-        })
-    } else if (id === 'robotics') {
-        housing(group, painted, 0, 0.55, -0.4, 1.6, 0.6 + level * 0.05, 0.85)
-        for (const x of [-0.5, 0, 0.5])
-            box(group, warmWindow, x, 0.65, 0.04, 0.3, 0.12, 0.025)
-        for (const side of [-1, 1]) {
-            cylinder(
-                group,
-                steel,
-                side * 0.65,
-                1.05 + level * 0.025,
-                -0.65,
-                0.12,
-                0.7,
-            )
-            const arm = new THREE.Group()
-            arm.position.set(side * 0.55, 0.35, 0.65)
-            group.add(arm)
-            cylinder(arm, dark, 0, 0, 0, 0.16, 0.15)
-            beam(arm, gold, [0, 0, 0], [0, 0.6, 0.12], 0.07)
-            beam(arm, steel, [0, 0.6, 0.12], [side * -0.38, 0.75, 0.25], 0.05)
-            box(arm, dark, side * -0.38, 0.75, 0.25, 0.15, 0.13, 0.17)
-            motion.push((time) => {
-                arm.rotation.y = Math.sin(time * 0.6 + side) * 0.35
-            })
+        for (const z of [-0.75, 0.55]) {
+            hull(steel, 0, 1.63 + tier * 0.12, z, 2.24, 0.16, 0.27)
+            box(gold, 0.13, 1.5 + tier * 0.12, z, 0.35, 0.13, 0.25)
+            beam(dark, [0.13, 1.5, z], [0.13, 0.78, z], 0.012)
         }
-    } else if (
-        ['metalStorage', 'crystalStorage', 'deuteriumStorage'].includes(id)
-    ) {
-        const height = 0.55 + level * 0.09
-        const accent =
-            id === 'metalStorage'
-                ? gold
-                : id === 'crystalStorage'
-                  ? purple
-                  : cyan
-        for (const side of [-1, 1]) {
-            if (id === 'deuteriumStorage') {
-                cylinder(
-                    group,
-                    insulation,
-                    side * 0.48,
-                    0.25 + height / 2,
-                    0,
-                    0.35,
-                    height,
-                    20,
-                )
-                mesh(
-                    new THREE.SphereGeometry(0.35, 16, 8),
-                    steel,
-                    group,
-                    side * 0.48,
-                    0.25 + height,
-                    0,
-                ).scale.y = 0.4
-            } else {
-                housing(
-                    group,
-                    painted,
-                    side * 0.48,
-                    0.25 + height / 2,
-                    0,
-                    0.74,
-                    height,
-                    1.25,
-                )
-                for (let i = 0; i < 4; i++)
-                    box(
-                        group,
-                        steel,
-                        side * 0.48,
-                        0.35 + (height * i) / 4,
-                        0.635,
-                        0.65,
-                        0.025,
-                        0.025,
-                    )
+        tower(-0.85, -0.93, 1.75 + tier * 0.18, 0.35)
+        for (let i = 0; i < 6; i++) box(gold, 0, 0.425, -0.65 + i * 0.27, 0.16, 0.008, 0.045)
+    } else if (['research', 'nanite', 'robotics'].includes(id)) {
+        hall(0, 0, 1.7, 1.25, 0.72)
+        hull(insulation, 0, 1.02, -0.12, 1.12, 0.4, 0.92)
+        windows(0, 1.02, 0.36, 0.92)
+        for (const s of [-1, 1]) tower(s * 0.68, -0.42, 1.4 + tier * 0.32 + (id === 'research' ? 0.2 : 0), 0.38)
+        if (id === 'research') {
+            mesh(new THREE.SphereGeometry(0.37, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, 1.24, -0.1).scale.y = 0.7
+            ring(steel, 0, 1.25, -0.1, 0.39)
+            for (let i = 0; i < 8; i++) {
+                const a = i * Math.PI / 4
+                beam(steel, [Math.cos(a) * 0.37, 1.25, -0.1 + Math.sin(a) * 0.37], [0, 1.52, -0.1], 0.01)
             }
-            box(group, accent, side * 0.48, 0.45, 0.65, 0.45, 0.1, 0.02)
-        }
-        fan(group, 0, 0.5, 0.85, 0.1)
-    } else if (id === 'rocket' || id === 'laser') {
-        cylinder(group, dark, 0, 0.4, 0, 0.6, 0.35, 20)
-        cylinder(
-            group,
-            steel,
-            0,
-            0.53 + level * 0.0175,
-            0,
-            0.42,
-            0.15 + level * 0.035,
-            20,
-        )
-        const turret = new THREE.Group()
-        turret.position.y = 0.65 + level * 0.035
-        group.add(turret)
-        housing(turret, painted, 0, 0.12, 0, 0.8, 0.33 + level * 0.025, 0.65)
-        if (id === 'rocket') {
-            for (const x of [-0.23, 0.23])
-                for (const y of [0.2, 0.5]) {
-                    const tube = cylinder(
-                        turret,
-                        steel,
-                        x,
-                        y,
-                        0.28,
-                        0.11,
-                        0.8 + level * 0.03,
-                        12,
-                    )
-                    tube.rotation.x = 0.9
-                    const tip = mesh(
-                        new THREE.ConeGeometry(0.09, 0.2, 12),
-                        dark,
-                        turret,
-                        x,
-                        y + 0.3,
-                        0.65,
-                    )
-                    tip.rotation.x = 0.9
-                }
         } else {
-            const barrel = cylinder(
-                turret,
-                steel,
-                0,
-                0.25,
-                0.62,
-                0.1,
-                0.9 + level * 0.05,
-                12,
-            )
-            barrel.rotation.x = Math.PI / 2
-            box(turret, cyan, 0, 0.26, 1.1, 0.1, 0.1, 0.025)
-            for (const side of [-1, 1])
-                box(turret, dark, side * 0.28, 0.3, 0, 0.12, 0.3, 0.4)
+            for (const s of [-1, 1]) {
+                beam(steel, [s * 0.63, 0.25, 0.77], [s * 0.63, 0.85, 0.77], 0.055)
+                beam(gold, [s * 0.63, 0.85, 0.77], [s * 0.28, 1.05, 0.82], 0.045)
+                beam(steel, [s * 0.28, 1.05, 0.82], [s * 0.12, 0.63, 0.82])
+                cylinder(dark, s * 0.63, 0.42, 0.77, 0.11, 0.12)
+            }
+            box(id === 'nanite' ? purple : cyan, 0, 0.38, 0.85, 0.28, 0.12, 0.3)
         }
-        for (const side of [-1, 1]) {
-            box(group, painted, side * 0.68, 0.33, 0.16, 0.19, 0.2, 0.8)
-            box(group, gold, side * 0.69, 0.44, 0.16, 0.12, 0.02, 0.3)
-            beam(
-                group,
-                steel,
-                [side * 0.5, 0.36, -0.15],
-                [side * 0.9, 0.25, -0.65],
-                0.045,
-            )
-            for (let i = 0; i < 4; i++)
-                box(
-                    turret,
-                    steel,
-                    side * 0.42,
-                    0.18,
-                    -0.23 + i * 0.12,
-                    0.025,
-                    0.18,
-                    0.025,
-                )
-        }
-        cylinder(turret, dark, 0, 0.46, -0.17, 0.12, 0.1)
-        const radar = mesh(
-            new THREE.SphereGeometry(
-                0.15,
-                12,
-                8,
-                0,
-                Math.PI * 2,
-                0,
-                Math.PI / 2,
-            ),
-            steel,
-            turret,
-            0,
-            0.64,
-            -0.17,
-        )
-        radar.rotation.z = 0.3
-        motion.push((time) => {
-            turret.rotation.y = Math.sin(time * 0.2) * 0.4
-        })
-    } else if (id === 'fusion') {
-        housing(group, painted, 0, 0.5, 0, 1.55, 0.5, 1.2)
-        const reactor = new THREE.Group()
-        reactor.position.y = 0.9 + level * 0.05
-        group.add(reactor)
-        mesh(
-            new THREE.TorusGeometry(0.48, 0.15, 10, 36),
-            insulation,
-            reactor,
-        ).rotation.x = Math.PI / 2
-        mesh(
-            new THREE.TorusGeometry(0.49, 0.025, 6, 36),
-            cyan,
-            reactor,
-            0,
-            0.13,
-        ).rotation.x = Math.PI / 2
-        for (const side of [-1, 1]) {
-            cylinder(
-                group,
-                steel,
-                side * 0.8,
-                0.72,
-                -0.48,
-                0.15,
-                0.9 + level * 0.05,
-            )
-            pipe(
-                group,
-                steel,
-                [
-                    [side * 0.7, 0.4, 0.5],
-                    [side * 0.85, 0.6, 0.5],
-                    [side * 0.85, 0.6, -0.3],
-                ],
-                0.04,
-            )
-            fan(group, side * 0.55, 0.8, 0.4, 0.15)
-        }
-        motion.push((time) => {
-            reactor.rotation.y = time * 0.12
-        })
-    } else if (id === 'nanite') {
-        housing(
-            group,
-            insulation,
-            0,
-            0.65,
-            -0.25,
-            1.65,
-            0.75 + level * 0.04,
-            1.2,
-        )
-        for (let i = 0; i < 4; i++) {
-            box(group, glass, -0.57 + i * 0.38, 0.7, 0.37, 0.27, 0.35, 0.025)
-            box(group, purple, -0.57 + i * 0.38, 0.93, 0.38, 0.27, 0.035, 0.025)
-        }
-        for (const side of [-1, 1]) {
-            cylinder(
-                group,
-                steel,
-                side * 0.8,
-                0.8,
-                -0.6,
-                0.12,
-                1.0 + level * 0.06,
-            )
-            const arm = new THREE.Group()
-            arm.position.set(side * 0.5, 0.35, 0.8)
-            group.add(arm)
-            beam(arm, steel, [0, 0, 0], [0, 0.48, 0], 0.055)
-            beam(arm, gold, [0, 0.48, 0], [-side * 0.32, 0.53, 0], 0.04)
-            mesh(
-                new THREE.IcosahedronGeometry(0.13, 0),
-                purple,
-                arm,
-                -side * 0.32,
-                0.35,
-            )
-            motion.push((time) => {
-                arm.rotation.y = Math.sin(time * 0.4 + side) * 0.3
-            })
-        }
-        fan(group, 0, 1.05 + level * 0.02, -0.3, 0.22)
-    } else if (id === 'terraformer') {
-        cylinder(group, dark, 0, 0.4, 0, 0.7, 0.3, 24)
-        const rotor = new THREE.Group()
-        rotor.position.y = 0.9 + level * 0.06
-        group.add(rotor)
-        mesh(
-            new THREE.TorusGeometry(0.69, 0.07, 8, 36),
-            steel,
-            rotor,
-        ).rotation.x = Math.PI / 2
-        box(rotor, cyan, 0, 0, 0, 1.25, 0.035, 0.035)
-        motion.push((time) => {
-            rotor.rotation.y = time * 0.18
-        })
+        rail(0, 0.84, 0.65, 1.5)
+    } else if (['metalStorage', 'crystalStorage', 'depot'].includes(id)) {
+        hall(0, -0.14, 1.9, 1.35, 0.95 + tier * 0.14)
         for (let i = 0; i < 3; i++) {
-            const a = (i * Math.PI * 2) / 3
-            cylinder(
-                group,
-                insulation,
-                Math.cos(a) * 0.75,
-                0.6 + level * 0.035,
-                Math.sin(a) * 0.75,
-                0.16,
-                0.75 + level * 0.07,
-                16,
-            )
-            beam(
-                group,
-                steel,
-                [Math.cos(a) * 0.75, 0.7, Math.sin(a) * 0.75],
-                [0, 0.55, 0],
-                0.04,
-            )
+            const x = -0.59 + i * 0.59
+            hull(dark, x, 0.61, 0.57, 0.43, 0.7, 0.04)
+            for (let y = 0.32; y < 0.92; y += 0.1) box(steel, x, y, 0.601, 0.38, 0.02, 0.012)
+            box(id === 'crystalStorage' ? cyan : gold, x, 1.02, 0.59, 0.4, 0.035, 0.02)
         }
-        cylinder(group, purple, 0, 0.65, 0, 0.28, 0.25)
+        for (let i = 0; i < 2 + tier; i++) hull(id === 'crystalStorage' ? insulation : painted, (i % 2 - 0.5) * 0.6, 0.33, 0.83 + Math.floor(i / 2) * 0.16, 0.46, 0.25, 0.14)
+        rail(0, 1.07 + tier * 0.14, 0.52, 1.8)
+    } else if (['fusion', 'terraformer', 'jumpGate'].includes(id)) {
+        const gate = id === 'jumpGate'
+        hall(0, -0.18, 1.8, 1.3, 0.55)
+        const reactor = ring(steel, 0, gate ? 1.35 : 1.02, 0, gate ? 0.83 : 0.61, 0.11)
+        const glow = ring(id === 'terraformer' ? purple : cyan, 0, gate ? 1.35 : 1.09, 0, gate ? 0.79 : 0.6, 0.035)
+        if (gate) reactor.rotation.x = glow.rotation.x = 0
+        for (let i = 0; i < 8; i++) {
+            const a = i * Math.PI / 4
+            if (gate) hull(insulation, Math.cos(a) * 0.84, 1.35 + Math.sin(a) * 0.84, 0, 0.17, 0.23, 0.24).rotation.z = a
+            else {
+                hull(insulation, Math.cos(a) * 0.7, 0.93, Math.sin(a) * 0.7, 0.18, 0.5, 0.18)
+                pipe([[Math.cos(a) * 0.7, 0.9, Math.sin(a) * 0.7], [Math.cos(a) * 0.95, 0.5, Math.sin(a) * 0.95]])
+            }
+        }
+        tower(-0.96, -0.69, 1.55 + tier * 0.2, 0.3)
+        tank(0.96, -0.68, 1.15 + tier * 0.15, 0.18, steel)
+    } else if (id === 'lunar') {
+        hall(0, 0.6, 1.6, 0.55, 0.45)
+        for (const s of [-1, 1]) {
+            mesh(new THREE.SphereGeometry(0.57, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2), insulation, s * 0.56, 0.26, -0.29)
+            ring(steel, s * 0.56, 0.28, -0.29, 0.58, 0.045)
+        }
+        tower(0.93, 0.56, 1.2 + tier * 0.2, 0.27)
+    } else if (id === 'phalanx') {
+        hall(0, 0.35, 1.2, 0.9, 0.6)
+        cylinder(steel, 0, 1.03, -0.16, 0.15, 1.25)
+        const dish = mesh(new THREE.SphereGeometry(0.83, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), insulation, 0, 1.65, -0.16)
+        dish.scale.y = 0.32
+        dish.rotation.x = 0.6
+        beam(steel, [-0.55, 1.77, -0.25], [0, 2.2, 0.16])
+        beam(steel, [0.55, 1.77, -0.25], [0, 2.2, 0.16])
+        box(cyan, 0, 2.2, 0.16, 0.1, 0.12, 0.12)
+        tower(-0.91, -0.76, 1.3 + tier * 0.2, 0.25)
+    } else if (['smallShield', 'largeShield'].includes(id)) {
+        cylinder(dark, 0, 0.34, 0, 0.85, 0.3)
+        for (let i = 0; i < 6; i++) {
+            const a = i * Math.PI / 3, x = Math.cos(a) * 0.72, z = Math.sin(a) * 0.72
+            cylinder(steel, x, 0.85, z, 0.1, 1.05)
+            box(cyan, x, 1.4, z, 0.14, 0.15, 0.14)
+            beam(steel, [x, 0.6, z], [0, 0.7, 0])
+        }
+        mesh(new THREE.SphereGeometry(0.91, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, 0.6, 0).scale.y = id === 'largeShield' ? 1.25 : 0.8
+        ring(cyan, 0, 0.62, 0, 0.92)
+    } else if (['silo', 'rocket', 'interceptor', 'missile'].includes(id)) {
+        hall(-0.7, -0.45, 0.45, 0.8, 0.65)
+        for (let i = 0; i < 4 + tier; i++) {
+            const x = (i % 2 - 0.5) * 0.68 + 0.18, z = Math.floor(i / 2) * 0.59 - 0.65
+            cylinder(steel, x, 0.3, z, 0.25, 0.2)
+            cylinder(dark, x, 0.41, z, 0.2, 0.025)
+            if (id !== 'silo') {
+                cylinder(insulation, x, 0.76, z, 0.065, 0.65)
+                mesh(new THREE.ConeGeometry(0.065, 0.22, 16), gold, x, 1.18, z)
+                for (let f = 0; f < 4; f++) box(steel, x, 0.52, z, 0.19, 0.18, 0.025).rotation.y = f * Math.PI / 2
+            } else {
+                ring(gold, x, 0.43, z, 0.21, 0.012)
+                box(steel, x, 0.44, z, 0.35, 0.025, 0.05)
+            }
+        }
     } else {
-        throw new Error(`Unknown model: ${id}`)
+        const heavy = ['gauss', 'plasma', 'heavyLaser'].includes(id)
+        cylinder(steel, 0, 0.39, 0, 0.72, 0.36)
+        ring(gold, 0, 0.59, 0, 0.66, 0.018)
+        hull(painted, 0, 0.85, -0.1, heavy ? 1.2 : 0.9, 0.52, 0.9)
+        const count = id === 'heavyLaser' ? 2 : 1
+        for (let i = 0; i < count; i++) {
+            const x = count === 2 ? (i - 0.5) * 0.44 : 0
+            cylinder(steel, x, 0.98, 0.69, id === 'plasma' ? 0.17 : 0.1, 1.15).rotation.x = Math.PI / 2 + 0.12
+            for (let j = 0; j < 5; j++) ring(id === 'ion' || id === 'plasma' ? cyan : dark, x, 0.98, 0.28 + j * 0.17, id === 'plasma' ? 0.2 : 0.12).rotation.x = 0
+            box(id === 'plasma' ? purple : cyan, x, 1.04, 1.23, 0.11, 0.11, 0.025)
+        }
+        for (const s of [-1, 1]) {
+            tank(s * 0.86, -0.55, 0.65, 0.13, steel)
+            vents(s * 0.47, 0.88, 0.37, 0.23)
+            pipe([[s * 0.83, 0.65, -0.55], [s * 0.7, 0.65, -0.15], [s * 0.46, 0.85, -0.1]])
+        }
     }
-    // Bolted electrical cabinets and subdued area lighting establish a common scale.
-    housing(group, painted, -0.84, 0.4, -0.74, 0.28, 0.33, 0.28)
-    box(group, glass, -0.84, 0.47, -0.588, 0.17, 0.08, 0.012)
-    for (const side of [-1, 1]) {
-        beam(
-            group,
-            steel,
-            [side * 1.07, 0.22, 0.84],
-            [side * 1.07, 0.55, 0.84],
-            0.02,
-        )
-        box(group, warmWindow, side * 1.07, 0.56, 0.84, 0.1, 0.035, 0.07)
+    for (let i = 0; i < tier; i++) {
+        const z = -0.68 + i * 0.36
+        hull(steel, -1.04, 0.37, z, 0.22, 0.3, 0.27)
+        vents(-1.04, 0.38, z + 0.145, 0.16)
+        box(cyan, -1.04, 0.55, z, 0.1, 0.025, 0.18)
     }
-    return {
-        group,
-        motion,
-        labelHeight: id === 'metal' ? h + 0.9 : Math.max(1.6, h + 0.4),
+    if (id === 'dock') {
+        for (const s of [-1, 1]) {
+            hull(steel, s * 0.62, 0.65, 0.91, 0.22, 0.45, 0.22)
+            box(cyan, s * 0.62, 0.89, 0.91, 0.2, 0.025, 0.18)
+        }
     }
+    if (id === 'depot') tower(0.85, -0.7, 1.8 + tier * 0.2, 0.34)
+    consolidate(group)
+    // A few moving mechanical parts give life to the colony without extra lights.
+    {
+        const fan = new THREE.Group()
+        fan.position.set(-1.05, 0.42, -0.74)
+        const casing = mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.035, 20), dark, -1.05, 0.42, -0.77)
+        casing.rotation.x = Math.PI / 2
+        for (let i = 0; i < 3; i++) {
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.016, 0.012), steel)
+            blade.rotation.z = i * Math.PI / 3
+            fan.add(blade)
+        }
+        group.add(fan)
+        motion.push((time) => { fan.rotation.z = time * 1.1 })
+    }
+    group.scale.y = 1 + tier * 0.015
+    const bounds = new THREE.Box3().setFromObject(group)
+    group.userData.modelRevision = 'colony-2'
+    group.userData.modelType = id
+    group.userData.visualTier = tier
+    return { group, motion, labelHeight: bounds.max.y + 0.22 }
 }

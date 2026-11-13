@@ -1160,3 +1160,7 @@
     border-radius: 3px;
     pointer-events: none;
 }
+
+/* Model thumbnails are rendered at 256 × 192; original tiny icons stay small. */
+.object-thumbnail.model-thumbnail { width: 96px; height: 72px; border-radius: 4px; }
+@media(max-width:650px) { .object-thumbnail.model-thumbnail { width: 72px; height: 54px; } }

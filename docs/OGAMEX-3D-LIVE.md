@@ -52,7 +52,76 @@ Benutzer. Es wird durch diesen Branch kein öffentlicher Server bereitgestellt.
   Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese beiden
   Bereiche sind weiterhin Übergangsansichten mit einem Link zur separaten Originalseite.
 
-## Aktuelle Etappe: Lesbare Verwaltung und scharfe Modellansichten
+## Aktuelle Etappe: Neubau der Koloniearchitektur
+
+Branch: `codex/ogamex-3d-colony-rebuild`.
+
+Die bisherige Gebäudebibliothek ist ersetzt. Alle **19 Originalgebäude und
+10 Verteidigungstypen** haben nun eine Modellzuordnung. Dazu gehören auch
+Allianzdepot, Raketensilo, Raumdock, Mondbasis, Sensorphalanx und Sprungtor.
+Wiederverwendete Komponenten sorgen für eine gemeinsame Architektur; verwandte
+Anlagen teilen bestimmte Grundformen. Es werden nur tatsächlich vorhandene
+Spielobjekte als Gebäude auf dem Planeten angeordnet.
+
+- Rechteckige, abgestufte Industrieflächen ersetzen die alten runden Sockel.
+- Minen haben Fördergerüste, Verarbeitungshallen und Förderstrecken; die Werft
+  erhält einen Trockendock mit Portalkränen und Serviceanlagen.
+- Forschung, Robotik, Speicher, Energietechnik, Mondanlagen und Verteidigung
+  verwenden passende Silhouetten, Fenster, Rohrleitungen, Geländer, Lüftung,
+  Antennen und Betriebsbeleuchtung.
+- Vier visuelle Ausbaustufen ergänzen Module und verändern die Gebäudeform.
+  Die tatsächliche Spielstufe bleibt unverändert sichtbar; höhere Spielstufen
+  erzeugen keine unbegrenzt wachsende Geometrie.
+- Wege und Versorgungsleitungen bleiben in **Übersicht, Kolonie und Orbit**
+  sichtbar. Straßenmarkierungen folgen der Kugeloberfläche; Servicefahrzeuge
+  fahren auf vorhandenen Verbindungen. Auch leere Kolonien und die ersten
+  ein bis drei Gebäude können ohne Grafikfehler dargestellt werden.
+- Die Gebäude werden beim Wechsel in den Orbit nicht mehr verkleinert.
+  **Kolonie** rahmt die Siedlung näher ein. Maus, Zoom und Gebäudeauswahl bleiben
+  erhalten; die Kamera wird außerhalb der Planetenoberfläche gehalten.
+- Detailansichten verwenden dieselben Modelle mit eigener Beleuchtung und
+  Schatten. Die Katalogvorschaubilder werden aus dieser Bibliothek gerendert
+  (256 × 192 Pixel, repräsentative Modellstufe 5); die früheren 40-Pixel-
+  Gebäudebilder werden dort ersetzt. Die interaktiven Detail- und Planetenmodelle
+  folgen dem tatsächlichen Ausbau innerhalb der vier visuellen Stufen.
+  Forschung behält das klar beschriftete Schema. Der CPU-Grafikfallback bleibt
+  eine vereinfachte Darstellung für Geräte ohne funktionsfähiges WebGL.
+
+Statische Gebäudeteile werden nach Material zusammengefasst. Die Prüfungen
+begrenzen Modelle auf maximal 20 Zeichnungsgruppen und 20.000 Dreiecke.
+Das feste Flottenbudget von zwölf repräsentativen Schiffsmodellen bleibt erhalten.
+Der visuelle Mindestradius von 8 und 32 Bauplätze sorgen dafür, dass sämtliche
+Objekttypen auch auf kleinen Monden Platz finden. Dies verändert weder Durchmesser,
+Baufelder noch andere Werte im Backend. Die bestehende Offline-Demo verwendet
+über dieselbe Bibliothek ebenfalls die neuen Modelle.
+
+Vorschaubilder bei Modelländerungen regenerieren (nur Entwicklungswerkzeug;
+Playwright und Chromium müssen bereits verfügbar sein):
+
+```sh
+PLAYWRIGHT_MODULE=/pfad/zu/playwright node scripts/codex/render-building-thumbnails.mjs
+npm run build
+```
+
+Die WebP-Dateien und Browser-Builds sind eingecheckt; der Testserver benötigt
+keine neuen Pakete und keine Installation. Das Referenzbild bleibt die gestalterische
+Richtung. Diese prozeduralen Modelle ersetzen keine filmreifen, individuell
+texturierten Hochdetail-Assets; ein gleichwertiger Fotorealismus wird nicht behauptet.
+
+**Stand der Bots:** Es existiert noch kein autonomer KI-Spieler-Dienst mit
+Kolonieausbau, eigener Wirtschaft und Flottenentscheidungen. Die vorhandenen
+`NPCFleetGeneratorService`, `NPCPlayerService` und `NPCPlanetService` stellen
+Piraten-/Aliengegner für die originalen Expeditionskämpfe bereit. Die originale
+Bot-/Multiaccount-Erkennung ist ebenfalls vorhanden. Sie ist keine spielende KI.
+Diese Etappe ändert weder diese Dienste noch die originale Spielmechanik.
+
+Prüfungen: Rector, Pint, PHPStan; 74 PHP-Tests mit 1.268 Assertions und
+76 Frontendtests, einschließlich Kamerabegrenzungen, Geometriebudgets, aller Modelltypen und
+Straßennetzen mit 0/1/2/3/4/19/29 Gebäuden. Browser: Kolonie-Nahansicht,
+Modellrevision in den Details, Verwaltung, Spielaufträge, mobile Oberflächen,
+Grafik-Fallbacks und Verträglichkeit mit der bestehenden Offline-Demo.
+
+## Etappe: Lesbare Verwaltung und scharfe Modellansichten
 
 Branch: `codex/ogamex-3d-visual-clarity`.
 

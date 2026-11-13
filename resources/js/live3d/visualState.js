@@ -16,6 +16,20 @@ export const modelAliases = Object.freeze({
     terraformer: 'terraformer',
     rocket_launcher: 'rocket',
     light_laser: 'laser',
+    heavy_laser: 'heavyLaser',
+    gauss_cannon: 'gauss',
+    ion_cannon: 'ion',
+    plasma_turret: 'plasma',
+    small_shield_dome: 'smallShield',
+    large_shield_dome: 'largeShield',
+    anti_ballistic_missile: 'interceptor',
+    interplanetary_missile: 'missile',
+    alliance_depot: 'depot',
+    missile_silo: 'silo',
+    space_dock: 'dock',
+    lunar_base: 'lunar',
+    sensor_phalanx: 'phalanx',
+    jump_gate: 'jumpGate',
 })
 export const shipModelAliases = {
     light_fighter: 'lightFighter',
@@ -35,11 +49,10 @@ export const shipModelAliases = {
     pathfinder: 'pathfinder',
 }
 export function visualState(snapshot) {
-    const radius = Math.min(12, Math.max(6, snapshot.planet.diameter / 1700))
-    // The live scene has at most 15 distinct building models. Twenty-four sites
-    // also fit the smallest visual sphere (radius 6); 48 cannot and used to
-    // abort the entire interface on small planets and moons.
-    const layout = createLayout(radius, 24),
+    const radius = Math.min(12, Math.max(8, snapshot.planet.diameter / 1700))
+    // Visual sphere size does not change game diameter or fields. Thirty-two
+    // fixed plots fit every original building/defense type, including small moons.
+    const layout = createLayout(radius, 32),
         buildings = []
     for (const item of snapshot.objects) {
         const type = modelAliases[item.key]
@@ -47,7 +60,7 @@ export function visualState(snapshot) {
         const site = chooseSite(
             layout,
             buildings,
-            buildingCatalog[type].category,
+            buildingCatalog[type]?.category || (item.type === 'defense' ? 'defense' : 'facilities'),
         )
         if (!site) continue
         buildings.push({

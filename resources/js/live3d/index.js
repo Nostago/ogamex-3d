@@ -208,7 +208,7 @@ function renderFleetStock() {
     )) {
         const card = el('button', 'fleet-stock-item'),
             image = el('img')
-        image.src = item.image
+        image.src = modelAliases[item.key] ? `/img/live3d/models/${modelAliases[item.key]}.webp` : item.image
         image.alt = ''
         card.append(
             image,
@@ -246,8 +246,8 @@ function renderCatalog() {
         button.dataset.object = item.key
         button.setAttribute('aria-pressed', String(item.id === selected[page]))
         if (item.image) {
-            const image = el('img', 'object-thumbnail')
-            image.src = item.image
+            const image = el('img', modelAliases[item.key] ? 'object-thumbnail model-thumbnail' : 'object-thumbnail')
+            image.src = modelAliases[item.key] ? `/img/live3d/models/${modelAliases[item.key]}.webp` : item.image
             image.alt = ''
             image.loading = 'lazy'
             button.append(image)

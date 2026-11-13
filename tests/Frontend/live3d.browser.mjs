@@ -67,6 +67,15 @@ try {
     await page.waitForFunction(
         () => document.querySelector('#scene').dataset.texture === 'atlas',
     );
+    assert.equal(await page.locator('#scene').getAttribute('data-model-revision'), 'colony-2');
+    assert.equal(await page.locator('#scene').getAttribute('data-building-scale'), '1');
+    assert.ok(Number(await page.locator('#scene').getAttribute('data-roads')) >= 4);
+    await page.locator('#live-colony').click();
+    await page.waitForFunction(() => document.querySelector('#scene').dataset.camera === 'idle');
+    await page.screenshot({ path: `${artifacts}/rebuilt-colony.png`, fullPage: true });
+    await page.locator('#live-orbit').click();
+    assert.equal(await page.locator('#scene').getAttribute('data-building-scale'), '1');
+    await page.locator('#live-overview-mode').click();
     assert.equal(await page.locator('canvas').count(), 1);
     assert.equal(
         await page.locator('#scene').getAttribute('data-units'),
@@ -106,6 +115,8 @@ try {
         );
     }
     await nav('buildings');
+    await page.locator('img.model-thumbnail').first().evaluate((image) => image.decode());
+    assert.equal(await page.locator('img.model-thumbnail').first().evaluate((image) => image.naturalWidth), 256);
     await page.locator('[data-object="metal_mine"]').click();
     await page.waitForFunction(
         () =>
@@ -116,6 +127,7 @@ try {
             ) > 1,
     );
     assert.equal(await page.locator('.detail-image').count(), 0);
+    assert.equal(await page.locator('.object-artwork').getAttribute('data-model-revision'), 'colony-2');
     assert.equal(
         await page
             .locator('.object-artwork canvas')

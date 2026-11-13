@@ -67,7 +67,7 @@ export function createColonyMaterials() {
         const map = new THREE.CanvasTexture(canvas)
         map.colorSpace = THREE.SRGBColorSpace
         map.wrapS = map.wrapT = THREE.RepeatWrapping
-        map.anisotropy = 2
+        map.anisotropy = 8
         textures.push(map)
         return map
     }
@@ -80,24 +80,24 @@ export function createColonyMaterials() {
             map: steelMap,
             bumpMap: steelMap,
             bumpScale: 0.014,
-            roughness: 0.7,
-            metalness: 0.6,
+            roughness: 0.44,
+            metalness: 0.72,
         }),
         painted: new THREE.MeshStandardMaterial({
-            color: 0x687c80,
+            color: 0x354859,
             map: steelMap,
             bumpMap: steelMap,
             bumpScale: 0.018,
-            roughness: 0.82,
+            roughness: 0.59,
             metalness: 0.3,
         }),
         dark: new THREE.MeshStandardMaterial({
-            color: 0x263239,
+            color: 0x18232d,
             roughness: 0.86,
             metalness: 0.35,
         }),
         concrete: new THREE.MeshStandardMaterial({
-            color: 0xb2ab96,
+            color: 0x777f83,
             map: concreteMap,
             bumpMap: concreteMap,
             bumpScale: 0.035,
@@ -105,7 +105,7 @@ export function createColonyMaterials() {
             metalness: 0,
         }),
         insulation: new THREE.MeshStandardMaterial({
-            color: 0xe1ded0,
+            color: 0xc2cbd1,
             map: steelMap,
             bumpMap: steelMap,
             bumpScale: 0.012,
@@ -113,7 +113,7 @@ export function createColonyMaterials() {
             metalness: 0.15,
         }),
         gold: new THREE.MeshStandardMaterial({
-            color: 0xc5a35d,
+            color: 0xe0a257,
             roughness: 0.8,
             metalness: 0.25,
         }),
@@ -122,21 +122,21 @@ export function createColonyMaterials() {
             roughness: 0.38,
             metalness: 0.3,
             emissive: 0x246374,
-            emissiveIntensity: 0.22,
+            emissiveIntensity: 0.65,
         }),
         window: new THREE.MeshPhysicalMaterial({
             color: 0x183d49,
             roughness: 0.2,
             metalness: 0.2,
             clearcoat: 0.7,
-            emissive: 0x83aa99,
-            emissiveIntensity: 0.15,
+            emissive: 0x398db7,
+            emissiveIntensity: 0.3,
         }),
         warmWindow: new THREE.MeshStandardMaterial({
             color: 0xbfac7e,
             roughness: 0.4,
-            emissive: 0xbaa469,
-            emissiveIntensity: 0.3,
+            emissive: 0xffad4d,
+            emissiveIntensity: 0.8,
         }),
         panel: new THREE.MeshStandardMaterial({
             color: 0xffffff,
