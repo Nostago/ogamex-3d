@@ -47,7 +47,7 @@ class HighscoreService
      */
     public function isAdminVisibleInHighscore(): bool
     {
-        return $this->settingsService->highscoreAdminVisible();
+        return !request()->attributes->get('live3d', false) && $this->settingsService->highscoreAdminVisible();
     }
 
     /**

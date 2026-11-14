@@ -1,4 +1,11 @@
 const paths = {
+    officers: 'M8 3h8l2 5-6 4-6-4 2-5Zm4 9v9m-4-3 4 3 4-3',
+    shop: 'M3 8h18v13H3V8Zm4 0V3h10v5',
+    merchant: 'M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4',
+    notes: 'M5 2h14v20H5V2Zm3 5h8M8 11h8m-8 4h6',
+    buddies: 'M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM2 21v-4c0-5 12-5 12 0v4m3-13h6m-3-3v6',
+    options: 'M4 5h16M4 12h16M4 19h16M8 2v6m8 1v6m-6 1v6',
+    highscore: 'M3 21V11h5v10m2 0V3h5v18m2 0V7h5v14',
     planet: 'M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM2 17c3 3 21-9 20-12M2 17c-3-4 2-8 5-9m15-3c2 3 0 6-3 8',
     buildings: 'M3 22V11h5v11m0-9V3h5v19m0-15h5v15m0-9h3v9M6 14v2m5-9v2m5 2v2',
     research: 'M8 2h8m-6 0v7L3 20c0 2 18 2 18 0L14 9V2M7 15h10',

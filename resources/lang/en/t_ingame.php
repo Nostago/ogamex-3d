@@ -50,6 +50,7 @@ return [
     // -------------------------------------------------------------------------
 
     'shared' => [
+        'characters' => 'characters',
         'caution' => 'Caution',
         'yes'     => 'yes',
         'no'      => 'No',

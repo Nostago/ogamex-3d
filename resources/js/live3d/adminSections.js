@@ -6,7 +6,7 @@ export function organizeAdminSections(frame, doc, controls, t) {
         ['[name="set_mines"]', 'admin_setup'],
         ['[name^="unit_"]', 'admin_units'],
         ['[name^="building_"]', 'buildings'],
-        ['[name^="research_"]', 'research'],
+        ['[name^="research_"]:not([name="research_speed"])', 'research'],
         [
             '[name="enable_free_class_changes"],[name="disable_free_class_changes"]',
             'admin_classes',
@@ -137,9 +137,9 @@ export function organizeAdminSections(frame, doc, controls, t) {
         .fieldwrapper input[type=text],.fieldwrapper input[type=number]{min-width:90px!important;width:180px!important;max-width:100%!important}
         .fieldwrapper .thefield{display:flex!important;gap:12px!important;flex-wrap:wrap!important;max-width:100%!important;min-width:0!important}
         .group{max-width:100%!important;min-width:0!important;margin:0 0 16px!important;padding:0!important}
-        .buddylistContent{margin-bottom:0!important}.content{padding:0!important}
-        form>.footer,form .content>.footer{height:auto!important;padding:16px!important;background:#071a28!important;position:sticky;bottom:0;z-index:3;max-width:100%!important}
-        .footer button{min-width:180px!important;width:auto!important;white-space:normal!important}
+        .buddylistContent,.live-admin-section{display:flow-root!important;float:none!important;height:auto!important}.buddylistContent{margin-bottom:0!important}.content{padding:0!important}
+        form>.footer,form .content>.footer{height:auto!important;padding:16px!important;background:#071a28!important;position:static!important;inset:auto!important;clear:both!important;pointer-events:auto!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;z-index:1!important}
+        .footer button{position:relative!important;z-index:10!important;pointer-events:auto!important;display:inline-block!important;min-width:180px!important;width:auto!important;white-space:normal!important}
         @media(max-width:650px){.fieldwrapper>button[type=submit]{flex-basis:100%!important}.fieldwrapper input[type=text],.fieldwrapper input[type=number]{width:100%!important}.thefield>div{min-width:100px;max-width:100%}}
     `
     doc.head.append(style)

@@ -6,7 +6,7 @@
         'initial' => $initial, 't' => $t, 'models' => __('t_prototype3d', [], 'de'),
         'stateUrl' => route('live3d.state'), 'commandUrl' => route('live3d.command'),
         'galaxyUrl' => route('live3d.galaxy'), 'fleetEventsUrl' => route('fleet.eventbox.fetch'),
-        'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index', ['prototype3d' => 1]), 'alliance' => route('alliance.index')],
+        'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index', ['prototype3d' => 1]), 'alliance' => route('alliance.index'), 'officers' => route('premium.index'), 'shop' => route('shop.index'), 'merchant' => route('merchant.index'), 'notes' => route('live3d.notes'), 'buddies' => route('buddies.index'), 'options' => route('options.index'), 'highscore' => route('highscore.index'), 'tools' => route('galaxy.index'), 'production' => route('resources.settings'), 'facilities' => route('facilities.index')],
     ];
     $liveVite = clone app(\Illuminate\Foundation\Vite::class);
     $liveVite->useScriptTagAttributes(['type' => 'module']);
@@ -28,7 +28,7 @@
         <div id="live-resources" class="resource-balances"></div>
         <div class="header-actions">
             <button data-live-page="messages" data-icon="messages" aria-label="{{ $t['messages'] }}"></button>
-            <a href="{{ route('options.index') }}" data-icon="settings" aria-label="{{ $t['settings'] }}"></a>
+            <button data-live-page="options" data-icon="settings" aria-label="{{ $t['settings'] }}"></button>
             <button id="live-refresh" data-icon="refresh" aria-label="{{ $t['refresh'] }}"></button>
             <a href="{{ route('overview.index') }}" data-icon="external" aria-label="{{ $t['original'] }}"></a>
         </div>
@@ -36,9 +36,9 @@
     <div class="activity-bar"><p id="live-status" role="status">{{ $t['connected'] }}</p><a id="live-login" href="{{ route('login') }}" hidden>{{ $t['login'] }}</a></div>
     <div class="app-shell">
         <nav class="main-nav" aria-label="{{ $t['navigation'] }}">
-            <a href="#planet" class="nav-banner" aria-hidden="true" tabindex="-1"><span class="nav-banner-world"></span></a>
-            @foreach(['planet', 'buildings', 'research', 'ships', 'defense', 'fleets', 'galaxy', 'alliance', 'messages'] as $page)
-                <a href="#{{ $page }}" data-live-page="{{ $page }}"><span data-icon="{{ $page }}" aria-hidden="true"></span><span>{{ $t[$page] }}</span></a>
+            <a href="#planet" class="nav-banner" aria-label="{{ $t['planet'] }}"><img src="/img/live3d/planet-atlas.png" alt=""><span>OGameX · {{ $t['planet'] }}</span></a>
+            @foreach(['planet', 'buildings', 'research', 'ships', 'defense', 'fleets', 'galaxy', 'alliance', 'messages', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore'] as $page)
+                <div class="nav-entry"><a href="#{{ $page }}" data-live-page="{{ $page }}"><span data-icon="{{ $page }}" aria-hidden="true"></span><span>{{ $t[$page] }}</span></a><button class="nav-help" data-help="{{ $page }}" aria-label="{{ $t['help'] }}: {{ $t[$page] }}" title="{{ $t['help'] }}: {{ $t[$page] }}">?</button></div>
             @endforeach
             @if($adminAccess)<a href="#admin" data-live-page="admin"><span data-icon="settings" aria-hidden="true"></span><span>{{ $t['admin'] }}</span></a>@endif
             <a class="nav-galaxy-card" href="#galaxy" data-live-page="galaxy"><span class="galaxy-radar" aria-hidden="true"></span><span>{{ $t['galaxy'] }} <b>↗</b></span></a>
@@ -82,12 +82,13 @@
                 <section id="live-admin-advanced" hidden><div class="admin-frame-toolbar"><p id="live-admin-tab-hint"></p><a id="live-admin-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-admin-sections" class="admin-section-switch" hidden></div><iframe id="live-admin-frame" title="{{ $t['admin'] }}"></iframe></section>
             </section>
             <section id="live-page-original" hidden>
-                <section id="live-fleet-stock" class="card" hidden></section>
+                <p id="live-original-capability" class="card" hidden></p><div id="live-area-tabs" class="live-groups"></div><section id="live-fleet-stock" class="card" hidden></section>
                 <div class="card original-note"><p>{{ $t['embedded'] }}</p><a id="live-original-link" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><iframe id="live-original" title="{{ $t['original_area'] }}"></iframe>
             </section>
         </main>
     </div>
 </div>
+<dialog id="live-help-dialog"><button id="live-help-close">{{ $t['close'] }}</button><h2 id="live-help-title"></h2><p id="live-help-text"></p><a id="live-help-original">{{ $t['technology'] }} ↗</a><iframe id="live-help-frame" title="{{ $t['technology'] }}" hidden></iframe></dialog>
 <script id="live-bootstrap" type="application/json">@json($bootstrap)</script>
 </body>
 </html>

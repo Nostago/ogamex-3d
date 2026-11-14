@@ -32,7 +32,7 @@
             var shipsData = {
                 "204": {
                     "id": 204,
-                    "name": "Light Fighter",
+                    "name": @json(__('Light Fighter')),
                     "baseFuelCapacity": 50,
                     "baseCargoCapacity": 50,
                     "fuelConsumption": 7,
@@ -40,7 +40,7 @@
                 },
                 "205": {
                     "id": 205,
-                    "name": "Heavy Fighter",
+                    "name": @json(__('Heavy Fighter')),
                     "baseFuelCapacity": 100,
                     "baseCargoCapacity": 100,
                     "fuelConsumption": 27,
@@ -48,7 +48,7 @@
                 },
                 "206": {
                     "id": 206,
-                    "name": "Cruiser",
+                    "name": @json(__('Cruiser')),
                     "baseFuelCapacity": 800,
                     "baseCargoCapacity": 800,
                     "fuelConsumption": 112,
@@ -56,7 +56,7 @@
                 },
                 "207": {
                     "id": 207,
-                    "name": "Battleship",
+                    "name": @json(__('Battleship')),
                     "baseFuelCapacity": 1500,
                     "baseCargoCapacity": 1500,
                     "fuelConsumption": 187,
@@ -64,7 +64,7 @@
                 },
                 "215": {
                     "id": 215,
-                    "name": "Battlecruiser",
+                    "name": @json(__('Battlecruiser')),
                     "baseFuelCapacity": 750,
                     "baseCargoCapacity": 750,
                     "fuelConsumption": 93,
@@ -72,7 +72,7 @@
                 },
                 "211": {
                     "id": 211,
-                    "name": "Bomber",
+                    "name": @json(__('Bomber')),
                     "baseFuelCapacity": 500,
                     "baseCargoCapacity": 500,
                     "fuelConsumption": 262,
@@ -80,7 +80,7 @@
                 },
                 "213": {
                     "id": 213,
-                    "name": "Destroyer",
+                    "name": @json(__('Destroyer')),
                     "baseFuelCapacity": 2000,
                     "baseCargoCapacity": 2000,
                     "fuelConsumption": 375,
@@ -88,7 +88,7 @@
                 },
                 "214": {
                     "id": 214,
-                    "name": "Deathstar",
+                    "name": @json(__('Deathstar')),
                     "baseFuelCapacity": 1000000,
                     "baseCargoCapacity": 1000000,
                     "fuelConsumption": 1,
@@ -96,7 +96,7 @@
                 },
                 "218": {
                     "id": 218,
-                    "name": "Reaper",
+                    "name": @json(__('Reaper')),
                     "baseFuelCapacity": 10000,
                     "baseCargoCapacity": 10000,
                     "fuelConsumption": 412,
@@ -104,7 +104,7 @@
                 },
                 "219": {
                     "id": 219,
-                    "name": "Pathfinder",
+                    "name": @json(__('Pathfinder')),
                     "baseFuelCapacity": 12000,
                     "baseCargoCapacity": 12000,
                     "fuelConsumption": 112,
@@ -112,7 +112,7 @@
                 },
                 "202": {
                     "id": 202,
-                    "name": "Small Cargo",
+                    "name": @json(__('Small Cargo')),
                     "baseFuelCapacity": 5000,
                     "baseCargoCapacity": 5000,
                     "fuelConsumption": 3,
@@ -120,7 +120,7 @@
                 },
                 "203": {
                     "id": 203,
-                    "name": "Large Cargo",
+                    "name": @json(__('Large Cargo')),
                     "baseFuelCapacity": 25000,
                     "baseCargoCapacity": 25000,
                     "fuelConsumption": 18,
@@ -128,7 +128,7 @@
                 },
                 "208": {
                     "id": 208,
-                    "name": "Colony Ship",
+                    "name": @json(__('Colony Ship')),
                     "baseFuelCapacity": 7500,
                     "baseCargoCapacity": 7500,
                     "fuelConsumption": 375,
@@ -136,7 +136,7 @@
                 },
                 "209": {
                     "id": 209,
-                    "name": "Recycler",
+                    "name": @json(__('Recycler')),
                     "baseFuelCapacity": 24000,
                     "baseCargoCapacity": 24000,
                     "fuelConsumption": 112,
@@ -144,7 +144,7 @@
                 },
                 "210": {
                     "id": 210,
-                    "name": "Espionage Probe",
+                    "name": @json(__('Espionage Probe')),
                     "baseFuelCapacity": 5,
                     "baseCargoCapacity": 0,
                     "fuelConsumption": 1,
@@ -152,7 +152,7 @@
                 },
                 "217": {
                     "id": 217,
-                    "name": "Crawler",
+                    "name": @json(__('Crawler')),
                     "baseFuelCapacity": 0,
                     "baseCargoCapacity": 0,
                     "fuelConsumption": 1,

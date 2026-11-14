@@ -84,6 +84,7 @@ class ServerSettingsController extends OGameController
      */
     public function update(SettingsService $settingsService): RedirectResponse
     {
+        $settingsService->set('universe_name', request('universe_name', $settingsService->universeName()));
         $settingsService->set('fleet_speed_war', request('fleet_speed_war'));
         $settingsService->set('fleet_speed_holding', request('fleet_speed_holding'));
         $settingsService->set('fleet_speed_peaceful', request('fleet_speed_peaceful'));

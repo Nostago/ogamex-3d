@@ -48,9 +48,12 @@ export function createObjectArtwork(t) {
         generation = 0,
         currentKey = '',
         disposed = false
-    function set(item) {
-        const key = `${item.key}:${item.type === 'ship' ? 'ship' : Math.min(8, Number(item.amount))}`
-        if (key === currentKey) return element
+    function set(item, job = null) {
+        const key = `${item.key}:${item.type === 'ship' ? 'ship' : Math.min(8, Number(item.amount))}:${job?.id || "idle"}`
+        if (key === currentKey) { engine?.setJob(job); return element }
+        engine?.setJob(null)
+        element.dataset.building = 'false'
+        delete element.dataset.progress
         current = item
         currentKey = key
         const version = ++generation
@@ -67,7 +70,7 @@ export function createObjectArtwork(t) {
                 if (disposed || version !== generation) return
                 try {
                     engine ||= createObjectPreview(element)
-                    if (engine.show(item)) {
+                    if (engine.show(item, job)) {
                         element.replaceChildren(engine.canvas)
                         element.dataset.artwork = '3d'
                         element.dataset.caption = t.object_preview

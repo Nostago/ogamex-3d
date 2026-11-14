@@ -1164,3 +1164,37 @@
 /* Model thumbnails are rendered at 256 × 192; original tiny icons stay small. */
 .object-thumbnail.model-thumbnail { width: 96px; height: 72px; border-radius: 4px; }
 @media(max-width:650px) { .object-thumbnail.model-thumbnail { width: 72px; height: 54px; } }
+
+/* Full original workflows share the Orbital Command visual shell. */
+.main-nav{position:relative}.main-nav>[data-live-page]{padding-right:34px!important}
+.nav-help{position:relative;float:right;margin-top:-44px;margin-right:7px;width:26px;height:28px;min-height:0;padding:0;z-index:2;color:#77dcee}
+.nav-banner img{position:absolute;left:22px;top:9px;width:140px;height:140px;border-radius:50%;object-fit:cover;object-position:40% 50%;filter:brightness(.95);box-shadow:0 0 16px #5ac9ff88}.nav-banner::after{content:"";position:absolute;left:22px;top:9px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 28% 20%,#b8edff30,transparent 35%,#020710dd 83%);pointer-events:none}
+.nav-banner>span{position:absolute;z-index:1;bottom:9px;left:12px;color:#d5f4ff;font-size:12px;font-weight:600;text-shadow:0 1px 6px #000}
+#live-help-dialog{max-width:520px;width:calc(100% - 36px);background:#0a2030;color:#d7edf5;border:1px solid #52c8e4;border-radius:8px;padding:25px;line-height:1.7}
+#live-help-dialog::backdrop{background:#000b}#live-help-close{float:right}
+#live-page-original .original-note{display:none}#live-original{width:100%;min-height:80vh;border:1px solid #284e64;border-radius:8px;background:#071521}
+.galaxy-row{grid-template-columns:64px minmax(200px,1.6fr) minmax(120px,1fr) minmax(240px,1.5fr)!important;gap:18px!important}
+.galaxy-planet,.galaxy-owner{min-width:0;overflow-wrap:normal!important;word-break:normal!important}.galaxy-planet strong{white-space:normal}
+.galaxy-actions{flex-wrap:wrap;gap:6px}.galaxy-actions button{white-space:normal;line-height:1.4;max-width:100%;padding:8px 12px}
+.galaxy-grid{overflow-x:auto}.galaxy-row{min-width:700px}.galaxy-position{white-space:nowrap}
+.resource-dark-matter{border:0;border-left:1px solid #214052;background:none!important;text-align:left;color:#bba4ed;font-size:10px;padding:8px 14px;white-space:nowrap}
+.resource-dark-matter strong{display:block;font-size:17px;color:#eadbff}.resource-dark-matter::before{content:'◆';color:#b98bff;margin-right:7px}
+.command-header .resource-balances{grid-template-columns:repeat(5,minmax(110px,1fr))}
+.admin-section-switch{position:relative;z-index:1}#live-admin-frame{position:relative;z-index:0}.object-artwork[data-building=true]::before{content:attr(data-job-label);position:absolute;top:10px;left:12px;z-index:1;color:#82e7ff;background:#061925dd;padding:5px 8px;border-radius:4px;font-size:11px}
+@media(max-width:1000px){.command-header .resource-balances{display:flex;overflow-x:auto}.resource-dark-matter{min-width:120px}}
+
+#live-help-dialog:has(iframe:not([hidden])){max-width:1100px}#live-help-frame{width:100%;height:65vh;border:1px solid #31566c;background:#071521;margin-top:16px}.live-tech-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+
+.orbital-command .main-nav{min-height:0;max-height:calc(100dvh - 104px);overflow-y:auto;position:sticky;top:0;align-self:start}
+.nav-entry{display:grid;grid-template-columns:minmax(0,1fr)27px;align-items:stretch}
+.orbital-command .nav-entry>a{padding:8px 7px!important;min-height:43px;border-top-right-radius:0;border-bottom-right-radius:0;font-size:12px}
+.nav-entry .nav-help{position:static;float:none;margin:0;width:27px;height:auto;min-height:43px;border-left:0;border-radius:0 4px 4px 0;padding:0;color:#7bd8ef}
+.nav-entry .nav-help:hover,.nav-entry .nav-help:focus-visible{background:#163c4f;color:#fff}
+@media(max-width:1000px){.orbital-command .main-nav{position:static;max-height:none;overflow-y:visible}.nav-entry{min-width:140px}.nav-entry .nav-help{min-width:25px!important}}
+@media(max-width:850px){
+    .orbital-command .main-nav{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;position:relative!important;inset:auto!important;overflow-x:auto!important;overflow-y:hidden!important;width:100%;max-width:100vw;padding:6px!important;box-sizing:border-box;z-index:10}
+    .orbital-command .nav-entry{flex:0 0 170px;min-width:170px;grid-template-columns:minmax(0,1fr)26px}
+    .orbital-command .nav-entry>a{flex-direction:row!important;min-width:0!important;min-height:43px!important;gap:7px}
+    .orbital-command .main-nav>a[data-live-page]{flex:0 0 135px}
+    .orbital-command #prototype{padding-bottom:16px}
+}

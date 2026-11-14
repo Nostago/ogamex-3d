@@ -52,7 +52,97 @@ Benutzer. Es wird durch diesen Branch kein öffentlicher Server bereitgestellt.
   Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese beiden
   Bereiche sind weiterhin Übergangsansichten mit einem Link zur separaten Originalseite.
 
-## Aktuelle Etappe: Neubau der Koloniearchitektur
+## Aktuelle Etappe: deutsche Spielbereiche vervollständigen
+
+Branch: `codex/ogamex-3d-complete-interface`.
+
+Die linke Navigation enthält jetzt auch Offiziere, Shop, Händler, Notizen,
+Freunde, Einstellungen und Rangliste. Allianz, Nachrichten und Flotten sowie
+alle neuen Bereiche verwenden weiterhin die originalen angemeldeten Seiten,
+Formulare, AJAX-Aktionen und Controller innerhalb des neuen Rahmens. Die
+Darstellung dieser Seiten ist dunkel/cyan, alte doppelte Navigation und große
+Kopfbilder sind ausgeblendet. Flottenplanung und Flottenbewegungen sowie
+Nachrichten/Chat und Händler/Rohstoffmarkt sind über eigene Bereichsschalter
+erreichbar. Weitere Galaxieaktionen öffnen die vollständigen Originalwerkzeuge
+im selben Rahmen. Einrichtungen wie Sprungtor, Silo und Raumdock bleiben über
+die jeweilige Detailansicht erreichbar.
+
+- **Bauanimationen:** Der Modellbereich des ausgewählten Gebäudes zeigt einen
+  Aufbau mit Gerüst und Scanebene, solange sein echter bezahlter Serverauftrag
+  aktiv ist. Bei Schiffen/Verteidigung wird nur der gerade abgearbeitete erste
+  Einheitenauftrag animiert; die Einzelbauzeit kommt vom Server. Reihenfolge,
+  Bezahlung und Fertigstellung bleiben beim Original. Andere Modelle stehen
+  still, reduzierte Bewegung wird berücksichtigt. Forschungsobjekte verwenden
+  weiterhin technische Darstellungen statt erfundener Gebäude.
+- **Galaxie:** Kolonisieren erscheint auch an freien Positionen. Der originale
+  Server entscheidet, ob die Aktion verfügbar ist; andernfalls erklärt ein
+  Hinweis den Grund. Eine Auswahl öffnet ausschließlich die Flottenplanung mit
+  Zielkoordinaten. Die Spalten haben passende Mindestbreiten; „Unbesetzt“ und
+  Koordinaten werden nicht mitten im Wort umgebrochen. Schmale Geräte scrollen
+  die Tabelle horizontal. Spielernamen werden als Text angezeigt.
+- **Verwaltung:** Die Speichern-Schaltfläche liegt außerhalb überdeckender
+  Dekorationen und ist über ihre gesamte Breite klickbar. Das Originalformular
+  samt versteckten Einstellungen bleibt erhalten. Außerdem wird der bereits
+  angebotene Universumsname nun vom Originalcontroller gespeichert; zuvor fehlte
+  genau dieses Feld in dessen Speichermethode.
+- **Kopfzeile und Hilfen:** Echte Dunkle Materie ergänzt die Rohstoffanzeige.
+  Das Planetenvorschaubild verwendet die vorhandene Planetenatlas-Grafik.
+  Jeder Hauptbereich hat einen Hilfedialog; Objektinformationen und
+  Technologiebaum öffnen die Originalberechnungen im selben Dialog.
+- **Deutsch:** Die neue Oberfläche und ihre eingebetteten Originalseiten
+  erhalten einen Anfragekontext `ui=live3d`. Er setzt die Sprache nur für diese
+  Anfrage und verändert keine gespeicherte Spracheinstellung. Alle vorhandenen
+  englischen PHP-Übersetzungsschlüssel sind auch auf Deutsch abgedeckt;
+  Platzhalter werden geprüft. Maschinell erstellte Übersetzungen sind als solche
+  gekennzeichnet. Historische gespeicherte Nachrichten und eigene Spielernamen
+  werden nicht nachträglich übersetzt. Literal-Schlüssel aus alten Templates
+  sind zusätzlich in `de.json` übersetzt; diese Datei erlaubt keine Kommentare.
+- **Rangliste:** Administratoren sind im neuen Anfragekontext ausgeschlossen,
+  unabhängig von der ursprünglichen Serveroption. Die separate Originalansicht
+  behält ihre bisherige Option. Berechnung und Statistikdaten bleiben original.
+- **Mobil:** Die erweiterte Hauptnavigation lässt sich horizontal scrollen;
+  die Einträge überdecken sich nicht.
+
+### Grenzen des vorhandenen Originals
+
+Offiziersrekrutierung und Shopkäufe sind im untersuchten OGameX-Stand noch keine
+vollständigen Spielfunktionen: Die Offiziersabfragen im `PlayerService` liefern
+als TODO `false`; der Shop besitzt einen Katalog, aber keine Kauf-/Inventar-
+Endpunkte. Diese Originalseiten sind integriert, werden aber ausdrücklich als
+noch nicht verfügbare Funktionen gekennzeichnet. Die Oberfläche erzeugt keine
+lokalen Scheinkäufe oder Bonuswirkungen. Auch weitere vorhandene Platzhalter in
+diesen Originalseiten werden durch eine neue Darstellung nicht zu fertigen
+Backendfunktionen. Eine vollständige Premium-Implementierung wäre ein eigener
+Auftrag an die Spiellogik. Die Bot-Erweiterung ist in dieser Etappe noch nicht
+integriert.
+
+### Prüfung dieser Etappe
+
+- Rector, Pint und PHPStan sowie der Produktionsbuild bestehen.
+- 81 ausgewählte PHP-Tests bestehen mit 6.011 Assertions, darunter deutsche
+  Sprachabdeckung, originale Aufträge, Rechteprüfung und Ranglistenkontext.
+- 76 Frontend-Logiktests bestehen.
+- `tests/Frontend/live3d-interface.browser.mjs` prüft zehn Originalbereiche,
+  gespeicherte Notizen, originale Technikinformationen, Kolonisationsziel,
+  tatsächlichen Transport und Rückruf sowie echte Gebäude-/Schiffsaufträge mit
+  Modellanimation und kompakte mobile Navigation.
+- `tests/Frontend/live3d-admin.browser.mjs` prüft zusätzlich die komplette
+  Trefferfläche der Speichern-Schaltfläche und speichert einen geänderten
+  Universumsnamen tatsächlich, bevor der alte Wert wiederhergestellt wird.
+
+Die Interface-Browserprüfung braucht ein isoliertes Testkonto mit zwei eigenen
+Planeten, einem verfügbaren kleinen Transporter, Kolonieschiff und den originalen
+Voraussetzungen für deren Nutzung. Die Verwaltungsprüfung braucht ein separates
+isoliertes Administratorkonto. Beide verwenden `PLAYWRIGHT_MODULE`,
+`LIVE_BASE_URL`, `LIVE_ACCOUNT_FILE` und `ARTIFACT_DIR` wie im allgemeinen
+Testabschnitt. Sie erteilen echte Aufträge; keine normalen Spielerkonten dafür
+verwenden. Zugangsdaten liegen außerhalb des Repositorys. Die in der Cloud
+verwendeten Testkonten werden nach der Prüfung gelöscht.
+
+Die nachfolgend dokumentierten Koloniemodelle bleiben erhalten. Diese Etappe
+ersetzt weder Gebäudemodelle noch Spielregeln erneut.
+
+## Vorherige Etappe: Neubau der Koloniearchitektur
 
 Branch: `codex/ogamex-3d-colony-rebuild`.
 
@@ -410,7 +500,7 @@ node --test tests/Frontend/*.test.mjs
 sh scripts/codex/compose.sh exec -T ogamex-app composer run rector
 sh scripts/codex/compose.sh exec -T ogamex-app composer run cs
 sh scripts/codex/compose.sh exec -T ogamex-app composer run stan
-sh scripts/codex/compose.sh exec -T ogamex-app composer run tests -- --processes=2 --filter 'Live3dTest|Prototype3dTest|Http200Test|RustFfiTest|UnitQueueTest|ResearchQueueTest|PlanetFieldRestrictionTest|MessagesTest|GalaxyTest'
+sh scripts/codex/compose.sh exec -T ogamex-app composer run tests -- --processes=2 --filter 'Live3dInterfaceTest|Live3dAdminTest|Live3dTest|LanguageSwitchTest|AdminTest|Prototype3dTest|Http200Test|RustFfiTest|UnitQueueTest|ResearchQueueTest|PlanetFieldRestrictionTest|MessagesTest|GalaxyTest'
 npm run build
 ```
 

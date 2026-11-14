@@ -1,0 +1,60 @@
+<?php
+
+// AI-TRANSLATED: verify against original OGame text
+return [
+    'space_dock' => [
+        'name' => 'Raumdock',
+        'description' => 'Wracks können im Raumdock repariert werden.',
+        'description_long' => 'Das Raumdock repariert Schiffe, die im Kampf zerstört wurden und ein Wrackfeld hinterlassen haben. Die Reparatur dauert höchstens 12 Stunden, aber mindestens 30 Minuten. Da das Raumdock im Orbit liegt, benötigt es kein Baufeld.',
+        'requirements' => 'Benötigt Raumschiffwerft Stufe 2',
+        'field_consumption' => 'Benötigt kein Baufeld (befindet sich im Orbit)',
+        'wreck_field_section' => 'Wrackfeld',
+        'no_wreck_field' => 'An diesem Ort ist kein Wrackfeld vorhanden.',
+        'wreck_field_info' => 'Ein Wrackfeld mit reparierbaren Schiffen ist vorhanden.',
+        'ships_available' => 'Reparierbare Schiffe: {count}',
+        'repair_capacity' => 'Reparaturkapazität bei Raumdock-Stufe {level}',
+        'start_repair' => 'Wrackfeld reparieren',
+        'repair_in_progress' => 'Reparatur läuft',
+        'repair_completed' => 'Reparatur abgeschlossen',
+        'deploy_ships' => 'Reparierte Schiffe übernehmen',
+        'burn_wreck_field' => 'Wrackfeld verbrennen',
+        'repair_time' => 'Geschätzte Reparaturzeit: {time}',
+        'repair_progress' => 'Reparaturfortschritt: {progress}%',
+        'completion_time' => 'Fertigstellung: {time}',
+        'auto_deploy_warning' => 'Nicht abgeholte Schiffe werden {hours} Stunden nach Reparaturende automatisch in Dienst gestellt.',
+        'level_effects' => [
+            'repair_speed' => 'Reparaturgeschwindigkeit um {bonus}% erhöht',
+            'capacity_increase' => 'Maximale Zahl reparierbarer Schiffe erhöht',
+        ],
+        'status' => [
+            'no_dock' => 'Für Reparaturen wird ein Raumdock benötigt',
+            'level_too_low' => 'Für Reparaturen wird Raumdock Stufe 1 benötigt',
+            'no_wreck_field' => 'Kein Wrackfeld vorhanden',
+            'repairing' => 'Wrackfeld wird repariert',
+            'ready_to_deploy' => 'Reparatur abgeschlossen, Schiffe abholbereit',
+        ],
+    ],
+    'actions' => [
+        'build' => 'Bauen',
+        'upgrade' => 'Auf Stufe {level} ausbauen',
+        'downgrade' => 'Auf Stufe {level} abbauen',
+        'demolish' => 'Abreißen',
+        'cancel' => 'Abbrechen',
+    ],
+    'requirements' => [
+        'met' => 'Voraussetzungen erfüllt',
+        'not_met' => 'Voraussetzungen nicht erfüllt',
+        'research' => 'Forschung: {requirement}',
+        'building' => 'Gebäude: {requirement} Stufe {level}',
+    ],
+    'cost' => [
+        'metal' => 'Metall: {amount}',
+        'crystal' => 'Kristall: {amount}',
+        'deuterium' => 'Deuterium: {amount}',
+        'energy' => 'Energie: {amount}',
+        'dark_matter' => 'Dunkle Materie: {amount}',
+        'total' => 'Gesamtkosten: {amount}',
+    ],
+    'construction_time' => 'Bauzeit: {time}',
+    'upgrade_time' => 'Ausbauzeit: {time}',
+];

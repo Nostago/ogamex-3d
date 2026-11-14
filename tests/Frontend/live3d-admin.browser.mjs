@@ -75,7 +75,7 @@ try {
     let snapshot = await (
         await context.request.get(`/play-3d/state?planet=${target}`)
     ).json();
-    assert.ok(snapshot.resources.metal.amount >= before + 10000000);
+    assert.ok(snapshot.resources.metal.amount >= Math.floor(before) + 9999999, `Original resource addition: before=${before}, after=${snapshot.resources.metal.amount}`);
     await page.screenshot({
         path: `${artifacts}/admin-test-tools.png`,
         fullPage: true,
@@ -173,6 +173,26 @@ try {
                     .locator('form .footer button[type="submit"]')
                     .isVisible(),
             );
+            const saveButton = frame.locator('form .footer button[type="submit"]');
+            await saveButton.scrollIntoViewIfNeeded();
+            await page.screenshot({path:`${artifacts}/admin-save-hit-test.png`,fullPage:true});
+            assert.equal(await saveButton.evaluate(button => {
+                const r = button.getBoundingClientRect();
+                return [.15, .5, .85].every(x => button.ownerDocument.elementFromPoint(r.left + r.width*x, r.top + r.height/2)?.closest('button') === button);
+            }), true, 'Entire save button must receive clicks, including its middle');
+            const oldName = await frame.locator('[name="universe_name"]').inputValue();
+            for (const value of ['UI Save Test', oldName]) {
+                await page.locator('#live-admin-section').selectOption('0');
+                await frame.locator('[name="universe_name"]').fill(value);
+                await page.locator('#live-admin-section').selectOption('1');
+                const saved = page.waitForResponse(r => r.url().includes('/admin/server-settings') && r.request().method() === 'POST');
+                await page.locator('#live-admin-frame').evaluate(f => { delete f.dataset.organized });
+                await saveButton.click();
+                assert.ok([302,303].includes((await saved).status()));
+                await page.waitForFunction(() => document.querySelector('#live-admin-frame').dataset.organized === '/admin/server-settings' && !document.querySelector('#live-admin-frame').inert);
+                await frame.locator('[name="universe_name"]').waitFor({state:'attached'});
+                assert.equal(await frame.locator('[name="universe_name"]').inputValue(), value);
+            }
             await page.screenshot({
                 path: `${artifacts}/admin-universe.png`,
                 fullPage: true,

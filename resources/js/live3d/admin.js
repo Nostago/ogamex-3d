@@ -38,6 +38,7 @@ export function createAdmin({
     function url(key) {
         const link = new URL(config.adminLinks[key], location.origin)
         link.searchParams.set('cp', state().planet.id)
+        link.searchParams.set('ui', 'live3d')
         return link.href
     }
     function show(key) {
@@ -207,6 +208,11 @@ export function createAdmin({
                     form.append(cp)
                 }
                 cp.value = framePlanet
+                const ui = doc.createElement('input')
+                ui.type = 'hidden'
+                ui.name = 'ui'
+                ui.value = 'live3d'
+                form.append(ui)
             }
             frame.inert = false
             sectionCleanup = organizeAdminSections(

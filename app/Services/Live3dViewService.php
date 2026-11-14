@@ -54,6 +54,7 @@ class Live3dViewService
             'serverTime' => Date::now()->timestamp,
             'vacation' => $player->isInVacationMode(),
             'player' => $player->getUsername(false),
+            'darkMatter' => $player->getDarkMatter(),
             'planet' => [
                 'id' => $planet->getPlanetId(), 'name' => $planet->getPlanetName(),
                 'coordinates' => $planet->getPlanetCoordinates()->asString(), 'diameter' => $planet->getPlanetDiameter(),
@@ -82,7 +83,7 @@ class Live3dViewService
                     'id' => $item->id, 'objectId' => $item->object->id, 'name' => $item->object->title, 'remaining' => $item->time_countdown, 'seconds' => $item->time_total, 'active' => $item->building, 'target' => $item->level_target, 'planet' => $item->planet->getPlanetId(),
                 ], $researchQueue->queue),
                 'unit' => array_map(fn (UnitQueueViewModel $item): array => [
-                    'id' => $item->id, 'objectId' => $item->object->id, 'name' => $item->object->title, 'remaining' => $item->time_countdown, 'seconds' => $item->time_total, 'quantity' => (string)$item->object_amount_remaining,
+                    'id' => $item->id, 'objectId' => $item->object->id, 'name' => $item->object->title, 'remaining' => $item->time_countdown, 'seconds' => $item->time_total, 'quantity' => (string)$item->object_amount_remaining, 'unitSeconds' => $item->time_countdown_per_object, 'nextRemaining' => $item->time_countdown_object_next,
                 ], $unitQueue->queue),
             ],
         ];

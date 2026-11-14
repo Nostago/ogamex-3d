@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
 use OGame\Http\Controllers\Admin\DeveloperShortcutsController;
 use OGame\Http\Controllers\Admin\FleetTimingController;
 use OGame\Http\Controllers\Admin\RulesController as AdminRulesController;
@@ -41,6 +43,10 @@ use OGame\Http\Controllers\ServerSettingsController;
 use OGame\Http\Controllers\ShipyardController;
 use OGame\Http\Controllers\ShopController;
 use OGame\Http\Controllers\TechtreeController;
+use OGame\Http\Middleware\Live3dContext;
+use OGame\Services\NoteService;
+use OGame\Services\ObjectService;
+use OGame\Services\PlayerService;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,13 +75,24 @@ Route::get('/ajax/main/terms', [RulesController::class, 'ajaxTerms'])->name('ter
 Route::get('/ajax/main/contact', [RulesController::class, 'ajaxContact'])->name('contact.ajax');
 
 // Group: all logged in pages:
-Route::middleware(['auth', 'banned', 'globalgame', 'locale', 'firstlogin'])->group(function () {
+Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::class, 'firstlogin'])->group(function () {
     // Authenticated 3D interface: original backend, separate public demo.
     Route::get('/play-3d', [Live3dController::class, 'index'])->name('live3d.index');
     Route::get('/play-3d/galaxy', [Live3dController::class, 'galaxy'])->name('live3d.galaxy');
     Route::get('/play-3d/state', [Live3dController::class, 'state'])->name('live3d.state');
     Route::post('/play-3d/admin/command', [Live3dAdminController::class, 'command'])->name('live3d.admin.command');
     Route::post('/play-3d/command', [Live3dController::class, 'command'])->name('live3d.command');
+
+    Route::match(['get', 'post'], '/play-3d/notes', function (Request $request, NoteService $notes) {
+        $content = resolve(NotesController::class)->overlay($request, $notes);
+        return view('live3d.notes', $content->getData());
+    })->name('live3d.notes');
+
+    Route::get('/play-3d/technology', function (Request $request, PlayerService $player) {
+        $request->validate(['object_id' => ['required', 'integer', Rule::in(array_map(fn ($object) => $object->id, ObjectService::getObjects()))], 'tab' => ['required', 'integer', 'between:1,4']]);
+        $technology = resolve(TechtreeController::class)->ajax($request, $player);
+        return view('live3d.technology', ['liveTechnologyName' => $technology->name(), 'liveTechnologyData' => $technology->getData()]);
+    })->name('live3d.technology');
 
     // Overview
     Route::get('/overview', [OverviewController::class, 'index'])->name('overview.index');

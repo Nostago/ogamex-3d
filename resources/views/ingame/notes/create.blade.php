@@ -30,7 +30,7 @@
             <tr>
                 <td></td>
                 <td>
-                    <div class="fleft count">(<span class="cntChars">0</span> / 5000 characters)</div>
+                    <div class="fleft count">(<span class="cntChars">0</span> / 5000 {{ __('t_ingame.shared.characters') }})</div>
                     <input type="submit" class="btn_blue float_right" name="noticeSubmit" value="{{ __('t_ingame.notes.save_btn') }}" />
                 </td>
             </tr>

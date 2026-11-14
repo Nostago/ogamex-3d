@@ -1,4 +1,5 @@
 // The original GalaxyController supplies visibility, debris and permitted missions.
+function plain(value) { const doc = new DOMParser().parseFromString(String(value), 'text/html'); return doc.body.textContent || '' }
 export function createGalaxy({
     url,
     t,
@@ -7,6 +8,7 @@ export function createGalaxy({
     context,
     onError,
     openFleet,
+    openTools,
 }) {
     const galaxyInput = document.querySelector('#live-galaxy-number'),
         systemInput = document.querySelector('#live-system-number'),
@@ -110,11 +112,18 @@ export function createGalaxy({
                     )
                 node.append(
                     name,
-                    el('span', '', planet ? row.playerName || '—' : '—'),
+                    el('span', 'galaxy-owner', planet ? plain(row.playerName || '—') : '—'),
                 )
                 const actions = el('div', 'galaxy-actions')
-                for (const mission of planet?.availableMissions || []) {
-                    if (!mission.link) continue
+                for (const mission of [...(planet?.availableMissions || []), ...(row.availableMissions || []), ...(moon?.availableMissions || []), ...(debris?.availableMissions || [])]) {
+                    if (mission.missionType === 0 || !mission.link) continue
+                    if (mission.link === '#') {
+                        const disabled = el('button', '', t[`mission_${mission.missionType}`] || plain(mission.name || t.unavailable))
+                        disabled.disabled = true
+                        disabled.title = plain(mission.description || t.unavailable)
+                        actions.append(disabled)
+                        continue
+                    }
                     const link = new URL(mission.link, location.origin)
                     // Never call instant spy / dispatch endpoints as navigation links.
                     if (
@@ -122,10 +131,13 @@ export function createGalaxy({
                         link.pathname !== '/fleet'
                     )
                         continue
-                    const button = el('button', '', mission.name)
+                    const button = el('button', '', t[`mission_${mission.missionType}`] || plain(mission.name || t.fleets))
                     button.addEventListener('click', () => openFleet(link.href))
                     actions.append(button)
                 }
+                const more = el('button', '', t.more_actions)
+                more.addEventListener('click', () => openTools(`/galaxy?galaxy=${currentGalaxy}&system=${currentSystem}`))
+                actions.append(more)
                 if (!actions.childElementCount)
                     actions.append(el('span', 'muted', '—'))
                 node.append(actions)
