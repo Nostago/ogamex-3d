@@ -1,5 +1,9 @@
+import { formatDuration } from './duration.js'
 // The original GalaxyController supplies visibility, debris and permitted missions.
-function plain(value) { const doc = new DOMParser().parseFromString(String(value), 'text/html'); return doc.body.textContent || '' }
+function plain(value) {
+    const doc = new DOMParser().parseFromString(String(value), 'text/html')
+    return doc.body.textContent || ''
+}
 export function createGalaxy({
     url,
     t,
@@ -8,7 +12,9 @@ export function createGalaxy({
     context,
     onError,
     openFleet,
-    openTools,
+    openArea,
+    config,
+    refresh,
 }) {
     const galaxyInput = document.querySelector('#live-galaxy-number'),
         systemInput = document.querySelector('#live-system-number'),
@@ -112,36 +118,38 @@ export function createGalaxy({
                     )
                 node.append(
                     name,
-                    el('span', 'galaxy-owner', planet ? plain(row.playerName || '—') : '—'),
+                    el(
+                        'span',
+                        'galaxy-owner',
+                        planet ? plain(row.playerName || '—') : '—',
+                    ),
                 )
                 const actions = el('div', 'galaxy-actions')
-                for (const mission of [...(planet?.availableMissions || []), ...(row.availableMissions || []), ...(moon?.availableMissions || []), ...(debris?.availableMissions || [])]) {
-                    if (mission.missionType === 0 || !mission.link) continue
-                    if (mission.link === '#') {
-                        const disabled = el('button', '', t[`mission_${mission.missionType}`] || plain(mission.name || t.unavailable))
-                        disabled.disabled = true
-                        disabled.title = plain(mission.description || t.unavailable)
-                        actions.append(disabled)
-                        continue
-                    }
-                    const link = new URL(mission.link, location.origin)
-                    // Never call instant spy / dispatch endpoints as navigation links.
-                    if (
-                        link.origin !== location.origin ||
-                        link.pathname !== '/fleet'
-                    )
-                        continue
-                    const button = el('button', '', t[`mission_${mission.missionType}`] || plain(mission.name || t.fleets))
-                    button.addEventListener('click', () => openFleet(link.href))
-                    actions.append(button)
-                }
+                const bodies = planets.filter((p) =>
+                    [1, 2, 3].includes(p.planetType),
+                )
+                if (!planet)
+                    bodies.unshift({
+                        planetType: 1,
+                        availableMissions: row.availableMissions || [],
+                    })
+                for (const body of bodies) missionButtons(actions, row, body)
                 const more = el('button', '', t.more_actions)
-                more.addEventListener('click', () => openTools(`/galaxy?galaxy=${currentGalaxy}&system=${currentSystem}`))
+                more.setAttribute('aria-expanded', 'false')
+                const details = el('section', 'galaxy-detail')
+                details.dataset.galaxyDetails = row.position
+                details.hidden = true
+                more.onclick = () => {
+                    details.hidden = !details.hidden
+                    more.setAttribute('aria-expanded', String(!details.hidden))
+                    if (!details.hidden && !details.childElementCount)
+                        renderDetails(details, row, bodies, data)
+                }
                 actions.append(more)
                 if (!actions.childElementCount)
                     actions.append(el('span', 'muted', '—'))
                 node.append(actions)
-                host.append(node)
+                host.append(node, details)
             }
             status.textContent = `[${currentGalaxy}:${currentSystem}] · ${t.galaxy_hint}`
         } catch (error) {
@@ -149,6 +157,348 @@ export function createGalaxy({
             status.textContent = t.error_request
             onError(error)
         }
+    }
+    function fleetUrl(row, body, mission) {
+        const target = new URL('/fleet', location.origin)
+        target.search = new URLSearchParams({
+            galaxy: currentGalaxy,
+            system: currentSystem,
+            position: row.position,
+            type: body.planetType,
+            mission,
+        })
+        return target.href
+    }
+    function missionButtons(host, row, body) {
+        for (const mission of body.availableMissions || []) {
+            if (!mission.missionType) continue
+            const caption =
+                t[`mission_${mission.missionType}`] || plain(mission.name)
+            const button = el(
+                'button',
+                '',
+                `${body.planetType === 3 ? t.moon + ' · ' : body.planetType === 2 ? t.debris + ' · ' : ''}${caption}`,
+            )
+            if (
+                mission.link === '#' ||
+                (body.planetType === 2 && body.recyclePossible === false)
+            ) {
+                button.disabled = true
+                button.title = plain(mission.description || t.unavailable)
+            } else
+                button.onclick = () =>
+                    openFleet(fleetUrl(row, body, mission.missionType))
+            host.append(button)
+        }
+    }
+    async function actionApi(path, body, method = 'POST') {
+        const token = document.querySelector('meta[name="csrf-token"]').content
+        const url = new URL(path, location.origin)
+        url.searchParams.set('cp', context().id)
+        url.searchParams.set('ui', 'live3d')
+        if (method === 'GET')
+            for (const [key, value] of Object.entries(body))
+                url.searchParams.set(key, value)
+        const response = await fetch(url, {
+            method,
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+            },
+            ...(method === 'GET'
+                ? {}
+                : { body: JSON.stringify({ _token: token, ...body }) }),
+        })
+        if (response.redirected || [401, 419].includes(response.status)) {
+            onError({ code: 'session' })
+            throw new Error(t.error_session)
+        }
+        const result = await response.json()
+        if (
+            !response.ok ||
+            result.success === false ||
+            result.is_error ||
+            result.error
+        )
+            throw new Error(
+                result.message ||
+                    result.error_message ||
+                    result.error ||
+                    t.error_request,
+            )
+        return result
+    }
+    function renderDetails(host, row, bodies, metadata) {
+        const coords = {
+            planet: context().id,
+            galaxy: currentGalaxy,
+            system: currentSystem,
+            position: row.position,
+            type: 1,
+        }
+        host.append(
+            el(
+                'h2',
+                '',
+                `${t.op_details} [${currentGalaxy}:${currentSystem}:${row.position}]`,
+            ),
+        )
+        const output = el('div', 'galaxy-action-result')
+        output.setAttribute('role', 'status')
+        const flags = row.actions || {},
+            playerFlags = row.player?.actions || {}
+        function button(label, callback) {
+            const control = el('button', '', label)
+            control.type = 'button'
+            control.onclick = async () => {
+                if (control.disabled) return
+                control.disabled = true
+                try {
+                    await callback()
+                } catch (error) {
+                    output.textContent = plain(error.message)
+                } finally {
+                    control.disabled = false
+                }
+            }
+            host.append(control)
+            return control
+        }
+        for (const body of bodies) {
+            const group = el('div', 'galaxy-detail-body')
+            group.append(
+                el(
+                    'h3',
+                    '',
+                    body.planetType === 3
+                        ? t.moon
+                        : body.planetType === 2
+                          ? t.debris
+                          : t.planet,
+                ),
+            )
+            missionButtons(group, row, body)
+            if (body.requiredShips !== undefined)
+                group.append(
+                    el(
+                        'p',
+                        '',
+                        `${t.op_recycler_count}: ${number(body.requiredShips)}`,
+                    ),
+                )
+            host.append(group)
+        }
+        if (flags.canPhalanx) {
+            const scan = button(
+                `${t.op_scan} · ${number(metadata.scanCost)} ${t.deuterium}`,
+                async () => {
+                    if (!confirm(t.op_scan_confirm)) return
+                    const result = await actionApi(config.galaxyActionUrl, {
+                        ...coords,
+                        action: 'scan',
+                    })
+                    output.replaceChildren(el('h3', '', t.op_scan_result))
+                    for (const movement of result.movements || []) {
+                        const card = el('article', 'card')
+                        card.append(
+                            el(
+                                'strong',
+                                '',
+                                t[`mission_${movement.mission_type}`] ||
+                                    movement.mission_type_name,
+                            ),
+                            el(
+                                'p',
+                                '',
+                                `${movement.origin.planet_name || ''} [${movement.origin.galaxy}:${movement.origin.system}:${movement.origin.position}] → ${movement.destination.planet_name || ''} [${movement.destination.galaxy}:${movement.destination.system}:${movement.destination.position}]`,
+                            ),
+                            el(
+                                'p',
+                                '',
+                                formatDuration(
+                                    movement.display_time - result.server_time,
+                                    t,
+                                ),
+                            ),
+                            el(
+                                'p',
+                                '',
+                                `${t.ships}: ${number(movement.ship_count)}`,
+                            ),
+                        )
+                        for (const [key, amount] of Object.entries(
+                            movement.ships || {},
+                        ))
+                            card.append(
+                                el(
+                                    'p',
+                                    '',
+                                    `${config.shipNames?.[key] || key}: ${number(amount)}`,
+                                ),
+                            )
+                        output.append(card)
+                    }
+                    if (!result.movements?.length)
+                        output.append(el('p', '', t.op_no_fleets))
+                    await refresh()
+                },
+            )
+            scan.disabled = !flags.phalanxActive
+            if (scan.disabled)
+                scan.title = plain(
+                    flags.phalanxInactiveReason || t.op_special_unavailable,
+                )
+        }
+        if (flags.canMissileAttack)
+            button(t.op_missiles, async () => {
+                const info = await actionApi(
+                    config.galaxyMissilesUrl,
+                    coords,
+                    'GET',
+                )
+                if (info.error) throw new Error(info.error)
+                const form = el('form', 'galaxy-action-form'),
+                    label = el(
+                        'label',
+                        '',
+                        `${t.op_missile_count} · ${t.ready}: ${number(info.available_missiles)}`,
+                    ),
+                    count = el('input')
+                count.type = 'number'
+                count.min = '1'
+                count.max = info.available_missiles
+                count.value = '1'
+                count.required = true
+                label.append(count)
+                const priority = el('select'),
+                    pLabel = el('label', '', t.op_primary)
+                priority.append(el('option', '', t.op_priority_all))
+                priority.firstChild.value = '0'
+                for (const defense of info.defenses) {
+                    const option = el('option', '', defense.name)
+                    option.value = defense.priority
+                    priority.append(option)
+                }
+                pLabel.append(priority)
+                const submit = el('button', '', t.op_missiles)
+                submit.type = 'submit'
+                submit.disabled = !info.available_missiles
+                form.append(
+                    label,
+                    pLabel,
+                    el(
+                        'p',
+                        '',
+                        `${t.op_duration}: ${formatDuration(info.flight_duration, t)}`,
+                    ),
+                    submit,
+                )
+                let sending = false
+                form.onsubmit = async (event) => {
+                    event.preventDefault()
+                    if (
+                        sending ||
+                        !form.reportValidity() ||
+                        !confirm(t.op_missile_confirm)
+                    )
+                        return
+                    sending = true
+                    submit.disabled = true
+                    try {
+                        await actionApi(config.galaxyActionUrl, {
+                            ...coords,
+                            action: 'missiles',
+                            missile_count: count.value,
+                            target_priority: priority.value,
+                        })
+                        output.textContent = t.accepted
+                        await refresh()
+                    } catch (error) {
+                        output.append(el('p', '', plain(error.message)))
+                    } finally {
+                        sending = false
+                        submit.disabled = false
+                    }
+                }
+                output.replaceChildren(form)
+            })
+        if (playerFlags.message?.available)
+            button(t.op_message, () =>
+                openArea(`/chat?playerId=${row.playerId}`, 'messages'),
+            )
+        if (flags.canBuddyRequests || playerFlags.buddies?.available)
+            button(t.op_buddy, () => {
+                const form = el('form', 'galaxy-action-form'),
+                    label = el('label', '', t.op_buddy_message),
+                    text = el('textarea'),
+                    submit = el('button', '', t.op_buddy_send)
+                text.maxLength = 5000
+                label.append(text)
+                submit.type = 'submit'
+                form.append(label, submit)
+                let sending = false
+                form.onsubmit = async (event) => {
+                    event.preventDefault()
+                    if (sending) return
+                    sending = true
+                    submit.disabled = true
+                    try {
+                        await actionApi('/buddies/send-request', {
+                            receiver_id: row.playerId,
+                            message: text.value,
+                        })
+                        output.textContent = t.accepted
+                    } catch (error) {
+                        output.append(el('p', '', plain(error.message)))
+                    } finally {
+                        sending = false
+                        submit.disabled = false
+                    }
+                }
+                output.replaceChildren(form)
+            })
+        if (playerFlags.alliance?.available && playerFlags.alliance.link)
+            button(t.alliance, () =>
+                openArea(playerFlags.alliance.link, 'alliance'),
+            )
+        if (playerFlags.highscore?.available)
+            button(t.highscore, () =>
+                openArea(
+                    playerFlags.highscore.link || '/highscore',
+                    'highscore',
+                ),
+            )
+        if (
+            !bodies.some((body) => body.planetType === 1 && body.planetId) &&
+            context().type !== 3
+        )
+            button(
+                `${t.op_relocate} · ${number(metadata.relocationCost)} ${t.dark_matter}`,
+                async () => {
+                    if (
+                        !confirm(
+                            `${t.op_relocate}? ${number(metadata.relocationCost)} ${t.dark_matter}`,
+                        )
+                    )
+                        return
+                    await actionApi(config.galaxyActionUrl, {
+                        ...coords,
+                        action: 'relocate',
+                    })
+                    output.textContent = t.accepted
+                    await refresh()
+                },
+            )
+        button(t.op_close, () => {
+            host.hidden = true
+            host.previousElementSibling
+                .querySelector('[aria-expanded]')
+                ?.setAttribute('aria-expanded', 'false')
+        })
+        host.append(output)
     }
     function changed(delay = 350) {
         clearTimeout(debounce)

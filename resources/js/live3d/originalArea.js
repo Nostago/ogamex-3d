@@ -1,7 +1,17 @@
 // Retain the original controllers/forms/scripts, replace their presentation shell.
-export function skinOriginalArea(frame, { t, planet, refresh }) {
+export function skinOriginalArea(frame, { t, planet, refresh, openFleet }) {
     const doc = frame.contentDocument
     if (!doc?.body) return
+    doc.addEventListener('click', event => {
+        const anchor = event.target.closest('a[href]')
+        if (!anchor || !openFleet) return
+        const target = new URL(anchor.href, location.origin)
+        if (target.origin === location.origin && /^\/fleet(?:\/|$)/.test(target.pathname)) {
+            event.preventDefault()
+            event.stopImmediatePropagation()
+            openFleet(target.href)
+        }
+    }, true)
     const style = doc.createElement('style')
     style.textContent = `
     html,body{min-width:0!important;margin:0!important;background:#071521!important;color:#d3e7f0!important;font:14px/1.6 system-ui,sans-serif!important}
@@ -22,6 +32,11 @@ export function skinOriginalArea(frame, { t, planet, refresh }) {
     #technologies li input{grid-column:2;position:static!important;min-width:0!important;width:100%!important;margin:0!important;float:none!important}
     #technologies li[data-status=off]{opacity:.5}
     @media(max-width:700px){#technologies{grid-template-columns:minmax(0,1fr)}#technologies ul{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}}
+    .requirement-met{background:#0d3025!important;border:1px solid #4fae83!important;color:#a1ffd0!important}
+    .requirement-missing{background:#371c25!important;border:1px solid #d97b85!important;color:#ffd0d4!important}
+    .live-requirement-status{padding:12px 14px;border-radius:5px;line-height:1.6;margin:10px 0}
+    .techImage.built{outline:3px solid #73e6a2!important}.techImage.notBuilt{outline:3px solid #ff8d9a!important}
+    .applications [data-prerequisites-met=true]{outline:3px solid #73e6a2!important}.applications [data-prerequisites-met=false]{outline:3px solid #ff8d9a!important}
     #inhalt .maincontent>#planet,#inhalt>#planet{display:none!important}
     #inhalt .header,#inhalt .footer,#inhalt .tabs,#inhalt .tabs a,#inhalt .tab,#inhalt .tabwrapper,#inhalt .box_highlight{background-image:none!important;box-shadow:none!important}
     #inhalt label,#inhalt p,#inhalt .textBeefy{font-family:system-ui,sans-serif!important}

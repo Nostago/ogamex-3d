@@ -24,7 +24,10 @@ use OGame\Http\Controllers\HighscoreController;
 use OGame\Http\Controllers\JumpGateController;
 use OGame\Http\Controllers\LanguageController;
 use OGame\Http\Controllers\Live3dAdminController;
+use OGame\Http\Controllers\Live3dBotsController;
 use OGame\Http\Controllers\Live3dController;
+use OGame\Http\Controllers\Live3dFleetController;
+use OGame\Http\Controllers\Live3dGalaxyController;
 use OGame\Http\Controllers\MerchantController;
 use OGame\Http\Controllers\MessagesController;
 use OGame\Http\Controllers\NotesController;
@@ -80,6 +83,14 @@ Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::clas
     // Authenticated 3D interface: original backend, separate public demo.
     Route::get('/play-3d', [Live3dController::class, 'index'])->name('live3d.index');
     Route::get('/play-3d/galaxy', [Live3dController::class, 'galaxy'])->name('live3d.galaxy');
+    Route::get('/play-3d/galaxy/missiles', [Live3dGalaxyController::class, 'missiles'])->name('live3d.galaxy.missiles');
+    Route::post('/play-3d/galaxy/action', [Live3dGalaxyController::class, 'action'])->name('live3d.galaxy.action');
+    Route::get('/play-3d/bots', [Live3dBotsController::class, 'state'])->name('live3d.bots');
+    Route::post('/play-3d/bots', [Live3dBotsController::class, 'command'])->name('live3d.bots.command');
+    Route::get('/play-3d/fleet', [Live3dFleetController::class, 'state'])->name('live3d.fleet');
+    Route::post('/play-3d/fleet/preview', [Live3dFleetController::class, 'preview'])->name('live3d.fleet.preview');
+    Route::post('/play-3d/fleet/send', [Live3dFleetController::class, 'send'])->name('live3d.fleet.send');
+    Route::post('/play-3d/fleet/recall', [Live3dFleetController::class, 'recall'])->name('live3d.fleet.recall');
     Route::get('/play-3d/state', [Live3dController::class, 'state'])->name('live3d.state');
     Route::post('/play-3d/admin/command', [Live3dAdminController::class, 'command'])->name('live3d.admin.command');
     Route::post('/play-3d/command', [Live3dController::class, 'command'])->name('live3d.command');

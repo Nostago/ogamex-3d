@@ -1,3 +1,4 @@
+import { formatDuration } from './duration.js'
 import * as THREE from '../prototype3d/vendor/three.module.min.js'
 import { createColonyMaterials } from '../prototype3d/materials.js'
 import { createBuilding } from '../prototype3d/buildings.js'
@@ -123,7 +124,7 @@ export function createObjectPreview(host) {
                 buildPlane.constant = -modelSize.y / 2 + modelSize.y * Math.max(.04, progress)
                 host.dataset.progress = String(progress)
                 // Server snapshots alone decide completion and inventory changes.
-                host.dataset.jobLabel = `${Math.floor(progress * 100)} % · ${Math.ceil(remaining)} s`
+                host.dataset.jobLabel = `${Math.floor(progress * 100)} % · ${formatDuration(remaining)}`
                 model.position.y = baseY + (model.userData.modelRevision ? 0 : Math.max(0, progress - .9) * 2)
                 draw()
                 lastFrame = time

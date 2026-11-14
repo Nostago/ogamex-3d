@@ -1,5 +1,7 @@
 # Neue Oberfläche am vorhandenen OGameX-Backend
 
+Aktuelle Erweiterung: [Native Flotten, Galaxieaktionen und autonome NPCs](OGAMEX-3D-OPERATIONS-BOTS.md).
+
 ## Grundentscheidung
 
 Die neue Spieloberfläche verwendet Laravel und die vorhandenen OGameX-Services

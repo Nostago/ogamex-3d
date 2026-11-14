@@ -1,3 +1,4 @@
+import { createBotsPanel } from './botsPanel.js'
 import { organizeAdminSections } from './adminSections.js'
 // Native test controls delegate to the existing admin controller. Advanced forms
 // stay intact: the original action, CSRF token and all settings fields are preserved.
@@ -22,6 +23,7 @@ export function createAdmin({
         frameTab = ''
     const names = {
         test: t.admin_test,
+        bots: t.bots_title,
         settings: t.admin_universe,
         prices: t.admin_prices,
         security: t.admin_security,
@@ -46,7 +48,9 @@ export function createAdmin({
     function show(key) {
         tab = key
         document.querySelector('#live-admin-test').hidden = key !== 'test'
-        document.querySelector('#live-admin-advanced').hidden = key === 'test'
+        document.querySelector('#live-admin-advanced').hidden = ['test','bots'].includes(key)
+        document.querySelector('#live-admin-bots').hidden = key !== 'bots'
+        if (key === 'bots') { botsPanel.show(); return }
         document
             .querySelectorAll('[data-admin-tab]')
             .forEach((button) =>
@@ -71,6 +75,7 @@ export function createAdmin({
             frame.src = url(key)
         }
     }
+    const botsPanel = createBotsPanel({config, t, el, number})
     for (const [key, name] of Object.entries(names)) {
         const button = el('button', '', name)
         button.dataset.adminTab = key

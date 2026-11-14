@@ -40,3 +40,6 @@ Schedule::command(CleanupDestroyedPlanets::class)->dailyAt('03:00')->withoutOver
 
 // Process Dark Matter regeneration every 5 minutes
 Schedule::command(DarkMatterRegenerateCommand::class)->everyFiveMinutes()->withoutOverlapping();
+
+// NPCs use ordinary OGameX queues and missions; no work runs in browser polling.
+Schedule::command(\OGame\Console\Commands\Scheduler\AutonomousBotsCommand::class)->everyMinute()->withoutOverlapping(5);

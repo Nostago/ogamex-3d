@@ -4,9 +4,11 @@ import '../../css/orbital-command.css'
 import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
+import { formatDuration } from './duration.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
 import { renderIcons } from './icons.js'
+import { createFleetPanel } from './fleetPanel.js'
 import { createFleetMonitor } from './fleetMonitor.js'
 import { createAdmin } from './admin.js'
 import { paintSpaceBackdrop } from './spaceBackdrop.js'
@@ -16,7 +18,7 @@ import { createObjectArtwork } from './objectArtwork.js'
 const config = JSON.parse(
         document.querySelector('#live-bootstrap').textContent,
     ),
-    t = config.t
+    t = {...config.t, ...config.operationsT}
 const objectArtwork = createObjectArtwork(t)
 const client = createLiveClient({
     ...config,
@@ -25,7 +27,7 @@ const client = createLiveClient({
 const root = document.querySelector('#prototype'),
     status = document.querySelector('#live-status'),
     frame = document.querySelector('#live-original')
-const originalPages = ['fleets', 'messages', 'alliance', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities', 'rewards', 'technology', 'inventory', 'market', 'movement', 'jumpgate']
+const originalPages = ['messages', 'alliance', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities', 'rewards', 'technology', 'inventory', 'market', 'jumpgate']
 const pages = [
     'planet',
     'buildings',
@@ -87,7 +89,7 @@ function objects() {
                 : item.type === group,
     )
 }
-function show(name, fromFrame = false) {
+function show(name, fromFrame = false, fleetTarget) {
     page = pages.includes(name) ? name : 'planet'
     if (location.hash !== `#${page}`) location.hash = page
     document.querySelectorAll('[data-live-page]').forEach((n) => {
@@ -96,7 +98,10 @@ function show(name, fromFrame = false) {
     })
     root.dataset.page = page
     document.querySelector('#live-heading').textContent = t[page]
-    document.querySelector('#live-fleet-stock').hidden = page !== 'fleets'
+    document.querySelector('#live-fleet-stock').hidden = true
+    document.querySelector('#live-page-fleets').hidden = !['fleets', 'movement'].includes(page)
+    if (['fleets', 'movement'].includes(page)) fleetPanel.show(page === 'movement' ? 'movement' : 'plan', fleetTarget)
+    else fleetPanel.hide()
     document.querySelector('#live-page-planet').hidden = page !== 'planet'
     document.querySelector('#live-page-catalog').hidden = ![
         'buildings',
@@ -329,17 +334,21 @@ function renderCatalog() {
     }
     detail.append(
         costs,
-        el('p', '', `${t.duration}: ${number(item.seconds)} s`),
+        el('p', '', `${t.duration}: ${formatDuration(item.seconds, t)}`),
     )
     const unit = ['ship', 'defense'].includes(item.type)
-    if (item.requirements.length)
-        detail.append(
-            el(
-                'p',
-                '',
-                `${t.requirements}: ${item.requirements.map((r) => `${r.name} ${r.level}`).join(', ')}`,
-            ),
-        )
+    if (item.requirements.length) {
+        const requirements = el('section', 'requirements-panel')
+        requirements.append(el('h3', '', t.op_requirements))
+        for (const requirement of item.requirements) {
+            const row = el('p', `requirement ${requirement.met ? 'requirement-met' : 'requirement-missing'}`)
+            row.dataset.requirement = requirement.key
+            row.append(el('strong', '', `${requirement.met ? '✓' : '✕'} ${requirement.name}: ${requirement.met ? t.op_met : t.op_missing}`),
+                el('span', '', `${t.op_current}: ${requirement.current} / ${t.op_required}: ${requirement.level}`))
+            requirements.append(row)
+        }
+        detail.append(requirements)
+    }
     const reason = state.vacation
         ? t.vacation
         : !item.requirementsMet
@@ -479,9 +488,9 @@ function updateCountdowns() {
         node.textContent =
             node.dataset.active === 'true'
                 ? left
-                    ? `${left} s`
+                    ? formatDuration(left, t)
                     : t.processing
-                : t.queued
+                : `${t.queued} · ${Number(node.dataset.remaining) > 0 ? formatDuration(node.dataset.remaining, t) : t.op_duration_on_start}`
     }
 }
 function failure(error) {
@@ -528,6 +537,7 @@ async function command(action, payload) {
 async function switchPlanet(id) {
     if (busy || stopped) return
     const previous = planet
+    if (['fleets','movement'].includes(page)) fleetPanel.hide()
     planet = String(id)
     try {
         const next = await client.load(planet)
@@ -541,6 +551,7 @@ async function switchPlanet(id) {
         planet = previous
         failure(error)
         render()
+        show(page)
     }
 }
 frame.addEventListener('load', () => {
@@ -556,7 +567,7 @@ frame.addEventListener('load', () => {
         style.textContent =
             'body{background:#07121f!important;min-width:0!important;color:#bcd3e4}#siteHeader,#siteFooter,#headerbarcomponent,#resourcesbarcomponent,#left,#right,#pageReloader{display:none!important}#pageContent{width:100%!important;min-width:0!important;margin:0!important;padding:0!important}#middle{width:100%!important;min-width:0!important;float:none!important;margin:0!important;padding:0!important}#inhalt{margin:0 auto!important}'
         document.head.append(style)
-        skinOriginalArea(frame, { t, planet, refresh })
+        skinOriginalArea(frame, { t, planet, refresh, openFleet })
         // A late load from a hidden original view must not undo navigation or
         // a planet selection in the surrounding interface.
         if (
@@ -582,7 +593,8 @@ frame.addEventListener('load', () => {
                 : url.pathname.startsWith('/alliance')
                   ? 'alliance'
                   : null
-        if (area === 'galaxy' && page !== 'tools') {
+        if (area === 'fleets') { openFleet(url.href); return }
+        if (area === 'galaxy') {
             show('galaxy')
             return
         }
@@ -648,7 +660,8 @@ document.querySelector('#live-rotate').addEventListener('click', (e) => {
     scene?.setRotation(rotating)
     e.currentTarget.setAttribute('aria-pressed', String(rotating))
 })
-function navigate(target, category, id) {
+async function navigate(target, category, id, world) {
+    if (world && String(world) !== planet) { await switchPlanet(world); if (String(world) !== planet) return }
     if (category && ['building', 'station', 'defense'].includes(category))
         group = category
     if (id) selected[target] = id
@@ -661,12 +674,10 @@ const galaxy = createGalaxy({
     number,
     context: () => state.planet,
     onError: failure,
-    openTools(url) { show('tools'); frame.src = contextUrl(url) },
-    openFleet(url) {
-        show('fleets')
-        frame.src = contextUrl(url)
-        document.querySelector('#live-original-link').href = contextUrl(url)
-    },
+    openArea(url, area = 'tools') { show(area); frame.src = contextUrl(url) },
+    openFleet,
+    config,
+    refresh,
 })
 const adminPanel = config.isAdmin
     ? createAdmin({
@@ -682,6 +693,12 @@ const adminPanel = config.isAdmin
           refresh,
       })
     : null
+const fleetPanel = createFleetPanel({ config: {...config, token: document.querySelector('meta[name="csrf-token"]').content}, t, el, number, state: () => state, refresh, onError: failure })
+function openFleet(value) {
+    const url = new URL(value, location.origin)
+    const target = Object.fromEntries(url.searchParams)
+    show(url.pathname.includes('movement') ? 'movement' : 'fleets', false, target)
+}
 renderIcons()
 paintSpaceBackdrop(document.querySelector('.orbital-stage'))
 const fleetMonitor = createFleetMonitor({
@@ -743,6 +760,7 @@ window.addEventListener('pagehide', (event) => {
     clearInterval(clock)
     galaxy.dispose()
     fleetMonitor.dispose()
+    fleetPanel.dispose()
     client.dispose()
     scene?.dispose()
     objectArtwork.dispose()
@@ -760,9 +778,7 @@ document.querySelectorAll('[data-nav-action]').forEach(link => link.addEventList
 }))
 document.querySelector('#live-galaxy-original').addEventListener('click', event => {
     event.preventDefault()
-    const url = event.currentTarget.href
-    show('tools')
-    frame.src = contextUrl(url)
+    galaxy.show(true)
 })
 
 function renderAreaTabs(area) {

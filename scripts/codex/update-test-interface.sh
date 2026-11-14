@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Apply an already fetched, pinned release to the existing native test installation.
-# Does not install dependencies, change main or restart services. Adds only the named premium tables.
+# Does not install dependencies, change main or restart services. Adds only the named premium/NPC tables.
 set -euo pipefail
 umask 022
 cd /home/ogamedev/OGameX
@@ -40,8 +40,15 @@ if [[ -f public/hot ]]; then
     mv public/hot "$backup/public-hot"
 fi
 composer dump-autoload --optimize --no-scripts --no-plugins --no-interaction
-# Add inventory/contracts/order audit tables; leave unrelated pending migrations alone.
+# Add only the named additive tables; leave unrelated pending migrations alone.
 php artisan migrate --force --path=database/migrations/2026_11_14_100000_create_premium_commerce_tables.php
+php artisan migrate --force --path=database/migrations/2026_11_14_160000_create_autonomous_bots_table.php
+# Enable bounded NPC decisions even when no browser is open.
+if command -v crontab >/dev/null; then
+    bash scripts/codex/enable-bots-cron.sh
+else
+    echo 'Hinweis: Bots benötigen den Laravel-Scheduler (jede Minute php artisan schedule:run).' >&2
+fi
 php artisan route:clear
 php artisan view:clear
 php artisan route:list --path=play-3d

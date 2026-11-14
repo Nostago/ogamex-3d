@@ -175,3 +175,11 @@ test('all live fleet types share a fixed twelve-model budget while catalog total
     assert.equal(model.fleetSummary.total, '15000000');
     assert.deepEqual(snapshot, before);
 });
+
+test('production durations preserve day boundaries and use explicit German units', async () => {
+    const {formatDuration} = await import('../../resources/js/live3d/duration.js')
+    assert.equal(formatDuration(90061), 'Tage: 1 Stunden: 1 Minuten: 1 Sekunden: 1')
+    assert.equal(formatDuration(59.1), 'Tage: 0 Stunden: 0 Minuten: 1 Sekunden: 0')
+    assert.equal(formatDuration(86400), 'Tage: 1 Stunden: 0 Minuten: 0 Sekunden: 0')
+    assert.equal(formatDuration(-5), 'Tage: 0 Stunden: 0 Minuten: 0 Sekunden: 0')
+})

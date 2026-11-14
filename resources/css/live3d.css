@@ -776,3 +776,35 @@
     min-width: 0;
     overflow-wrap: anywhere;
 }
+/* Native fleet and galaxy operations share the readable form layout. */
+#prototype .fleet-field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:16px 0}
+#prototype .fleet-field-grid label,#prototype #fleet-own-world,#prototype #fleet-template-form label,#prototype #bots-create>label{display:grid;gap:8px;min-width:0}
+#prototype .fleet-field-grid input,#prototype .fleet-field-grid select,#prototype #fleet-own-world{width:100%;min-width:0}
+#prototype .fleet-ship-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}
+#prototype .fleet-ship{display:grid;grid-template-columns:60px minmax(0,1fr);gap:8px;padding:14px;background:#081d2c;border:1px solid #365c72;border-radius:6px}
+#prototype .fleet-ship img{width:60px;height:60px;object-fit:contain;grid-row:1/3}
+#prototype .fleet-ship input{grid-column:1/-1;width:100%;min-width:0}
+#prototype .fleet-check{display:flex;align-items:center;gap:10px}
+#prototype .fleet-check input{width:auto}
+#prototype .fleet-stat{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+#prototype .fleet-template{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
+#prototype .fleet-template strong{flex:1}
+#prototype .fleet-clock,#prototype .dock-order [data-remaining]{font-size:12px;line-height:1.65;white-space:normal;color:#ccf3ff}
+#prototype .fleet-notice{color:#ffbcb8}
+#prototype .requirement-met{background:#0d3025;border:1px solid #4fae83;color:#a1ffd0}
+#prototype .requirement-missing{background:#371c25;border:1px solid #d97b85;color:#ffd0d4}
+#prototype .requirement-met,#prototype .requirement-missing{padding:12px 14px;border-radius:5px;line-height:1.6;margin:10px 0}
+#prototype .galaxy-detail{padding:20px;margin:0 0 12px;border:1px solid #56bed7;background:#0b2435;border-radius:6px}
+#prototype .galaxy-detail h3{font-size:14px;color:#b5ecff;margin:8px 0}
+#prototype .galaxy-detail button{margin:4px}
+#prototype .galaxy-detail-body{display:inline-block;vertical-align:top;margin:0 24px 16px 0;max-width:100%}
+#prototype .galaxy-action-result{margin-top:16px}
+#prototype .galaxy-action-form{display:grid;gap:16px;max-width:650px}
+#prototype .galaxy-action-form label{display:grid;gap:8px}
+#prototype .dock-order{min-width:0;grid-template-columns:45px minmax(0,1fr)}
+#prototype .dock-order small,#prototype .dock-order strong,#prototype .dock-order span{overflow-wrap:break-word;white-space:normal}
+#prototype .bots-list{display:grid;gap:18px}
+#prototype .bot-card form{margin:16px 0}
+#prototype .dock-order > strong{grid-column:2/-1}
+#prototype .dock-order > [data-remaining],#prototype .dock-order > progress{grid-column:1/-1;width:100%;min-width:0}
+#prototype .requirement-met>span,#prototype .requirement-missing>span{display:block;margin-top:5px}

@@ -14,6 +14,7 @@ class Live3dViewService
     /** @return array<string, mixed> */
     public function snapshot(PlayerService $player, PlanetService $planet): array
     {
+        $activity = resolve(Live3dActivityService::class)->forPlayer($player);
         $buildingQueue = resolve(BuildingQueueService::class)->retrieveQueue($planet);
         $researchQueue = resolve(ResearchQueueService::class)->retrieveQueue($planet);
         $unitQueue = resolve(UnitQueueService::class)->retrieveQueue($planet);
@@ -46,7 +47,10 @@ class Live3dViewService
                 'maxAmount' => $unit ? ObjectService::getObjectMaxBuildAmount($object->machine_name, $planet, $requirementsMet) : null,
                 'requirements' => array_map(fn ($requirement): array => [
                     'name' => ObjectService::getObjectByMachineName($requirement->object_machine_name)->title,
+                    'key' => $requirement->object_machine_name,
                     'level' => $requirement->level,
+                    'current' => ObjectService::getObjectByMachineName($requirement->object_machine_name)->type === GameObjectType::Research ? $player->getResearchLevel($requirement->object_machine_name) : $planet->getObjectLevel($requirement->object_machine_name),
+                    'met' => (ObjectService::getObjectByMachineName($requirement->object_machine_name)->type === GameObjectType::Research ? $player->getResearchLevel($requirement->object_machine_name) : $planet->getObjectLevel($requirement->object_machine_name)) >= $requirement->level,
                 ], $object->requirements),
             ];
         }
@@ -75,6 +79,7 @@ class Live3dViewService
             'defenseTotal' => (string)$planet->getDefenseUnits()->getAmount(),
             'shipTotal' => (string)$planet->getShipUnits()->getAmount(),
             'objects' => $objects,
+            'activity' => $activity,
             'queues' => [
                 'building' => array_map(fn (BuildingQueueViewModel $item): array => [
                     'id' => $item->id, 'objectId' => $item->object->id, 'name' => $item->object->title, 'remaining' => $item->time_countdown, 'seconds' => $item->time_total, 'active' => $item->building, 'target' => $item->level_target,

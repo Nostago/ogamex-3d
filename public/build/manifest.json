@@ -7,6 +7,14 @@
     "file": "assets/catalog-CT4oIouG.js",
     "name": "catalog"
   },
+  "_duration-DDj7__h8.js": {
+    "file": "assets/duration-DDj7__h8.js",
+    "name": "duration",
+    "imports": [
+      "_catalog-CT4oIouG.js",
+      "_layout-SWFQj27H.js"
+    ]
+  },
   "_layout-SWFQj27H.js": {
     "file": "assets/layout-SWFQj27H.js",
     "name": "layout"
@@ -21,14 +29,6 @@
     "imports": [
       "_buildings-BoZ8k7r0.js",
       "_layout-SWFQj27H.js"
-    ]
-  },
-  "_visualState-DYHi-HRM.js": {
-    "file": "assets/visualState-DYHi-HRM.js",
-    "name": "visualState",
-    "imports": [
-      "_layout-SWFQj27H.js",
-      "_catalog-CT4oIouG.js"
     ]
   },
   "resources/css/ingame.css": {
@@ -50,30 +50,30 @@
     "isEntry": true
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-GCkI56mt.js",
+    "file": "assets/index-veCwE6Od.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
     "imports": [
-      "_visualState-DYHi-HRM.js"
+      "_duration-DDj7__h8.js"
     ],
     "dynamicImports": [
       "resources/js/prototype3d/scene.js",
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
-      "assets/index-ChLC6bzG.css",
+      "assets/index-DutT8jVh.css",
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },
   "resources/js/live3d/objectPreview3d.js": {
-    "file": "assets/objectPreview3d-C9O02uOq.js",
+    "file": "assets/objectPreview3d-DIxbW0IV.js",
     "name": "objectPreview3d",
     "src": "resources/js/live3d/objectPreview3d.js",
     "isDynamicEntry": true,
     "imports": [
-      "_buildings-BoZ8k7r0.js",
-      "_visualState-DYHi-HRM.js"
+      "_duration-DDj7__h8.js",
+      "_buildings-BoZ8k7r0.js"
     ]
   },
   "resources/js/prototype3d/index.js": {

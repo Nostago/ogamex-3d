@@ -46,6 +46,7 @@ class Live3dController extends Controller
         return response()->json([
             'galaxy' => (int)$input['galaxy'], 'system' => (int)$input['system'],
             'maxGalaxies' => $settings->numberOfGalaxies(), 'maxSystems' => 499,
+            'scanCost' => $phalanx->getScanCost(), 'relocationCost' => (int)$settings->get('planet_relocation_cost', 240000),
             'rows' => resolve(GalaxyController::class)->getGalaxyArray((int)$input['galaxy'], (int)$input['system'], $player, $planets, $phalanx),
         ])->header('Cache-Control', 'private, no-store');
     }

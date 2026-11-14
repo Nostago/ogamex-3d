@@ -1,6 +1,11 @@
 @php
     $t = __('t_live3d', [], 'de');
     $bootstrap = [
+        'shipNames' => collect(\OGame\Services\ObjectService::getShipObjects())->mapWithKeys(fn ($ship) => [$ship->machine_name => $ship->title])->all(),
+        'galaxyActionUrl' => route('live3d.galaxy.action'), 'galaxyMissilesUrl' => route('live3d.galaxy.missiles'),
+        'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de')),
+        'botsUrl' => route('live3d.bots'),
+        'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
         'adminLinks' => $adminAccess ? ['settings' => route('admin.serversettings.index'), 'prices' => route('commerce.prices'), 'security' => route('admin.server-administration.index'), 'rules' => route('admin.rules.index'), 'timing' => route('admin.fleettiming.index'), 'tools' => route('admin.developershortcuts.index')] : [],
         'initial' => $initial, 't' => $t, 'models' => __('t_prototype3d', [], 'de'),
@@ -66,8 +71,9 @@
                 </div>
             </section>
             <section id="live-page-catalog" hidden><div id="live-groups" class="live-groups"></div><div id="live-queues"></div><div class="split-layout"><section id="live-catalog" class="card"></section><aside id="live-detail" class="card"></aside></div></section>
+            <section id="live-page-fleets" hidden>@include('live3d.fleet')</section>
             <section id="live-page-galaxy" hidden>
-                <div class="card galaxy-toolbar"><form id="live-galaxy-form"><label>{{ $t['galaxy'] }}<input id="live-galaxy-number" type="number" min="1" required></label><label>{{ $t['system'] }}<input id="live-system-number" type="number" min="1" max="499" required></label></form><div class="galaxy-controls"><button id="live-system-prev" aria-label="{{ $t['previous_system'] }}">←</button><button id="live-system-home">{{ $t['home_system'] }}</button><button id="live-system-next" aria-label="{{ $t['next_system'] }}">→</button><a id="live-galaxy-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div></div>
+                <div class="card galaxy-toolbar"><form id="live-galaxy-form"><label>{{ $t['galaxy'] }}<input id="live-galaxy-number" type="number" min="1" required></label><label>{{ $t['system'] }}<input id="live-system-number" type="number" min="1" max="499" required></label></form><div class="galaxy-controls"><button id="live-system-prev" aria-label="{{ $t['previous_system'] }}">←</button><button id="live-system-home">{{ $t['home_system'] }}</button><button id="live-system-next" aria-label="{{ $t['next_system'] }}">→</button><a id="live-galaxy-original" target="_blank" rel="noopener">{{ __('t_operations.op_refresh') }}</a></div></div>
                 <p id="live-galaxy-status" role="status"></p><div id="live-galaxy-rows" class="card galaxy-grid"></div>
             </section>
             <section id="live-page-admin" hidden>
@@ -81,8 +87,9 @@
                     <section class="card"><h2>{{ __('t_commerce.finish') }}</h2><p>{{ __('t_commerce.finish_hint') }}</p><button type="button" id="live-admin-finish">{{ __('t_commerce.finish') }}</button></section>
                     <p id="live-admin-status" role="status"></p>
                     <div id="live-admin-shortcuts" class="admin-shortcuts"></div>
-                    <section class="card admin-bot-note"><h2>{{ $t['admin_bots'] }}</h2><p>{{ $t['admin_bots_hint'] }}</p></section>
+
                 </div>
+                <section id="live-admin-bots" hidden>@include('live3d.bots')</section>
                 <section id="live-admin-advanced" hidden><div class="admin-frame-toolbar"><p id="live-admin-tab-hint"></p><a id="live-admin-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-admin-sections" class="admin-section-switch" hidden></div><iframe id="live-admin-frame" title="{{ $t['admin'] }}"></iframe></section>
             </section>
             <section id="live-page-original" hidden>
