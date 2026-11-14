@@ -72,41 +72,36 @@ export function renderDashboard(state, t, el, number, navigate) {
     for (const [kind, items] of Object.entries(state.queues)) {
         if (!items.length) continue
         count += items.length
-        const item = items[0],
-            object = state.objects.find((o) => o.id === item.objectId)
-        const button = el('button', 'dock-order')
-        const image = el('img')
-        if (object?.image) image.src = object.image
-        image.alt = ''
-        button.append(
-            image,
-            el('small', '', `${t[`queue_${kind}`]} · ${items.length}`),
-            el('strong', '', item.name),
-        )
-        const countdown = el('span')
-        countdown.dataset.remaining = item.remaining
-        countdown.dataset.active = String(kind === 'unit' || item.active)
-        button.append(countdown)
-        const progress = el('progress')
-        progress.max = Math.max(1, item.seconds)
-        progress.value = Math.max(0, item.seconds - item.remaining)
-        progress.dataset.total = item.seconds
-        progress.dataset.progressRemaining = item.remaining
-        progress.dataset.active = countdown.dataset.active
-        progress.setAttribute('aria-label', item.name)
-        button.append(progress)
-        button.addEventListener('click', () =>
-            navigate(
-                kind === 'research'
-                    ? 'research'
-                    : object?.type === 'ship'
-                      ? 'ships'
-                      : 'buildings',
-                object?.type,
-                object?.id,
-            ),
-        )
-        dock.append(button)
+        for (const [index, item] of items.entries()) {
+            const object = state.objects.find((o) => o.id === item.objectId)
+            const active = kind === 'unit' ? index === 0 : item.active
+            const button = el('button', 'dock-order')
+            button.dataset.orderId = item.id
+            button.dataset.orderKind = kind
+            button.dataset.orderActive = String(Boolean(active))
+            const image = el('img')
+            if (object?.image) image.src = object.image
+            image.alt = ''
+            button.append(image,
+                el('small', '', `${t[`queue_${kind}`]} · ${active ? t.current_order : t.following_order}`),
+                el('strong', '', `${item.name}${kind === 'unit' ? ` · ${number(item.quantity)}` : ` · ${t.level} ${item.target}`}`))
+            if (active) {
+                const countdown = el('span')
+                countdown.dataset.remaining = item.remaining
+                countdown.dataset.active = 'true'
+                button.append(countdown)
+                const progress = el('progress')
+                progress.max = Math.max(1, item.seconds)
+                progress.value = Math.max(0, item.seconds - item.remaining)
+                progress.dataset.total = item.seconds
+                progress.dataset.progressRemaining = item.remaining
+                progress.dataset.active = 'true'
+                progress.setAttribute('aria-label', item.name)
+                button.append(progress)
+            }
+            button.addEventListener('click', () => navigate(kind === 'research' ? 'research' : object?.type === 'ship' ? 'ships' : object?.type === 'defense' ? 'defense' : 'buildings', object?.type, object?.id))
+            dock.append(button)
+        }
     }
     if (!count) dock.append(el('p', '', t.no_orders))
 }

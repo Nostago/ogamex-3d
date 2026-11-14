@@ -1198,3 +1198,36 @@
     .orbital-command .main-nav>a[data-live-page]{flex:0 0 135px}
     .orbital-command #prototype{padding-bottom:16px}
 }
+
+/* The document scrolls as one page; navigation and catalogues have no inner scroll area. */
+.orbital-command .app-shell{grid-template-columns:240px minmax(0,1fr)}
+.orbital-command .main-nav{position:relative;top:auto;min-height:0;max-height:none;overflow:visible;padding:5px;align-self:start}
+.orbital-command .nav-entry{display:flex;align-items:stretch;min-width:0;gap:0;margin-bottom:5px}
+.orbital-command .nav-entry>a[data-live-page],.orbital-command .main-nav>a[data-live-page]{padding:5px!important;white-space:nowrap;min-height:42px;gap:8px;font-size:13px;min-width:0;flex:1}
+.orbital-command .nav-entry>a[data-live-page]>span:last-child{white-space:nowrap;overflow-wrap:normal;word-break:normal}
+.orbital-command .nav-extra{flex:0 0 32px!important;display:flex;justify-content:center;align-items:center;min-height:42px;padding:5px!important;border-left:0;border-radius:0 4px 4px 0}
+.orbital-command .nav-extra>span:first-child{width:20px!important;height:20px;display:block}.orbital-command .nav-extra svg{width:20px;height:20px}
+.orbital-command [hidden]{display:none!important}
+.orbital-command #live-catalog{max-height:none!important;height:auto;overflow:visible!important}
+.orbital-command #live-detail{position:sticky;top:12px;align-self:start}
+.orbital-command #live-original{min-height:300px;height:300px;overflow:visible}
+.orbital-command .command-dock{max-height:none;overflow:visible}
+@media(min-width:1001px){
+ .orbital-command .orbital-stage{display:grid;grid-template-columns:minmax(185px,235px) minmax(40px,1fr) minmax(250px,300px);grid-template-rows:95px auto 135px;gap:15px;height:auto;min-height:max(800px,calc(100dvh - 102px));overflow:visible;padding:0 22px;box-sizing:border-box;align-content:start}
+ .orbital-command .hud-left,.orbital-command .hud-right{position:relative;top:auto;right:auto;left:auto;width:auto;grid-row:2;align-self:start}
+ .orbital-command .hud-left{grid-column:1}.orbital-command .hud-right{grid-column:3}
+}
+@media(max-width:1000px){.orbital-command .app-shell{grid-template-columns:220px minmax(0,1fr)}}
+@media(max-width:850px){
+ .orbital-command .app-shell{grid-template-columns:minmax(0,1fr)}
+ .orbital-command .main-nav{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:5px;overflow:visible!important;position:relative!important;max-height:none;padding:5px!important}
+ .orbital-command .nav-entry{flex:auto;min-width:0;margin:0}.orbital-command .nav-entry>a[data-live-page]{min-width:0!important}
+ .orbital-command #live-detail{position:relative;top:auto}
+}
+
+.orbital-command .main-nav>a.nav-galaxy-card[data-live-page]{min-height:110px;padding:5px!important;flex:none}
+@media(min-width:1001px){
+ .orbital-command .orbital-stage{--scene-height:clamp(800px,calc(100dvh - 102px),1100px)}
+ .orbital-command .orbital-stage>.scene-panel{height:var(--scene-height);bottom:auto}
+ .orbital-command .orbital-bottom{top:calc(var(--scene-height) - 115px);bottom:auto}
+}

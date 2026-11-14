@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Apply an already fetched, pinned release to the existing native test installation.
-# Does not install dependencies, migrate data, change main or restart services.
+# Does not install dependencies, change main or restart services. Adds only the named premium tables.
 set -euo pipefail
 umask 022
 cd /home/ogamedev/OGameX
@@ -40,6 +40,8 @@ if [[ -f public/hot ]]; then
     mv public/hot "$backup/public-hot"
 fi
 composer dump-autoload --optimize --no-scripts --no-plugins --no-interaction
+# Add inventory/contracts/order audit tables; leave unrelated pending migrations alone.
+php artisan migrate --force --path=database/migrations/2026_11_14_100000_create_premium_commerce_tables.php
 php artisan route:clear
 php artisan view:clear
 php artisan route:list --path=play-3d

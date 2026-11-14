@@ -19,7 +19,8 @@ try {
     await page.goto('/play-3d');
     await page.waitForSelector('#prototype[data-ready=true]');
     assert.equal(await page.locator('.resource-dark-matter').count(),1);
-    assert.equal(await page.locator('.nav-entry .nav-help').count(),16);
+    assert.equal(await page.locator('.nav-help,.nav-banner').count(),0);
+    assert.equal(await page.locator('[data-nav-action]').count(),7);
     const frame = page.frameLocator('#live-original');
     async function nav(area, path) {
         await page.locator(`.main-nav [data-live-page="${area}"]`).click();
@@ -30,15 +31,13 @@ try {
     }
     for (const [area,path] of [['alliance','/alliance'],['messages','/messages'],['notes','/play-3d/notes'],['buddies','/buddies'],['options','/options'],['officers','/premium'],['shop','/shop'],['merchant','/merchant'],['highscore','/highscore'],['fleets','/fleet']]) {
         await nav(area,path);
-        if (['officers','shop'].includes(area)) assert.equal(await page.locator('#live-original-capability').isVisible(),true);
+        if (['officers','shop'].includes(area)) assert.equal(await page.locator('#live-original-capability').isVisible(),false);
         await page.screenshot({path:`${artifacts}/${area}.png`,fullPage:true});
     }
-    // Each help button has a keyboard-accessible dialog; technical data uses original calculations.
-    await page.locator('[data-help="buildings"]').click();
-    await page.locator('#live-help-original').click();
-    await page.waitForFunction(()=>document.querySelector('#live-help-frame').dataset.areaReady==='/play-3d/technology');
-    assert.match(await page.frameLocator('#live-help-frame').locator('body').innerText(),/Metallmine/);
-    await page.locator('#live-help-close').click();
+    // Original technology data is a full page, not a generic navigation description.
+    await page.locator('[data-nav-action=technology]').click();
+    await frame.locator('.live-tech-tabs').waitFor();
+    assert.match(await frame.locator('body').innerText(),/Metallmine/);
     // Notes execute the original AJAX creation, then survive a fresh page load.
     const noteSubject = `UI Notiz ${Date.now() % 1000000}`;
     await nav('notes','/play-3d/notes');
@@ -120,8 +119,8 @@ try {
     await page.setViewportSize({width:390,height:844});
     await nav('options','/options');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true);
-    assert.ok(await page.locator('.main-nav').evaluate(n=>n.getBoundingClientRect().height<90), 'Mobile navigation must remain a compact horizontal row');
+    assert.equal(await page.locator('.main-nav').evaluate(n=>n.scrollHeight<=n.clientHeight+2),true, 'Mobile navigation grows with the document');
     await page.screenshot({path:`${artifacts}/mobile-options.png`,fullPage:true});
     assert.deepEqual(errors,[]);
-    console.log('PASS ten original areas in German, honest premium placeholders, original technical help, persistent native notes, colonisation target handoff, real native transport and recall, server-driven construction preview, mobile layout');
+    console.log('PASS ten original areas in German, functional premium areas, original technology page, persistent native notes, colonisation target handoff, real native transport and recall, server-driven construction preview, mobile document flow');
 } finally { await browser.close(); }

@@ -11,6 +11,7 @@ enum DarkMatterTransactionType: string
     case PLAYER_CLASS = 'player_class';
     case MERCHANT = 'merchant';
     case PLANET_RELOCATION = 'planet_relocation';
+    case SHOP_PURCHASE = 'shop_purchase';
     case SPEEDUP = 'speedup';
     case ADMIN_ADJUSTMENT = 'admin_adjustment';
     case HALVING = 'halving';

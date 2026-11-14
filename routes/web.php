@@ -14,6 +14,7 @@ use OGame\Http\Controllers\BuddiesController;
 use OGame\Http\Controllers\ChangeNickController;
 use OGame\Http\Controllers\CharacterClassController;
 use OGame\Http\Controllers\ChatController;
+use OGame\Http\Controllers\CommerceController;
 use OGame\Http\Controllers\DefenseController;
 use OGame\Http\Controllers\FacilitiesController;
 use OGame\Http\Controllers\FleetController;
@@ -230,6 +231,8 @@ Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::clas
 
     Route::get('/premium', [PremiumController::class, 'index'])->name('premium.index');
     Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+    Route::post('/shop/purchase', [CommerceController::class, 'purchase'])->name('commerce.purchase');
+    Route::post('/shop/activate', [CommerceController::class, 'activate'])->name('commerce.activate');
 
     // Character Class
     Route::get('/characterclass', [CharacterClassController::class, 'index'])->name('characterclass.index');
@@ -287,7 +290,9 @@ Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::clas
 });
 
 // Group: all logged in pages:
-Route::middleware(['auth', 'globalgame', 'locale', 'admin'])->group(function () {
+Route::middleware(['auth', 'globalgame', 'locale', Live3dContext::class, 'admin'])->group(function () {
+    Route::get('/admin/premium-prices', [CommerceController::class, 'prices'])->name('commerce.prices');
+    Route::post('/admin/premium-prices', [CommerceController::class, 'savePrices'])->name('commerce.prices.save');
     // Server settings
     Route::get('/admin/server-settings', [AdminServerSettingsController::class, 'index'])->name('admin.serversettings.index');
     Route::post('/admin/server-settings', [AdminServerSettingsController::class, 'update'])->name('admin.serversettings.update');

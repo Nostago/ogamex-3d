@@ -149,8 +149,8 @@ return [
     ],
     'astrophysics' => [
         'title' => 'Astrophysik',
-        'description' => 'Ermöglicht Expeditionen und die Besiedlung weiterer Planeten. Die Voraussetzungen werden vom Spielserver geprüft.',
-        'description_long' => 'Ermöglicht Expeditionen und die Besiedlung weiterer Planeten. Die Voraussetzungen werden vom Spielserver geprüft.',
+        'description' => 'Ermöglicht Expeditionen und die Besiedlung weiterer Planeten. Die Voraussetzungen werden von der Verwaltung geprüft.',
+        'description_long' => 'Ermöglicht Expeditionen und die Besiedlung weiterer Planeten. Die Voraussetzungen werden von der Verwaltung geprüft.',
     ],
     'intergalactic_research_network' => [
         'title' => 'Intergalaktisches Forschungsnetzwerk',
@@ -314,8 +314,8 @@ return [
     ],
     'kraken' => [
         'title' => 'Kraken',
-        'description' => 'Verkürzt einen Gebäudeauftrag um :duration. Wirkung und Bedingungen werden vom Spielserver geprüft.',
-        'description_long' => 'Verkürzt einen Gebäudeauftrag um :duration. Wirkung und Bedingungen werden vom Spielserver geprüft.',
+        'description' => 'Verkürzt einen Gebäudeauftrag um :duration. Wirkung und Bedingungen werden von der Verwaltung geprüft.',
+        'description_long' => 'Verkürzt einen Gebäudeauftrag um :duration. Wirkung und Bedingungen werden von der Verwaltung geprüft.',
     ],
     'detroid' => [
         'title' => 'Detroid',

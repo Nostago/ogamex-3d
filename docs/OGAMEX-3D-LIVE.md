@@ -13,8 +13,9 @@ importiert und verändern keinen echten Account.
 
 Eine laufende, bereits eingerichtete OGameX-Installation verwenden. Änderungen
 dieses Entwicklungsbranches übernehmen, vorhandene Abhängigkeiten weiterverwenden
-und bei eigener Entwicklung `npm run build` ausführen. Der Entwicklungsbranch enthält bereits gebaute Browserdateien; auf dem Testserver ist kein Node-Build nötig. Es gibt keine neuen Abhängigkeiten, Migrationen oder
-Lockfile-Änderungen und keinen Wechsel des bestehenden Datenbanksystems.
+und bei eigener Entwicklung `npm run build` ausführen. Der Entwicklungsbranch enthält bereits gebaute Browserdateien; auf dem Testserver ist kein Node-Build nötig. Es gibt keine neuen Abhängigkeiten oder Lockfile-Änderungen und keinen Wechsel
+des bestehenden Datenbanksystems. Für Shop, Inventar und Offiziersverträge ergänzt
+die aktuelle Commerce-Etappe drei Tabellen über eine gezielte additive Migration.
 
 Am OGameX-Server anmelden und oben in der Originaloberfläche **3D-Oberfläche**
 anklicken. Alternativ auf derselben Serveradresse **`/play-3d`** öffnen.
@@ -52,7 +53,23 @@ Benutzer. Es wird durch diesen Branch kein öffentlicher Server bereitgestellt.
   Kampfberechnung, Berichte, Empfänger und Aktionen bleiben erhalten. Diese beiden
   Bereiche sind weiterhin Übergangsansichten mit einem Link zur separaten Originalseite.
 
-## Aktuelle Etappe: deutsche Spielbereiche vervollständigen
+## Aktuelle Etappe: Händler, Shop und Offiziere
+
+Branch: `codex/ogamex-3d-shop-officers`.
+
+Der Händler und der Rohstoffmarkt sind sichtbar und benutzbar. Shopkäufe,
+Inventaraktivierungen, Offiziersverträge und editierbare Preise sind jetzt
+implementiert. Die allgemeinen Fragezeichen wurden durch die eigenständigen
+Originalaktionen ersetzt. Navigation und Kataloge wachsen mit der Seite;
+auch eingebettete Seiten erhalten ihre tatsächliche Inhaltshöhe. Alle Folgeaufträge
+stehen einzeln unter „Aktuelle Aufträge“. Administratoren können die eigenen
+Produktionsaufträge über einen geschützten Testbutton sofort fertigstellen.
+
+**Diese Version fügt drei Tabellen hinzu.** Der aktualisierte Updatehelfer führt
+nur die dafür bestimmte additive Migration aus. Details zu Bedienung, Originalboni,
+Preisen, Migration und Tests: [OGAMEX-3D-COMMERCE.md](OGAMEX-3D-COMMERCE.md).
+
+## Vorherige Etappe: deutsche Spielbereiche vervollständigen
 
 Branch: `codex/ogamex-3d-complete-interface`.
 
@@ -103,7 +120,7 @@ die jeweilige Detailansicht erreichbar.
 - **Mobil:** Die erweiterte Hauptnavigation lässt sich horizontal scrollen;
   die Einträge überdecken sich nicht.
 
-### Grenzen des vorhandenen Originals
+### Ausgangslage vor der nachfolgenden Commerce-Erweiterung
 
 Offiziersrekrutierung und Shopkäufe sind im untersuchten OGameX-Stand noch keine
 vollständigen Spielfunktionen: Die Offiziersabfragen im `PlayerService` liefern
@@ -112,8 +129,8 @@ Endpunkte. Diese Originalseiten sind integriert, werden aber ausdrücklich als
 noch nicht verfügbare Funktionen gekennzeichnet. Die Oberfläche erzeugt keine
 lokalen Scheinkäufe oder Bonuswirkungen. Auch weitere vorhandene Platzhalter in
 diesen Originalseiten werden durch eine neue Darstellung nicht zu fertigen
-Backendfunktionen. Eine vollständige Premium-Implementierung wäre ein eigener
-Auftrag an die Spiellogik. Die Bot-Erweiterung ist in dieser Etappe noch nicht
+Backendfunktionen. Diese fehlende Kauf- und Vertragsverwaltung wird in der oben verlinkten
+Commerce-Etappe ergänzt. Die Bot-Erweiterung ist in dieser Etappe noch nicht
 integriert.
 
 ### Prüfung dieser Etappe
@@ -397,7 +414,7 @@ Das Hilfsskript `scripts/codex/update-test-interface.sh` ist ausschließlich fü
 Branch/Commit von GitHub holen, dann die Skriptversion **aus genau diesem Commit**
 mit dessen vollständiger SHA aufrufen. Das Skript verweigert `main`/`master`,
 ungeprüfte lokale Änderungen und Mergekonflikte; es sichert Commit und gebaute
-Assets vor dem Merge. Es installiert nichts, führt keine Migrationen aus und
+Assets vor dem Merge. Es installiert keine Pakete, führt nur die benannte additive Commerce-Migration aus und
 startet keine Dienste neu. Der bestehende lokale Reverb-Commit bleibt beim Merge erhalten.
 
 Bei einem Fehler nach dem Merge ist der letzte Commit unter dem ausgegebenen
@@ -435,7 +452,9 @@ Die fünf neuen Routen liegen in derselben Middlewaregruppe wie das Original:
 `Live3dViewService` liefert ausschließlich ein Lesemodell aus `PlanetService`,
 `PlayerService`, `ObjectService` und den bestehenden Queue-ViewModels. Preise,
 Produktion und Zeiten werden aus deren Methoden übernommen. Keine neuen
-Formeln, keine direkten Updates an Spieltabellen und keine neuen Queue-Worker.
+Formeln und keine neuen Queue-Worker. Die Commerce-Erweiterung speichert Inventar
+und Verträge; ihre Zeitverkürzer und Admin-Testaktionen ändern gezielt Fristen.
+Die ursprünglichen Queue-Prozessoren vergeben weiterhin Stufen und Einheiten.
 Antworten mit Spielständen sind privat und nicht zwischenspeicherbar.
 
 `Live3dController::command` prüft Sitzungstoken, Eigentum, Objekttyp und

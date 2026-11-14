@@ -1,4 +1,11 @@
 const paths = {
+    rewards: 'm12 2 3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1 3-7Z',
+    production: 'M4 5h16M4 12h16M4 19h16M8 2v6m8 1v6m-6 1v6',
+    technology: 'M12 2v5m-7 5v-5h14v5M5 16v4m14-4v4M2 12h6v4H2v-4Zm14 0h6v4h-6v-4Z',
+    movement: 'M3 7h18m-5-5 5 5-5 5M21 17H3m5-5-5 5 5 5',
+    inventory: 'M3 6h18v15H3V6Zm4-4h10v4M8 11h8m-8 4h8',
+    market: 'M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4',
+
     officers: 'M8 3h8l2 5-6 4-6-4 2-5Zm4 9v9m-4-3 4 3 4-3',
     shop: 'M3 8h18v13H3V8Zm4 0V3h10v5',
     merchant: 'M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4',

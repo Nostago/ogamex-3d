@@ -25,7 +25,7 @@ const client = createLiveClient({
 const root = document.querySelector('#prototype'),
     status = document.querySelector('#live-status'),
     frame = document.querySelector('#live-original')
-const originalPages = ['fleets', 'messages', 'alliance', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities']
+const originalPages = ['fleets', 'messages', 'alliance', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities', 'rewards', 'technology', 'inventory', 'market', 'movement', 'jumpgate']
 const pages = [
     'planet',
     'buildings',
@@ -36,7 +36,7 @@ const pages = [
     'defense',
     'alliance',
     'messages',
-    'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities',
+    'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities', 'rewards', 'technology', 'inventory', 'market', 'movement', 'jumpgate',
 ]
 if (config.isAdmin) pages.push('admin')
 let state = config.initial,
@@ -188,6 +188,8 @@ function render() {
         `[${state.planet.coordinates}] · ${state.planet.type === 3 ? t.moon : t.planet}`
     adminPanel?.renderContext()
     renderFleetStock()
+    const jump = document.querySelector('[data-nav-action=jumpgate]')
+    jump.hidden = state.planet.type !== 3 || !state.objects.some(o => o.key === 'jump_gate' && Number(o.amount) > 0)
     const visual = visualState(state),
         signature = JSON.stringify(visual)
     if (scene && signature !== renderedScene) {
@@ -308,13 +310,8 @@ function renderCatalog() {
     )
     const technical = el('button', '', t.technology)
     technical.addEventListener('click', () => {
-        help.dataset.area = page
-        document.querySelector('#live-help-title').textContent = item.name
-        document.querySelector('#live-help-text').textContent = item.description
-        document.querySelector('#live-help-original').hidden = true
-        helpFrame.hidden = false
-        helpFrame.src = contextUrl(`/play-3d/technology?object_id=${item.id}&tab=2`)
-        help.showModal()
+        show('technology')
+        frame.src = contextUrl(`/play-3d/technology?object_id=${item.id}&tab=2`)
     })
     detail.append(technical)
     if (['jump_gate', 'missile_silo', 'alliance_depot', 'space_dock'].includes(item.key)) {
@@ -757,29 +754,10 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) refresh()
 })
 
-const help = document.querySelector('#live-help-dialog')
-document.querySelectorAll('[data-help]').forEach(button => button.addEventListener('click', () => {
-    const key = button.dataset.help
-    document.querySelector('#live-help-title').textContent = t[key]
-    document.querySelector('#live-help-text').textContent = t[`help_${key}`] || t.help_general
-    const original = document.querySelector('#live-help-original')
-    original.href = contextUrl(key === 'buildings' ? '/resources' : key === 'research' ? '/research' : key === 'ships' ? '/shipyard' : config.links[key] || '/overview')
-    document.querySelector('#live-help-frame').hidden = true
-    help.dataset.area = key
-    original.hidden = !['buildings', 'research', 'ships', 'defense'].includes(key)
-    help.showModal()
-}))
-document.querySelector('#live-help-close').addEventListener('click', () => help.close())
-const helpFrame = document.querySelector('#live-help-frame')
-helpFrame.addEventListener('load', () => skinOriginalArea(helpFrame, {t, planet, refresh}))
-document.querySelector('#live-help-original').addEventListener('click', event => {
+document.querySelectorAll('[data-nav-action]').forEach(link => link.addEventListener('click', event => {
     event.preventDefault()
-    const area = help.dataset.area || page
-    const objectId = selected[area] || (area === 'research' ? 113 : area === 'ships' ? 204 : area === 'defense' ? 401 : 1)
-    helpFrame.hidden = false
-    helpFrame.src = contextUrl(`/play-3d/technology?object_id=${objectId}&tab=2`)
-})
-help.addEventListener('close', () => { helpFrame.hidden = true; helpFrame.removeAttribute('src') })
+    show(link.dataset.navAction)
+}))
 document.querySelector('#live-galaxy-original').addEventListener('click', event => {
     event.preventDefault()
     const url = event.currentTarget.href
@@ -789,8 +767,7 @@ document.querySelector('#live-galaxy-original').addEventListener('click', event 
 
 function renderAreaTabs(area) {
     const hint = document.querySelector('#live-original-capability')
-    hint.hidden = !['officers', 'shop'].includes(area)
-    hint.textContent = t[`${area}_pending`] || ''
+    hint.hidden = true
     const host = document.querySelector('#live-area-tabs')
     host.replaceChildren()
     const links = area === 'messages' ? [[t.messages, '/messages'], [t.chat, '/chat']] : area === 'fleets' ? [[t.fleet_dispatch, '/fleet'], [t.fleet_movements, '/fleet/movement']] : area === 'merchant' ? [[t.merchant, '/merchant'], [t.resource_market, '/merchant/resource-market']] : []

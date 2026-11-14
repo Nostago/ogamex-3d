@@ -135,7 +135,7 @@
     "Failed to extend hold time.": "Haltezeit konnte nicht verlängert werden.",
     "Note edited": "Notiz bearbeitet",
     "Player ID or name": "Spieler-ID oder Name",
-    "ACS is disabled on this server.": "Das Allianz-Kampfsystem ist auf diesem Server deaktiviert.",
+    "ACS is disabled on this server.": "Das Allianz-Kampfsystem wurde von der Verwaltung deaktiviert.",
     "Note has been added": "Notiz hinzugefügt",
     "Fleet speed must be between 10% and 100% in 5% increments.": "Die Flottengeschwindigkeit muss in Schritten von 5 % zwischen 10 % und 100 % liegen.",
     "Planet has been deleted and espionage report is no longer available.": "Der Planet wurde gelöscht. Der Spionagebericht ist nicht mehr verfügbar.",

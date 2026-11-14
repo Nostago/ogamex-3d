@@ -1217,6 +1217,10 @@ class PlanetService
             $time_seconds = (int)($time_seconds * $timeMultiplier);
         }
 
+        if ($this->player->hasTechnocrat()) {
+            $time_seconds = (int)($time_seconds * 0.75);
+        }
+
         // Minimum time is always 1 second for all objects/units.
         if ($time_seconds < 1) {
             $time_seconds = 1;
@@ -1418,6 +1422,31 @@ class PlanetService
      * @return void
      */
     public function updateResourcesUntil(int $until_time, bool $save_planet = true): void
+    {
+        $segmented = false;
+        if (!$this->isDestroyed() && $this->planet->time_last_update > 0) {
+            $boundaries = array_unique(array_values($this->player->officerContracts()));
+            sort($boundaries);
+            foreach ($boundaries as $boundary) {
+                if ($boundary > $this->planet->time_last_update && $boundary <= $until_time) {
+                    $this->accrueOfficerBoundary($boundary);
+                    $segmented = true;
+                }
+            }
+        }
+        $this->accrueResourcesUntil($until_time, $save_planet && !$segmented);
+        if ($save_planet && $segmented) {
+            $this->save();
+        }
+    }
+
+    private function accrueOfficerBoundary(int $boundary): void
+    {
+        $this->accrueResourcesUntil($boundary, false);
+        $this->player->withOfficerTime($boundary, fn () => $this->updateResourceProductionStats(false));
+    }
+
+    private function accrueResourcesUntil(int $until_time, bool $save_planet): void
     {
         $time_last_update = $this->planet->time_last_update;
 

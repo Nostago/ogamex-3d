@@ -42,7 +42,27 @@ export function skinOriginalArea(frame, { t, planet, refresh }) {
     .footer input,.footer button{position:relative!important;z-index:10!important;width:auto!important;min-width:160px!important;pointer-events:auto!important}
     @media(max-width:700px){#inhalt{padding:6px!important}.content,.group{padding:8px!important}table{font-size:12px!important}td,th{padding:6px!important}.w250,.w300,.w500{max-width:100%!important}}
     `
+    style.textContent += `
+    html,body{height:auto!important;min-height:0!important;overflow-y:hidden!important}
+    #pageContent,#middle,#inhalt,.maincontent,.content,.contentbox,.contentBox{height:auto!important;min-height:0!important;max-height:none!important}
+    .footer{width:100%!important;box-sizing:border-box!important}
+    `
     doc.head.append(style)
+    frame.setAttribute('scrolling', 'no')
+    let sizing
+    function resizeFrame() {
+        cancelAnimationFrame(sizing)
+        sizing = requestAnimationFrame(() => {
+            if (!frame.isConnected || !frame.offsetWidth) return
+            const height = Math.max(300, Math.ceil(doc.body.getBoundingClientRect().height + 32))
+            if (Math.abs(frame.getBoundingClientRect().height - height) > 2) frame.style.height = `${height}px`
+            frame.dataset.autoHeight = String(height)
+        })
+    }
+    const sizeObserver = new ResizeObserver(resizeFrame)
+    sizeObserver.observe(doc.body)
+    doc.addEventListener('load', resizeFrame, true)
+    resizeFrame()
     function bind() {
         for (const cell of doc.querySelectorAll('#technologies li[data-technology]')) {
             if (cell.querySelector('.live-unit-name')) continue
@@ -72,9 +92,9 @@ export function skinOriginalArea(frame, { t, planet, refresh }) {
         }
     }
     bind()
-    const observer = new MutationObserver(() => { observer.disconnect(); bind(); observer.observe(doc.body, {childList:true, subtree:true}) })
+    const observer = new MutationObserver(() => { observer.disconnect(); bind(); resizeFrame(); observer.observe(doc.body, {childList:true, subtree:true}) })
     observer.observe(doc.body, {childList:true, subtree:true})
-    frame.contentWindow.addEventListener('pagehide', () => observer.disconnect(), {once:true})
+    frame.contentWindow.addEventListener('pagehide', () => { observer.disconnect(); sizeObserver.disconnect(); cancelAnimationFrame(sizing) }, {once:true})
     // Mutations continue to use the original server endpoints; update the outer HUD.
     const jq = frame.contentWindow.jQuery
     if (jq) {

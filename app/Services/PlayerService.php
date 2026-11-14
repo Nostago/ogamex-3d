@@ -2,6 +2,7 @@
 
 namespace OGame\Services;
 
+use Closure;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,7 @@ use OGame\Models\BuildingQueue;
 use OGame\Models\FleetMission;
 use OGame\Models\Highscore;
 use OGame\Models\Message;
+use OGame\Models\OfficerContract;
 use OGame\Models\Planet;
 use OGame\Models\ResearchQueue;
 use OGame\Models\Resources;
@@ -30,6 +32,52 @@ use Throwable;
  */
 class PlayerService
 {
+    /** @var array<string, int>|null */
+    private array|null $officerExpirations = null;
+    private int|null $officerTime = null;
+
+    /** @return array<string, int> */
+    public function officerContracts(): array
+    {
+        if ($this->getId() === 0) {
+            return [];
+        }
+        if ($this->officerExpirations === null) {
+            $this->officerExpirations = [];
+            foreach (OfficerContract::where('user_id', $this->getId())->get() as $contract) {
+                $this->officerExpirations[$contract->officer] = (int)$contract->expires_at->timestamp;
+            }
+        }
+        return $this->officerExpirations;
+    }
+
+    public function resetOfficerContracts(): void
+    {
+        $this->officerExpirations = null;
+    }
+
+    private function hasOfficer(string $officer): bool
+    {
+        return ($this->officerContracts()[$officer] ?? 0) > ($this->officerTime ?? (int)Date::now()->timestamp);
+    }
+
+    /** Evaluate original production formulas at an entitlement boundary without changing global time. */
+    public function withOfficerTime(int $timestamp, Closure $callback): void
+    {
+        $previous = $this->officerTime;
+        $this->officerTime = $timestamp;
+        try {
+            $callback();
+        } finally {
+            $this->officerTime = $previous;
+        }
+    }
+
+    public function getEffectiveEspionageLevel(): int
+    {
+        return $this->getResearchLevel('espionage_technology') + ($this->hasTechnocrat() ? 2 : 0) + ($this->hasCommandingStaff() ? 1 : 0);
+    }
+
     /**
      * The planet list object for this player.
      *
@@ -102,6 +150,7 @@ class PlayerService
         }
 
         $this->user = $user;
+        $this->resetOfficerContracts();
 
         // Fetch user tech from model
         /** @var UserTech $tech */
@@ -172,6 +221,7 @@ class PlayerService
         }
 
         $this->user = $user;
+        $this->resetOfficerContracts();
     }
 
     /**
@@ -574,7 +624,7 @@ class PlayerService
         $user = $this->getUser();
         $fleet_slots_bonus = $characterClassService->getAdditionalFleetSlots($user);
 
-        return $fleet_slots_from_research + $fleet_slots_bonus;
+        return $fleet_slots_from_research + $fleet_slots_bonus + ($this->hasAdmiral() ? 2 : 0) + ($this->hasCommandingStaff() ? 1 : 0);
     }
 
     /**
@@ -619,7 +669,7 @@ class PlayerService
         $user = $this->getUser();
         $expedition_slots_bonus = $characterClassService->getExpeditionSlotsBonus($user);
 
-        return $expedition_slots_from_research + $bonus_slots + $expedition_slots_bonus;
+        return $expedition_slots_from_research + $bonus_slots + $expedition_slots_bonus + ($this->hasAdmiral() ? 1 : 0);
     }
 
     /**
@@ -960,32 +1010,27 @@ class PlayerService
 
     public function hasCommander(): bool
     {
-        // TODO: add logic
-        return false;
+        return $this->hasOfficer('commander');
     }
 
     public function hasAdmiral(): bool
     {
-        // TODO: add logic
-        return false;
+        return $this->hasOfficer('admiral');
     }
 
     public function hasEngineer(): bool
     {
-        // TODO: add logic
-        return false;
+        return $this->hasOfficer('engineer');
     }
 
     public function hasGeologist(): bool
     {
-        // TODO: add logic
-        return false;
+        return $this->hasOfficer('geologist');
     }
 
     public function hasTechnocrat(): bool
     {
-        // TODO: add logic
-        return false;
+        return $this->hasOfficer('technocrat');
     }
 
     public function hasCommandingStaff(): bool

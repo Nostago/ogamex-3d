@@ -54,6 +54,7 @@ class MerchantController extends OGameController
             'darkMatter' => $darkMatter,
             'merchantCost' => $merchantCost,
             'activeMerchant' => $activeMerchant,
+            'planet' => $player->planets->current(),
         ]);
     }
 

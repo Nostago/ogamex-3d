@@ -23,12 +23,14 @@ export function createAdmin({
     const names = {
         test: t.admin_test,
         settings: t.admin_universe,
+        prices: t.admin_prices,
         security: t.admin_security,
         rules: t.admin_rules,
         timing: t.admin_timing,
         tools: t.admin_tools,
     }
     const hints = {
+        prices: t.admin_prices_hint,
         settings: t.admin_universe_hint,
         security: t.admin_security_hint,
         rules: t.admin_rules_hint,
@@ -153,6 +155,9 @@ export function createAdmin({
             catalog()
         }
     }
+    document.querySelector('#live-admin-finish').addEventListener('click', () => {
+        if (confirm(t.admin_finish_confirm)) command({action:'finish-orders'})
+    })
     document
         .querySelector('#live-admin-resources')
         .addEventListener('submit', (event) => {

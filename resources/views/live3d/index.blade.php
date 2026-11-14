@@ -2,11 +2,11 @@
     $t = __('t_live3d', [], 'de');
     $bootstrap = [
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
-        'adminLinks' => $adminAccess ? ['settings' => route('admin.serversettings.index'), 'security' => route('admin.server-administration.index'), 'rules' => route('admin.rules.index'), 'timing' => route('admin.fleettiming.index'), 'tools' => route('admin.developershortcuts.index')] : [],
+        'adminLinks' => $adminAccess ? ['settings' => route('admin.serversettings.index'), 'prices' => route('commerce.prices'), 'security' => route('admin.server-administration.index'), 'rules' => route('admin.rules.index'), 'timing' => route('admin.fleettiming.index'), 'tools' => route('admin.developershortcuts.index')] : [],
         'initial' => $initial, 't' => $t, 'models' => __('t_prototype3d', [], 'de'),
         'stateUrl' => route('live3d.state'), 'commandUrl' => route('live3d.command'),
         'galaxyUrl' => route('live3d.galaxy'), 'fleetEventsUrl' => route('fleet.eventbox.fetch'),
-        'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index', ['prototype3d' => 1]), 'alliance' => route('alliance.index'), 'officers' => route('premium.index'), 'shop' => route('shop.index'), 'merchant' => route('merchant.index'), 'notes' => route('live3d.notes'), 'buddies' => route('buddies.index'), 'options' => route('options.index'), 'highscore' => route('highscore.index'), 'tools' => route('galaxy.index'), 'production' => route('resources.settings'), 'facilities' => route('facilities.index')],
+        'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index', ['prototype3d' => 1]), 'alliance' => route('alliance.index'), 'officers' => route('premium.index'), 'shop' => route('shop.index'), 'merchant' => route('merchant.index'), 'notes' => route('live3d.notes'), 'buddies' => route('buddies.index'), 'options' => route('options.index'), 'highscore' => route('highscore.index'), 'tools' => route('galaxy.index'), 'production' => route('resources.settings'), 'facilities' => route('facilities.index'), 'rewards' => route('rewards.index'), 'technology' => route('live3d.technology', ['object_id'=>1,'tab'=>3,'open'=>'all']), 'inventory' => route('shop.index',['inventory'=>1]), 'market' => route('merchant.resource-market'), 'movement' => route('fleet.movement'), 'jumpgate' => route('jumpgate.index')],
     ];
     $liveVite = clone app(\Illuminate\Foundation\Vite::class);
     $liveVite->useScriptTagAttributes(['type' => 'module']);
@@ -36,9 +36,12 @@
     <div class="activity-bar"><p id="live-status" role="status">{{ $t['connected'] }}</p><a id="live-login" href="{{ route('login') }}" hidden>{{ $t['login'] }}</a></div>
     <div class="app-shell">
         <nav class="main-nav" aria-label="{{ $t['navigation'] }}">
-            <a href="#planet" class="nav-banner" aria-label="{{ $t['planet'] }}"><img src="/img/live3d/planet-atlas.png" alt=""><span>OGameX · {{ $t['planet'] }}</span></a>
+            @php($extras = ['planet'=>['rewards','rewards'],'buildings'=>['production','production_settings'],'research'=>['technology','technology'],'fleets'=>['movement','fleet_movements'],'shop'=>['inventory','inventory'],'merchant'=>['market','resource_market']])
             @foreach(['planet', 'buildings', 'research', 'ships', 'defense', 'fleets', 'galaxy', 'alliance', 'messages', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore'] as $page)
-                <div class="nav-entry"><a href="#{{ $page }}" data-live-page="{{ $page }}"><span data-icon="{{ $page }}" aria-hidden="true"></span><span>{{ $t[$page] }}</span></a><button class="nav-help" data-help="{{ $page }}" aria-label="{{ $t['help'] }}: {{ $t[$page] }}" title="{{ $t['help'] }}: {{ $t[$page] }}">?</button></div>
+                <div class="nav-entry"><a href="#{{ $page }}" data-live-page="{{ $page }}"><span data-icon="{{ $page }}" aria-hidden="true"></span><span>{{ $t[$page] }}</span></a>
+                @if(isset($extras[$page]))<a class="nav-extra" href="#{{ $extras[$page][0] }}" data-nav-action="{{ $extras[$page][0] }}" title="{{ __('t_commerce.'.$extras[$page][1]) }}" aria-label="{{ __('t_commerce.'.$extras[$page][1]) }}"><span data-icon="{{ $extras[$page][0] }}" aria-hidden="true"></span></a>@endif
+                @if($page==='buildings')<a class="nav-extra" data-nav-action="jumpgate" href="#jumpgate" title="{{ __('t_ingame.layout.menu_jump_gate') }}" aria-label="{{ __('t_ingame.layout.menu_jump_gate') }}" hidden><span data-icon="planet" aria-hidden="true"></span></a>@endif
+                </div>
             @endforeach
             @if($adminAccess)<a href="#admin" data-live-page="admin"><span data-icon="settings" aria-hidden="true"></span><span>{{ $t['admin'] }}</span></a>@endif
             <a class="nav-galaxy-card" href="#galaxy" data-live-page="galaxy"><span class="galaxy-radar" aria-hidden="true"></span><span>{{ $t['galaxy'] }} <b>↗</b></span></a>
@@ -75,6 +78,7 @@
                         <section class="card"><h2>{{ $t['admin_resources'] }}</h2><p>{{ $t['admin_resources_hint'] }}</p><div class="admin-presets" id="live-admin-packs"></div><form id="live-admin-resources"><div class="admin-resource-fields">@foreach(['metal','crystal','deuterium'] as $key)<label>{{ $t[$key] }}<input name="{{ $key }}" type="number" min="0" max="1000000000000" step="1" value="10000000" required></label>@endforeach</div><button type="submit">{{ $t['admin_add_resources'] }}</button></form></section>
                         <section class="card"><h2>{{ $t['admin_objects'] }}</h2><p>{{ $t['admin_objects_hint'] }}</p><form id="live-admin-objects"><label>{{ $t['admin_category'] }}<select id="live-admin-kind">@foreach(['building','station','research','ship','defense'] as $kind)<option value="{{ $kind }}">{{ $t[$kind] ?? $t['ships'] }}</option>@endforeach</select></label><label>{{ $t['admin_object'] }}<select id="live-admin-object"></select></label><label id="live-admin-amount-label">{{ $t['admin_amount'] }}<input id="live-admin-amount" type="number" min="1" max="100" value="1" required></label><button type="submit">{{ $t['admin_apply_object'] }}</button></form></section>
                     </div>
+                    <section class="card"><h2>{{ __('t_commerce.finish') }}</h2><p>{{ __('t_commerce.finish_hint') }}</p><button type="button" id="live-admin-finish">{{ __('t_commerce.finish') }}</button></section>
                     <p id="live-admin-status" role="status"></p>
                     <div id="live-admin-shortcuts" class="admin-shortcuts"></div>
                     <section class="card admin-bot-note"><h2>{{ $t['admin_bots'] }}</h2><p>{{ $t['admin_bots_hint'] }}</p></section>
@@ -88,7 +92,6 @@
         </main>
     </div>
 </div>
-<dialog id="live-help-dialog"><button id="live-help-close">{{ $t['close'] }}</button><h2 id="live-help-title"></h2><p id="live-help-text"></p><a id="live-help-original">{{ $t['technology'] }} ↗</a><iframe id="live-help-frame" title="{{ $t['technology'] }}" hidden></iframe></dialog>
 <script id="live-bootstrap" type="application/json">@json($bootstrap)</script>
 </body>
 </html>

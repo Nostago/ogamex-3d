@@ -4,12 +4,16 @@ namespace OGame\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use OGame\GameObjects\Models\Abstracts\GameObject;
 use OGame\GameObjects\Models\Enums\GameObjectType;
 use OGame\Http\Controllers\Admin\DeveloperShortcutsController;
+use OGame\Models\User;
 use OGame\Services\ObjectService;
 use OGame\Services\PlayerService;
+use OGame\Services\QueueAccelerationService;
 use OGame\Services\SettingsService;
 
 /** UI adapter only. All privileged changes use the original admin controller. */
@@ -22,7 +26,7 @@ class Live3dAdminController extends Controller
         abort_unless(is_string($token) && hash_equals($request->session()->token(), $token), 419);
         $input = $request->validate([
             'planet' => ['required', 'integer', 'min:1'],
-            'action' => ['required', Rule::in(['resources', 'object'])],
+            'action' => ['required', Rule::in(['resources', 'object', 'finish-orders'])],
             'metal' => ['required_if:action,resources', 'integer', 'min:0', 'max:1000000000000'],
             'crystal' => ['required_if:action,resources', 'integer', 'min:0', 'max:1000000000000'],
             'deuterium' => ['required_if:action,resources', 'integer', 'min:0', 'max:1000000000000'],
@@ -31,6 +35,15 @@ class Live3dAdminController extends Controller
         ]);
         abort_unless($player->planets->planetExistsAndOwnedByPlayer((int)$input['planet']), 404);
         $player->setCurrentPlanetId((int)$input['planet']);
+        if ($input['action'] === 'finish-orders') {
+            DB::transaction(function () use ($player) {
+                User::whereKey($player->getId())->lockForUpdate()->firstOrFail();
+                $player->refreshUser();
+                resolve(QueueAccelerationService::class)->completeOwnOrders($player);
+                Log::notice('Admin completed own production orders', ['admin_id' => $player->getId()]);
+            }, 3);
+            return response()->json(['status' => 'success']);
+        }
         $planet = $player->planets->current();
         $controller = resolve(DeveloperShortcutsController::class);
         if ($input['action'] === 'resources') {
