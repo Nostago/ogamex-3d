@@ -3,7 +3,7 @@
     $bootstrap = [
         'shipNames' => collect(\OGame\Services\ObjectService::getShipObjects())->mapWithKeys(fn ($ship) => [$ship->machine_name => $ship->title])->all(),
         'galaxyActionUrl' => route('live3d.galaxy.action'), 'galaxyMissilesUrl' => route('live3d.galaxy.missiles'),
-        'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de'), __('t_systemmap', [], 'de')),
+        'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de'), __('t_systemmap', [], 'de'), __('t_fleetquick', [], 'de')),
         'botsUrl' => route('live3d.bots'),
         'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
@@ -26,6 +26,7 @@
     {{ $liveVite('resources/js/live3d/index.js') }}
 </head>
 <body class="prototype-3d live-interface orbital-command">
+@include('live3d.quick-fleet')
 <div id="prototype" data-mode="map" data-page="planet">
     <header class="command-header">
         <a class="brand" href="{{ route('live3d.index') }}"><span class="brand-orbit" aria-hidden="true">◈</span><span>OGameX <b>3D</b><small>ORBITAL COMMAND</small></span></a>

@@ -1377,3 +1377,40 @@
 .orbital-command .system-map-field { min-height: 680px; height: 680px; flex: 0 0 auto; }
 @media(max-width: 1000px) and (min-width: 601px) { .orbital-command .system-map-field { min-height: 760px; height: 760px; } }
 @media(max-width: 600px) { .orbital-command .system-map-field { height: auto; min-height: 0; } }
+
+/* Direct dispatch, clear launch controls and readable live radar contacts. */
+.orbital-command .quick-fleet-dialog { position:fixed; margin:auto; width:min(580px,calc(100vw - 30px)); box-sizing:border-box; max-height:calc(100dvh - 30px); overflow-y:auto; padding:24px; border:1px solid #69e8ff; border-radius:12px; background:#071c2b; color:#e5f7ff; box-shadow:0 20px 100px #000b; font-size:18px; }
+.quick-fleet-dialog::backdrop { background:#010914c9; backdrop-filter:blur(4px); }
+.quick-fleet-dialog header { display:flex; justify-content:space-between; gap:20px; align-items:start; }
+.orbital-command .quick-fleet-dialog h2 { font-size:26px; margin:0 0 16px; color:#b2f4ff; }
+.orbital-command #quick-fleet-close { min-width:44px; font-size:26px; padding:0 10px; }
+#quick-fleet-target,#quick-fleet-availability,#quick-fleet-status { font-size:17px; line-height:1.6; }
+.quick-fleet-ship { display:grid; grid-template-columns:minmax(0,1fr) 130px; gap:8px 16px; padding:16px 0; border-bottom:1px solid #31566a; font-size:20px; }
+.quick-fleet-ship small { grid-column:1; font-size:16px; color:#a9dcf2; }
+.quick-fleet-ship input { grid-column:2; grid-row:1 / 3; width:100%; box-sizing:border-box; min-height:48px; font-size:22px; }
+.quick-escorts,.quick-cargo { margin:16px 0; padding:12px; border:1px solid #2c647a; border-radius:6px; }
+.quick-escorts summary,.quick-cargo summary { cursor:pointer; font-size:17px; }
+#quick-fleet-advanced { margin-top:16px; font-size:16px; width:100%; }
+.orbital-command button.fleet-launch { display:block; width:100%; min-height:56px; padding:16px 22px; font-size:20px; font-weight:700; border:1px solid #90f1ff; border-radius:7px; background:linear-gradient(120deg,#126d88,#09526c); color:#fff; box-shadow:0 0 20px #30d8ff22; }
+.orbital-command button.fleet-launch:disabled { opacity:.65; box-shadow:none; }
+.fleet-launch-bar { position:sticky; top:8px; z-index:8; display:flex; align-items:center; gap:20px; padding:16px; margin:16px 0; background:#062032f5; border:1px solid #67dcfa; border-radius:8px; box-shadow:0 8px 24px #0008; }
+.fleet-launch-bar p { flex:1; font-size:17px; line-height:1.5; margin:0; }
+.orbital-command .fleet-launch-bar .fleet-launch { width:auto; min-width:235px; }
+.fleet-empty { opacity:.6; }
+#system-map-connections line { stroke:#66c8e4; stroke-width:1.6; stroke-dasharray:5 6; opacity:.62; }
+#system-map-flight-lines line { stroke-width:2; stroke-dasharray:7 5; opacity:.9; }
+#system-map-radar { z-index:6; }
+.orbital-command button.system-fleet-contact { width:40px; height:40px; background:#073d57; border:2px solid #b1faff; box-shadow:0 0 0 5px #2bd3ee22,0 0 24px #3beaffbb; }
+.system-fleet-contact::after { content:''; position:absolute; inset:-8px; border:1px solid #82f5ff88; border-radius:50%; animation:fleet-contact-pulse 2.8s ease-out infinite; pointer-events:none; }
+@keyframes fleet-contact-pulse { to { transform:scale(1.5); opacity:0; } }
+.fleet-radar-tooltip { position:fixed; z-index:10000; width:min(380px,calc(100vw - 20px)); box-sizing:border-box; max-height:calc(100dvh - 20px); overflow-y:auto; padding:20px; color:#e7f7ff; background:#041827f5; border:1px solid #76e6fb; border-radius:9px; box-shadow:0 12px 55px #000b; font-size:18px; }
+.orbital-command .fleet-radar-tooltip h2 { font-size:22px; margin:0 0 12px; color:#b5f6ff; }
+.orbital-command .fleet-radar-tooltip h3 { font-size:18px; margin:16px 0 10px; }
+.fleet-radar-tooltip p { font-size:16px; line-height:1.6; }
+.radar-ship-row { display:flex; justify-content:space-between; gap:18px; padding:10px 0; border-bottom:1px solid #315769; font-size:18px; }
+.radar-ship-row strong { color:#b6f3ff; font-size:20px; font-variant-numeric:tabular-nums; }
+.quick-fleet-success { color:#aff5ca; font-size:20px; }
+@media(max-width:600px) { .fleet-launch-bar { flex-direction:column; gap:12px; } .orbital-command .fleet-launch-bar .fleet-launch { width:100%; min-width:0; } .quick-fleet-ship { grid-template-columns:minmax(0,1fr) 100px; font-size:18px; } }
+@media(prefers-reduced-motion:reduce) { .system-fleet-contact::after { animation:none; } }
+.orbital-command .quick-fleet-ship,.orbital-command .quick-cargo label { font-size:20px; }
+.orbital-command .quick-fleet-ship input { font-size:22px; }

@@ -219,6 +219,10 @@ try {
         'Fixture must offer at least one original colonisation action',
     )
     await page
+        .locator('#quick-fleet-dialog[open] [data-quick-ship="208"]')
+        .waitFor()
+    await page.locator('#quick-fleet-advanced').click()
+    await page
         .locator('#system-map-planner:not([hidden]) [data-fleet-ship="208"]')
         .waitFor()
     assert.equal(
@@ -350,12 +354,34 @@ try {
     })
     assert.equal(dispatched.status(), 200)
     assert.equal((await dispatched.json()).success, true)
+    const flightResponse = await context.request.get(
+        `/play-3d/system-map?planet=${initial.id}`,
+    )
+    const flightData = await flightResponse.json()
+    const intended = flightData.fleets
+        .filter(
+            (fleet) =>
+                fleet.own &&
+                !fleet.returning &&
+                fleet.mission === 3 &&
+                fleet.count === '2' &&
+                fleet.destination === other.coordinates,
+        )
+        .sort((a, b) => b.id - a.id)[0]
+    assert.ok(
+        intended,
+        'Find the exact test flight among other active missions',
+    )
     await page.locator('#system-map-refresh').click()
-    await page.locator('.system-fleet-contact').first().waitFor()
+    await page
+        .locator(`.system-fleet-contact[data-fleet-id="${intended.id}"]`)
+        .waitFor()
     assert.ok(
         (await page.locator('#system-map-flight-lines line').count()) >= 1,
     )
-    const contact = page.locator('.system-fleet-contact').first(),
+    const contact = page.locator(
+            `.system-fleet-contact[data-fleet-id="${intended.id}"]`,
+        ),
         missionId = await contact.getAttribute('data-fleet-id')
     await contact.click()
     await page.locator('#system-map-dialog[open] .map-contact-clock').waitFor()
@@ -377,7 +403,14 @@ try {
             `/play-3d/system-map?planet=${initial.id}`,
         ),
         radar = await source.json(),
-        returning = radar.fleets.find((fleet) => fleet.own && fleet.returning)
+        returning = radar.fleets.find(
+            (fleet) =>
+                fleet.own &&
+                fleet.returning &&
+                fleet.mission === 3 &&
+                fleet.origin === other.coordinates &&
+                fleet.destination === initial.coordinates,
+        )
     if (returning) {
         assert.equal(returning.origin, other.coordinates)
         assert.equal(returning.destination, initial.coordinates)

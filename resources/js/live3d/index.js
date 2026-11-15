@@ -7,6 +7,7 @@ import { createLiveClient } from './client.js'
 import { formatDuration } from './duration.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
+import { createQuickFleet } from './quickFleet.js'
 import { createSystemMap } from './systemMap.js'
 import { renderIcons } from './icons.js'
 import { createFleetPanel } from './fleetPanel.js'
@@ -94,6 +95,7 @@ function objects() {
     )
 }
 function show(name, fromFrame = false, fleetTarget) {
+    quickFleet.hide()
     systemMap.hide()
     page = pages.includes(name) ? name : 'planet'
     if (location.hash !== `#${page}`) location.hash = page
@@ -733,7 +735,7 @@ const galaxy = createGalaxy({
     context: () => state.planet,
     onError: failure,
     openArea(url, area = 'tools') { show(area); loadOriginal(url) },
-    openFleet,
+    openFleet: value => quickFleet.open(value, { advanced: () => openFleet(value) }),
     config,
     refresh,
 })
@@ -752,7 +754,8 @@ const adminPanel = config.isAdmin
       })
     : null
 const fleetPanel = createFleetPanel({ config: {...config, token: document.querySelector('meta[name="csrf-token"]').content}, t, el, number, state: () => state, refresh, onError: failure })
-const systemMap = createSystemMap({ config, t, el, state: () => state, actions: galaxy, switchPlanet, fleetPanel, number, openFleet, onError: failure })
+const quickFleet = createQuickFleet({ config, t, el, number, state: () => state, refresh, onError: failure, onSent: () => { status.textContent = t.op_sent; systemMap.refreshRadar() } })
+const systemMap = createSystemMap({ config, t, el, state: () => state, actions: galaxy, switchPlanet, fleetPanel, quickFleet, number, openFleet, onError: failure })
 function openFleet(value) {
     const url = new URL(value, location.origin)
     const target = Object.fromEntries(url.searchParams)
@@ -817,6 +820,7 @@ window.addEventListener('pagehide', (event) => {
     clearInterval(poll)
     clearInterval(clock)
     clearTimeout(originalTimer)
+    quickFleet.dispose()
     systemMap.dispose()
     galaxy.dispose()
     fleetMonitor.dispose()

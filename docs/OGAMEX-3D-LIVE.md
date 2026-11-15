@@ -1,5 +1,7 @@
 # Neue Oberfläche am vorhandenen OGameX-Backend
 
+Aktuelle Bedienung: [Schnellversand und Flottenradar](OGAMEX-3D-QUICK-FLEETS.md).
+
 Neue Standardansicht: [Sonnensystemkarte und lesbare Infokarten](OGAMEX-3D-SYSTEM-MAP.md).
 
 Aktuelle Korrekturen: [Planeten, Bodentransporte und einheitliche Seitenwechsel](OGAMEX-3D-PLANET-NAVIGATION.md).

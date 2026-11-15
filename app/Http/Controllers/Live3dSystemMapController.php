@@ -46,6 +46,13 @@ class Live3dSystemMapController extends Controller
                 continue;
             }
             $own = $model?->user_id === $player->getId();
+            $ships = null;
+            if ($own) {
+                $ships = [];
+                foreach ($event->fleet_units->units as $unit) {
+                    $ships[] = ['name' => $unit->unitObject->title, 'amount' => (string)$unit->amount];
+                }
+            }
             $fleets[] = [
                 'id' => $event->real_mission_id ?? $event->id, 'mission' => $event->mission_type,
                 'label' => $event->mission_label, 'own' => $own,
@@ -55,7 +62,7 @@ class Live3dSystemMapController extends Controller
                 'departure' => $event->time_departure, 'arrival' => $event->timer_time,
                 'holding' => $event->is_at_destination, 'returning' => $event->is_return_trip,
                 // Foreign ship composition and counts are deliberately omitted.
-                'count' => $own ? (string)$event->fleet_unit_count : null,
+                'count' => $own ? (string)$event->fleet_unit_count : null, 'ships' => $ships,
             ];
         }
 

@@ -59,7 +59,7 @@
     "isEntry": true
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-4wzQHJMU.js",
+    "file": "assets/index-DpYWgzLz.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
@@ -71,7 +71,7 @@
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
-      "assets/index-CvbFbYt9.css",
+      "assets/index-Cr1xHet5.css",
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },

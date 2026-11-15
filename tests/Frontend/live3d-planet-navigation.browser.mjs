@@ -127,6 +127,8 @@ try {
     await details
         .getByRole('button', { name: 'Neue Kolonie gründen', exact: true })
         .click()
+    await page.locator('#quick-fleet-dialog[open] [data-quick-ship="208"]').waitFor()
+    await page.locator('#quick-fleet-advanced').click()
     await page.waitForSelector('#live-page-fleets[data-fleet-ready=true]')
     await page.waitForFunction(
         () =>

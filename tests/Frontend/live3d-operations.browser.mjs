@@ -107,6 +107,8 @@ try {
     })
     if (await colonize.isEnabled()) {
         await colonize.click()
+        await page.locator('#quick-fleet-dialog[open] [data-quick-ship="208"]').waitFor()
+        await page.locator('#quick-fleet-advanced').click()
         await page.waitForSelector('#fleet-form:visible')
         assert.equal(
             await page.locator('#fleet-form [name=mission]').inputValue(),

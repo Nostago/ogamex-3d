@@ -67,11 +67,13 @@ class Live3dSystemMapTest extends IsolatedAccountTestCase
         $own = collect($fleets)->firstWhere('id', $mission->id);
         $hostile = collect($fleets)->firstWhere('id', $incoming->id);
         $this->assertSame('3', $own['count'] ?? null);
+        $this->assertSame('3', $own['ships'][0]['amount'] ?? null);
         $this->assertSame('own', $own['relation'] ?? null);
         $this->assertSame($mission->time_departure, $own['departure'] ?? null);
         $this->assertSame($mission->time_arrival, $own['arrival'] ?? null);
         $this->assertSame('hostile', $hostile['relation'] ?? null);
         $this->assertNull($hostile['count'] ?? null);
+        $this->assertNull($hostile['ships'] ?? null);
         $response->assertDontSee('123456789');
         $this->assertNotContains($unrelated->id, array_column($fleets, 'id'));
         $this->travel(2)->seconds();

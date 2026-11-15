@@ -88,6 +88,13 @@ export function createFleetPanel({
         ).checked
         return { ...out, ...selection(), planet: state().planet.id }
     }
+    function setSendDisabled(value) {
+        send.disabled = value
+        document.querySelector('#fleet-send-top').disabled = value
+        document.querySelector('#fleet-send-hint').textContent = value
+            ? t.quick_choose
+            : t.quick_ready
+    }
     function changed(force = false) {
         field('holdingtime').closest('label').hidden = ![5, 15].includes(
             Number(field('mission').value),
@@ -101,7 +108,7 @@ export function createFleetPanel({
         lastSignature = signature
         revision++
         quote = null
-        send.disabled = true
+        setSendDisabled(true)
         controller?.abort()
         clearTimeout(timer)
         timer = setTimeout(preview, 350)
@@ -118,6 +125,8 @@ export function createFleetPanel({
                 t.choose_ships
             return
         }
+        document.querySelector('#fleet-send-hint').textContent =
+            t.quick_checking
         const version = revision,
             source = String(state().planet.id)
         controller = new AbortController()
@@ -161,15 +170,22 @@ export function createFleetPanel({
             )
             for (const error of result.errors || [])
                 host.append(el('p', 'fleet-notice', error.message))
-            send.disabled =
+            setSendDisabled(
                 !result.orders?.[field('mission').value] ||
-                result.consumption > result.fuelCapacity ||
-                result.consumption > state().resources.deuterium.amount ||
-                pending
+                    result.consumption > result.fuelCapacity ||
+                    result.consumption > state().resources.deuterium.amount ||
+                    pending,
+            )
+            if (send.disabled)
+                document.querySelector('#fleet-send-hint').textContent =
+                    result.errors?.[0]?.message || t.quick_unavailable
         } catch (error) {
-            if (error.name !== 'AbortError' && version === revision)
+            if (error.name !== 'AbortError' && version === revision) {
                 document.querySelector('#fleet-preview').textContent =
                     error.message
+                document.querySelector('#fleet-send-hint').textContent =
+                    error.message
+            }
         }
     }
     function tab(name) {
@@ -213,6 +229,7 @@ export function createFleetPanel({
             }
             input.max = ship.available
             input.disabled = ship.available === '0'
+            input.closest('label').hidden = ship.available === '0'
             input
                 .closest('label')
                 .querySelector('.fleet-available').textContent =
@@ -491,10 +508,10 @@ export function createFleetPanel({
     }
     form.onsubmit = async (event) => {
         event.preventDefault()
-        if (pending || !quote || send.disabled || !confirm(t.op_confirm)) return
+        if (pending || !quote || send.disabled) return
         const body = payload()
         pending = true
-        send.disabled = true
+        setSendDisabled(true)
         status.textContent = t.processing
         try {
             await api(config.fleetSendUrl, body)
@@ -563,7 +580,7 @@ export function createFleetPanel({
             active = true
             form.inert = true
             quote = null
-            send.disabled = true
+            setSendDisabled(true)
             revision++
             controller?.abort()
             clearTimeout(timer)
@@ -601,7 +618,7 @@ export function createFleetPanel({
             loadId++
             form.inert = true
             quote = null
-            send.disabled = true
+            setSendDisabled(true)
             controller?.abort()
             clearTimeout(timer)
         },

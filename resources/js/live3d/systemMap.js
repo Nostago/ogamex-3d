@@ -1,4 +1,5 @@
 import { planetTint } from './planetAppearance.js'
+import { createFleetTooltip, appendComposition } from './fleetTooltip.js'
 
 import { systemPosition, fleetPoint, reportFor } from './systemRadar.js'
 import { formatDuration } from './duration.js'
@@ -18,6 +19,7 @@ export function createSystemMap({
     actions,
     switchPlanet,
     fleetPanel,
+    quickFleet,
     onError,
     number,
     openFleet,
@@ -43,7 +45,9 @@ export function createSystemMap({
         tacticalReceived = 0,
         tacticalAttempt = 0,
         selectedRow,
-        radarContacts = []
+        radarContacts = [],
+        radarSignature = ''
+    const tooltip = createFleetTooltip({ t, el, number, now })
     function closeActions() {
         if (dialog.open) dialog.close()
     }
@@ -57,6 +61,10 @@ export function createSystemMap({
         if (focus) lastFocus?.focus()
     }
     function openPlan(value) {
+        closeActions()
+        quickFleet.open(value, { advanced: () => openAdvancedPlan(value) })
+    }
+    function openAdvancedPlan(value) {
         const target = new URL(value, location.origin)
         closeActions()
         planning = true
@@ -193,6 +201,8 @@ export function createSystemMap({
         const request = (controller = new AbortController())
         tacticalRequest?.abort()
         tactical = null
+        tooltip.hide()
+        radarSignature = ''
         radarContacts = []
         document.querySelector('#system-map-radar').replaceChildren()
         document.querySelector('#system-map-flight-lines').replaceChildren()
@@ -367,6 +377,13 @@ export function createSystemMap({
             )
     }
     function paintRadar() {
+        const signature = JSON.stringify(tactical?.fleets || [])
+        if (signature === radarSignature) {
+            tickRadar()
+            return
+        }
+        radarSignature = signature
+        tooltip.hide()
         const layer = document.querySelector('#system-map-radar'),
             lines = document.querySelector('#system-map-flight-lines'),
             list = document.querySelector('#system-map-fleet-list')
@@ -390,6 +407,7 @@ export function createSystemMap({
             entry.append(el('strong', '', title), el('span', 'map-fleet-clock'))
             const open = () => {
                 if (!active) return
+                tooltip.hide()
                 selectedRow = null
                 document.querySelector('#system-map-dialog-title').textContent =
                     t.map_fleet
@@ -408,6 +426,7 @@ export function createSystemMap({
                 const clock = el('p', 'map-contact-clock')
                 clock.dataset.arrival = fleet.arrival
                 details.append(clock)
+                appendComposition(details, fleet, t, el, number)
                 const movement = el('button', '', t.map_movements)
                 movement.onclick = () => {
                     closeActions()
@@ -418,6 +437,8 @@ export function createSystemMap({
                 dialog.showModal()
                 tickRadar()
             }
+            tooltip.bind(marker, fleet)
+            tooltip.bind(entry, fleet)
             marker.onclick = entry.onclick = open
             layer.append(marker)
             list.append(entry)
@@ -440,6 +461,7 @@ export function createSystemMap({
     }
     function tickRadar() {
         if (!active || !data || !tactical || document.hidden) return
+        tooltip.tick()
         const home = Number(state().planet.coordinates.split(':')[2])
         for (const { fleet, marker, entry, line } of radarContacts) {
             const point = fleetPoint(
@@ -572,6 +594,9 @@ export function createSystemMap({
             load(true)
     }, 30000)
     return {
+        refreshRadar() {
+            if (active && data) loadTactical()
+        },
         show(force = false) {
             active = true
             load(force)
@@ -581,6 +606,7 @@ export function createSystemMap({
         },
         hide() {
             active = false
+            tooltip.hide()
             nodes.inert = true
             tacticalRequest?.abort()
             controller?.abort()
@@ -589,6 +615,7 @@ export function createSystemMap({
             closePlanner()
         },
         dispose() {
+            tooltip.dispose()
             clearInterval(timer)
             clearInterval(radarTimer)
             tacticalRequest?.abort()
