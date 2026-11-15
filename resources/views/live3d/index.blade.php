@@ -3,14 +3,14 @@
     $bootstrap = [
         'shipNames' => collect(\OGame\Services\ObjectService::getShipObjects())->mapWithKeys(fn ($ship) => [$ship->machine_name => $ship->title])->all(),
         'galaxyActionUrl' => route('live3d.galaxy.action'), 'galaxyMissilesUrl' => route('live3d.galaxy.missiles'),
-        'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de')),
+        'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de'), __('t_systemmap', [], 'de')),
         'botsUrl' => route('live3d.bots'),
         'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
         'adminLinks' => $adminAccess ? ['settings' => route('admin.serversettings.index'), 'prices' => route('commerce.prices'), 'security' => route('admin.server-administration.index'), 'rules' => route('admin.rules.index'), 'timing' => route('admin.fleettiming.index'), 'tools' => route('admin.developershortcuts.index')] : [],
         'initial' => $initial, 't' => $t, 'models' => __('t_prototype3d', [], 'de'),
         'stateUrl' => route('live3d.state'), 'commandUrl' => route('live3d.command'),
-        'galaxyUrl' => route('live3d.galaxy'), 'fleetEventsUrl' => route('fleet.eventbox.fetch'),
+        'systemMapUrl' => route('live3d.system-map'), 'galaxyUrl' => route('live3d.galaxy'), 'fleetEventsUrl' => route('fleet.eventbox.fetch'),
         'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index'), 'alliance' => route('alliance.index'), 'officers' => route('premium.index'), 'shop' => route('shop.index'), 'merchant' => route('merchant.index'), 'notes' => route('live3d.notes'), 'buddies' => route('buddies.index'), 'options' => route('options.index'), 'highscore' => route('highscore.index'), 'tools' => route('galaxy.index'), 'production' => route('resources.settings'), 'facilities' => route('facilities.index'), 'rewards' => route('rewards.index'), 'technology' => route('live3d.technology', ['object_id'=>1,'tab'=>3,'open'=>'all']), 'inventory' => route('shop.index',['inventory'=>1]), 'market' => route('merchant.resource-market'), 'movement' => route('fleet.movement'), 'jumpgate' => route('jumpgate.index')],
     ];
     $liveVite = clone app(\Illuminate\Foundation\Vite::class);
@@ -26,7 +26,7 @@
     {{ $liveVite('resources/js/live3d/index.js') }}
 </head>
 <body class="prototype-3d live-interface orbital-command">
-<div id="prototype" data-mode="overview" data-page="planet">
+<div id="prototype" data-mode="map" data-page="planet">
     <header class="command-header">
         <a class="brand" href="{{ route('live3d.index') }}"><span class="brand-orbit" aria-hidden="true">◈</span><span>OGameX <b>3D</b><small>ORBITAL COMMAND</small></span></a>
         <div class="command-empire"><span id="live-player"></span><label for="live-planet" class="sr-only">{{ $t['planet'] }}</label><select id="live-planet"></select></div>
@@ -55,7 +55,8 @@
         <main class="workspace">
             <header class="workspace-heading"><span class="eyebrow" id="live-context"></span><h1 id="live-heading" tabindex="-1"></h1></header>
             <section id="live-page-planet" class="orbital-stage">
-                <section class="scene-panel">
+                @include('live3d.system-map')
+                <section class="scene-panel" hidden>
                     <div id="scene" tabindex="0" aria-label="{{ $t['scene_controls'] }}"></div>
                     <div id="scene-labels" aria-hidden="true"></div>
                     <div class="orbital-reticle" aria-hidden="true"></div>
@@ -65,7 +66,7 @@
                 <aside class="hud-right"><section id="live-production" class="card hud-panel"></section><section id="live-dock" class="command-dock hud-panel"></section><section id="live-fleet-events" class="card hud-panel"></section></aside>
                 <div id="live-scene-recovery" class="scene-recovery" role="status"><p id="live-scene-hint">{{ $t['scene_loading'] }}</p><button id="live-scene-retry">{{ $t['scene_retry'] }}</button><details><summary>{{ $t['scene_diagnostics'] }}</summary><output id="live-scene-diagnostics"></output></details></div>
                 <div class="orbital-bottom">
-                    <div class="view-switch"><button id="live-overview-mode" aria-pressed="true"><span data-icon="planet" aria-hidden="true"></span>{{ $t['camera'] }}</button><button id="live-colony" aria-pressed="false"><span data-icon="buildings" aria-hidden="true"></span>{{ $t['colony'] }}</button><button id="live-orbit" aria-pressed="false"><span data-icon="planet" aria-hidden="true"></span>{{ $t['orbit'] }}</button></div>
+                    <div class="view-switch"><button id="live-system-map-mode" aria-pressed="true"><span data-icon="galaxy" aria-hidden="true"></span>{{ __('t_systemmap.map_system') }}</button><button id="live-overview-mode" aria-pressed="false"><span data-icon="planet" aria-hidden="true"></span>{{ $t['camera'] }}</button><button id="live-colony" aria-pressed="false"><span data-icon="buildings" aria-hidden="true"></span>{{ $t['colony'] }}</button><button id="live-orbit" aria-pressed="false"><span data-icon="planet" aria-hidden="true"></span>{{ $t['orbit'] }}</button></div>
                     <div class="scene-tools"><button id="live-zoom-in" aria-label="{{ $t['zoom_in'] }}">+</button><button id="live-zoom-out" aria-label="{{ $t['zoom_out'] }}">−</button><button id="live-rotate" aria-pressed="false" data-icon="rotate" aria-label="{{ $t['rotate'] }}"></button><button id="live-camera" data-icon="refresh" aria-label="{{ $t['camera'] }}"></button></div>
                     <p class="geometry-note">{{ $t['representative'] }}</p>
                 </div>

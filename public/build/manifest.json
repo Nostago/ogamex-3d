@@ -7,8 +7,8 @@
     "file": "assets/catalog-CT4oIouG.js",
     "name": "catalog"
   },
-  "_duration-xoXXuYQE.js": {
-    "file": "assets/duration-xoXXuYQE.js",
+  "_duration-jgqMDis2.js": {
+    "file": "assets/duration-jgqMDis2.js",
     "name": "duration",
     "imports": [
       "_catalog-CT4oIouG.js",
@@ -59,29 +59,29 @@
     "isEntry": true
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-DmpirCWv.js",
+    "file": "assets/index-4wzQHJMU.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
     "imports": [
-      "_duration-xoXXuYQE.js"
+      "_duration-jgqMDis2.js"
     ],
     "dynamicImports": [
       "resources/js/prototype3d/scene.js",
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
-      "assets/index-CGdcO7sI.css",
+      "assets/index-CvbFbYt9.css",
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },
   "resources/js/live3d/objectPreview3d.js": {
-    "file": "assets/objectPreview3d-BNELj4As.js",
+    "file": "assets/objectPreview3d-CPY9x1bY.js",
     "name": "objectPreview3d",
     "src": "resources/js/live3d/objectPreview3d.js",
     "isDynamicEntry": true,
     "imports": [
-      "_duration-xoXXuYQE.js",
+      "_duration-jgqMDis2.js",
       "_buildings-BocMM1H1.js"
     ]
   },

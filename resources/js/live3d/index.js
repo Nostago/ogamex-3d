@@ -7,6 +7,7 @@ import { createLiveClient } from './client.js'
 import { formatDuration } from './duration.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
+import { createSystemMap } from './systemMap.js'
 import { renderIcons } from './icons.js'
 import { createFleetPanel } from './fleetPanel.js'
 import { createFleetMonitor } from './fleetMonitor.js'
@@ -45,8 +46,11 @@ let state = config.initial,
     page = routePage(),
     planet = String(state.planet.id),
     busy = false,
+    switching = false,
+    planetSwitch = 0,
     scene = null,
-    mode = 'overview',
+    mode = 'map',
+    sceneStarted = false,
     rotating = false,
     selected = {},
     group = 'building',
@@ -90,6 +94,7 @@ function objects() {
     )
 }
 function show(name, fromFrame = false, fleetTarget) {
+    systemMap.hide()
     page = pages.includes(name) ? name : 'planet'
     if (location.hash !== `#${page}`) location.hash = page
     document.querySelectorAll('[data-live-page]').forEach((n) => {
@@ -129,6 +134,7 @@ function show(name, fromFrame = false, fleetTarget) {
             loadOriginal(config.links[page])
         }
     } else renderCatalog()
+    if (page === 'planet' && mode === 'map') systemMap.show()
     if (!fromFrame) window.scrollTo({ top: 0, behavior: 'instant' })
 }
 function render() {
@@ -184,6 +190,7 @@ function render() {
     matter.addEventListener('click', () => show('shop'))
     balances.append(matter)
     renderDashboard(state, t, el, number, navigate)
+    systemMap.contextChanged()
     document.querySelector('#live-production-link').href = contextUrl(
         '/resources/settings',
     )
@@ -507,7 +514,7 @@ function failure(error) {
     }
 }
 async function refresh() {
-    if (busy || stopped) return
+    if (busy || stopped || switching) return
     try {
         const next = await client.load(planet)
         if (next) {
@@ -536,24 +543,30 @@ async function command(action, payload) {
 }
 async function switchPlanet(id) {
     if (busy || stopped) return
-    const previous = planet
+    const previous = String(state.planet.id), version = ++planetSwitch
+    switching = true
     if (['fleets','movement'].includes(page)) fleetPanel.hide()
+    systemMap.hide()
     planet = String(id)
     try {
         const next = await client.load(planet)
-        if (next) {
+        if (next && version === planetSwitch) {
             state = next
             received = Date.now()
             render()
             show(page)
         }
     } catch (error) {
+        if (version !== planetSwitch) return
         planet = previous
         failure(error)
         render()
         show(page)
+    } finally {
+        if (version === planetSwitch) switching = false
     }
 }
+
 let originalTimer, originalPendingUrl
 function originalLoading() {
     frame.dataset.ready = 'false'
@@ -652,11 +665,25 @@ document
 document.querySelector('#live-refresh').addEventListener('click', () => {
     refresh()
     if (page === 'galaxy') galaxy.show(true)
+    if (page === 'planet' && mode === 'map') systemMap.show(true)
 })
 function setMode(next) {
     mode = next
     root.dataset.mode = mode
-    scene?.setMode(mode)
+    document.querySelector('#live-system-map').hidden = mode !== 'map'
+    document.querySelector('.scene-panel').hidden = mode === 'map'
+    if (mode === 'map') {
+        if (page === 'planet') systemMap.show()
+    }
+    else {
+        systemMap.hide()
+        scene?.setMode(mode)
+        if (scene && !sceneStarted) {
+            sceneStarted = true
+            scene.start()
+        }
+    }
+    document.querySelector('#live-system-map-mode').setAttribute('aria-pressed', String(mode === 'map'))
     document
         .querySelector('#live-overview-mode')
         .setAttribute('aria-pressed', String(mode === 'overview'))
@@ -667,6 +694,7 @@ function setMode(next) {
         .querySelector('#live-orbit')
         .setAttribute('aria-pressed', String(mode === 'orbit'))
 }
+document.querySelector('#live-system-map-mode').addEventListener('click', () => setMode('map'))
 document
     .querySelector('#live-overview-mode')
     .addEventListener('click', () => setMode('overview'))
@@ -724,6 +752,7 @@ const adminPanel = config.isAdmin
       })
     : null
 const fleetPanel = createFleetPanel({ config: {...config, token: document.querySelector('meta[name="csrf-token"]').content}, t, el, number, state: () => state, refresh, onError: failure })
+const systemMap = createSystemMap({ config, t, el, state: () => state, actions: galaxy, switchPlanet, fleetPanel, number, openFleet, onError: failure })
 function openFleet(value) {
     const url = new URL(value, location.origin)
     const target = Object.fromEntries(url.searchParams)
@@ -771,7 +800,6 @@ scene = createSceneHost({
 scene.update(visualState(state))
 renderedScene = JSON.stringify(visualState(state))
 setMode(mode)
-scene.start()
 root.dataset.ready = 'true'
 const poll = setInterval(() => {
         if (document.hidden) return
@@ -789,6 +817,7 @@ window.addEventListener('pagehide', (event) => {
     clearInterval(poll)
     clearInterval(clock)
     clearTimeout(originalTimer)
+    systemMap.dispose()
     galaxy.dispose()
     fleetMonitor.dispose()
     fleetPanel.dispose()

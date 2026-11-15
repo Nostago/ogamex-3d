@@ -44,7 +44,8 @@ try {
     page.setDefaultTimeout(40000)
     page.on('pageerror', (e) => errors.push(e.message))
     page.on('request', (r) => requests.push(r.url()))
-    await page.goto('/play-3d#planet')
+    await page.goto(`/play-3d?cp=${account.planet}#planet`)
+    await page.locator('#live-overview-mode').click()
     await page.waitForSelector('#scene[data-renderer=webgl][data-frames]')
     assert.equal(
         await page.locator('#scene').getAttribute('data-surface'),
@@ -99,6 +100,7 @@ try {
         colour,
     )
     await page.reload()
+    await page.locator('#live-overview-mode').click()
     await page.waitForSelector('#scene[data-renderer=webgl][data-frames]')
     assert.equal(
         await page.locator('#scene').getAttribute('data-surface-color'),

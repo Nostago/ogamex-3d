@@ -57,7 +57,8 @@ try {
         const page = await context.newPage(),
             errors = [];
         page.on('pageerror', (error) => errors.push(error.message));
-        await page.goto('/play-3d#planet');
+        await page.goto(`/play-3d?cp=${account.planet}#planet`);
+        await page.locator('#live-overview-mode').click();
         await page.waitForFunction(
             () =>
                 document.querySelector('#scene')?.dataset.renderer ===

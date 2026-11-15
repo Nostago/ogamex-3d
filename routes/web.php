@@ -28,6 +28,7 @@ use OGame\Http\Controllers\Live3dBotsController;
 use OGame\Http\Controllers\Live3dController;
 use OGame\Http\Controllers\Live3dFleetController;
 use OGame\Http\Controllers\Live3dGalaxyController;
+use OGame\Http\Controllers\Live3dSystemMapController;
 use OGame\Http\Controllers\MerchantController;
 use OGame\Http\Controllers\MessagesController;
 use OGame\Http\Controllers\NotesController;
@@ -82,6 +83,7 @@ Route::get('/ajax/main/contact', [RulesController::class, 'ajaxContact'])->name(
 Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::class, 'firstlogin'])->group(function () {
     // Authenticated 3D interface: original backend, separate public demo.
     Route::get('/play-3d', [Live3dController::class, 'index'])->name('live3d.index');
+    Route::get('/play-3d/system-map', [Live3dSystemMapController::class, 'index'])->name('live3d.system-map');
     Route::get('/play-3d/galaxy', [Live3dController::class, 'galaxy'])->name('live3d.galaxy');
     Route::get('/play-3d/galaxy/missiles', [Live3dGalaxyController::class, 'missiles'])->name('live3d.galaxy.missiles');
     Route::post('/play-3d/galaxy/action', [Live3dGalaxyController::class, 'action'])->name('live3d.galaxy.action');

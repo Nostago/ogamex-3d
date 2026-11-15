@@ -158,18 +158,25 @@ export function createGalaxy({
             onError(error)
         }
     }
-    function fleetUrl(row, body, mission) {
+    function fleetUrl(row, body, mission, metadata) {
         const target = new URL('/fleet', location.origin)
         target.search = new URLSearchParams({
-            galaxy: currentGalaxy,
-            system: currentSystem,
+            galaxy: metadata.galaxy,
+            system: metadata.system,
             position: row.position,
             type: body.planetType,
             mission,
         })
         return target.href
     }
-    function missionButtons(host, row, body, details = false) {
+    function missionButtons(
+        host,
+        row,
+        body,
+        details = false,
+        metadata = { galaxy: currentGalaxy, system: currentSystem },
+        plan = openFleet,
+    ) {
         for (const mission of body.availableMissions || []) {
             if (!mission.missionType) continue
             const caption =
@@ -190,7 +197,7 @@ export function createGalaxy({
                 button.title = plain(mission.description || t.unavailable)
             } else
                 button.onclick = () =>
-                    openFleet(fleetUrl(row, body, mission.missionType))
+                    plan(fleetUrl(row, body, mission.missionType, metadata))
             host.append(button)
             if (details && mission.missionType === 7) {
                 const hint = el(
@@ -205,6 +212,8 @@ export function createGalaxy({
         }
     }
     async function actionApi(path, body, method = 'POST') {
+        if (body.planet && String(body.planet) !== String(context().id))
+            throw new Error(t.error_request)
         const token = document.querySelector('meta[name="csrf-token"]').content
         const url = new URL(path, location.origin)
         url.searchParams.set('cp', context().id)
@@ -244,11 +253,11 @@ export function createGalaxy({
             )
         return result
     }
-    function renderDetails(host, row, bodies, metadata) {
+    function renderDetails(host, row, bodies, metadata, options = {}) {
         const coords = {
             planet: context().id,
-            galaxy: currentGalaxy,
-            system: currentSystem,
+            galaxy: metadata.galaxy,
+            system: metadata.system,
             position: row.position,
             type: 1,
         }
@@ -256,7 +265,7 @@ export function createGalaxy({
             el(
                 'h2',
                 '',
-                `${t.op_details} [${currentGalaxy}:${currentSystem}:${row.position}]`,
+                `${t.op_details} [${metadata.galaxy}:${metadata.system}:${row.position}]`,
             ),
         )
         const output = el('div', 'galaxy-action-result')
@@ -267,7 +276,11 @@ export function createGalaxy({
             const control = el('button', '', label)
             control.type = 'button'
             control.onclick = async () => {
-                if (control.disabled) return
+                if (
+                    control.disabled ||
+                    String(coords.planet) !== String(context().id)
+                )
+                    return
                 control.disabled = true
                 try {
                     await callback()
@@ -293,7 +306,14 @@ export function createGalaxy({
                           : t.planet,
                 ),
             )
-            missionButtons(group, row, body, true)
+            missionButtons(
+                group,
+                row,
+                body,
+                true,
+                metadata,
+                options.openFleet || openFleet,
+            )
             if (body.requiredShips !== undefined)
                 group.append(
                     el(
@@ -506,9 +526,13 @@ export function createGalaxy({
                 },
             )
         button(t.op_close, () => {
+            if (options.close) {
+                options.close()
+                return
+            }
             host.hidden = true
             host.previousElementSibling
-                .querySelector('[aria-expanded]')
+                ?.querySelector('[aria-expanded]')
                 ?.setAttribute('aria-expanded', 'false')
         })
         host.append(output)
@@ -565,6 +589,19 @@ export function createGalaxy({
         anchor.href = link.href
     }
     return {
+        renderActions(host, row, metadata, options) {
+            const bodies = Array.isArray(row.planets)
+                ? [...row.planets]
+                : row.planets
+                  ? [row.planets]
+                  : []
+            if (!bodies.some((body) => body.planetType === 1))
+                bodies.unshift({
+                    planetType: 1,
+                    availableMissions: row.availableMissions || [],
+                })
+            renderDetails(host, row, bodies, metadata, options)
+        },
         show(force = false) {
             const own = context()
             updateOriginalLink()
