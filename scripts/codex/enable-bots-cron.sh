@@ -19,10 +19,12 @@ if ! LC_ALL=C crontab -l > "$current" 2> "$next"; then
     fi
 fi
 if grep -Fq -- "$marker" "$current"; then
-    echo 'Bot-Taktgeber ist bereits eingerichtet.'
+    awk -v marker="$marker" 'substr($0,length($0)-length(marker)+1)==marker {sub(/--limit=20 /,"--limit=100 ")} {print}' "$current" > "$next"
+    crontab "$next"
+    echo 'Bot-Taktgeber aktualisiert: maximal 100 fällige Bots je Minute.'
     exit 0
 fi
 cat "$current" > "$next"
-printf '\n* * * * * cd %q && %q artisan ogamex:bots:tick --limit=20 >> storage/logs/autonomous-bots.log 2>&1 # %s\n' "$project" "$php_bin" "$marker" >> "$next"
+printf '\n* * * * * cd %q && %q artisan ogamex:bots:tick --limit=100 >> storage/logs/autonomous-bots.log 2>&1 # %s\n' "$project" "$php_bin" "$marker" >> "$next"
 crontab "$next"
-echo 'Bot-Taktgeber eingerichtet: jede Minute, maximal 20 fällige Bots. Bestehende Cron-Aufträge bleiben erhalten.'
+echo 'Bot-Taktgeber eingerichtet: jede Minute, maximal 100 fällige Bots. Bestehende Cron-Aufträge bleiben erhalten.'

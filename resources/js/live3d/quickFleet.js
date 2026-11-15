@@ -232,11 +232,13 @@ export function createQuickFleet({
                 throw new Error(t.error_request)
             if (
                 !quote.orders?.[body.mission] ||
+                quote.missionPossible === false ||
                 quote.consumption > quote.fuelCapacity ||
                 quote.consumption > state().resources.deuterium.amount
             )
                 throw new Error(
-                    quote.errors?.map((item) => item.message).join(' · ') ||
+                    quote.reason ||
+                        quote.errors?.map((item) => item.message).join(' · ') ||
                         t.quick_unavailable,
                 )
             status.textContent = `${t.quick_sending} · ${formatDuration(quote.duration, t)} · ${number(quote.consumption)} ${t.deuterium}`

@@ -611,3 +611,5 @@ CPU-Rotation/Zoom, erneuten WebGL-Start und die Wiederkehr aus bfcache.
 `tests/Frontend/live3d-recovery.browser.mjs` prüft zusätzlich fehlende GPU-Unterstützung
 und blockierte 3D-Moduldateien. Beide Fälle müssen die Spieloberfläche und eine
 interaktive Kompatibilitätsansicht erhalten.
+
+Weitere Etappe: [Flottenprüfung, Nachrichten und autonome NPCs](OGAMEX-3D-BOT-OPERATIONS.md).

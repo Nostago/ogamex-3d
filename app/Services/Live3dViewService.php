@@ -19,6 +19,7 @@ class Live3dViewService
         $researchQueue = resolve(ResearchQueueService::class)->retrieveQueue($planet);
         $unitQueue = resolve(UnitQueueService::class)->retrieveQueue($planet);
         $objects = [];
+        $inventory = resolve(Live3dShipInventory::class)->forPlanet($player, $planet);
         foreach (ObjectService::getObjects() as $object) {
             if ($object->valid_planet_types !== [] && !in_array($planet->getPlanetType(), $object->valid_planet_types, true)) {
                 continue;
@@ -40,6 +41,7 @@ class Live3dViewService
                 'image' => isset($object->assets->imgSmall) ? asset('img/objects/'.($unit ? 'units' : ($object->type === GameObjectType::Research ? 'research' : 'buildings')).'/'.$object->assets->imgSmall) : null,
                 'type' => $object->type->value,
                 'amount' => (string)$level,
+                ...($inventory[$object->machine_name] ?? []),
                 'cost' => ['metal' => $cost->metal->get(), 'crystal' => $cost->crystal->get(), 'deuterium' => $cost->deuterium->get(), 'energy' => $cost->energy->get()],
                 'seconds' => $duration,
                 'requirementsMet' => $requirementsMet,
@@ -77,7 +79,9 @@ class Live3dViewService
             'unread' => (new MessageService($player))->getUnreadMessagesCount(),
             'fleetSlots' => ['used' => $player->getFleetSlotsInUse(), 'max' => $player->getFleetSlotsMax()],
             'defenseTotal' => (string)$planet->getDefenseUnits()->getAmount(),
-            'shipTotal' => (string)$planet->getShipUnits()->getAmount(),
+            'shipTotal' => (string)array_sum(array_column($inventory, 'total')),
+            'shipAvailable' => (string)array_sum(array_column($inventory, 'available')),
+            'shipOnMission' => (string)array_sum(array_column($inventory, 'onMission')),
             'objects' => $objects,
             'activity' => $activity,
             'queues' => [

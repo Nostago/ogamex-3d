@@ -124,3 +124,13 @@ gradient-button[sq30] { display:inline-block!important;width:auto!important;heig
 #resourcesettingscomponent select,#createNote select { display:inline-block!important;min-width:100px!important; }
 #resourcesettingscomponent span.dropdown,#createNote span.dropdown { display:none!important; }
 #live-tech-object,#resourcesettingscomponent select,#createNote select { visibility:visible!important;opacity:1!important;pointer-events:auto!important; }
+
+/* Remote message tabs keep their original handlers, with the command navigation's clear surfaces. */
+#content #buttonz .subtabs { display:flex!important;flex-wrap:wrap;gap:8px;list-style:none!important;margin:0 0 18px!important;padding:0!important;background:#0a2030!important;border:1px solid #31566c!important;border-radius:6px!important;height:auto!important; }
+#content #buttonz .subtabs li { float:none!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;background:none!important;border:0!important; }
+#content #buttonz .subtabs a { display:block!important;background:#102838!important;background-image:none!important;color:#d4eef8!important;font:calc(18px * var(--ui-text-scale,1))/1.6 system-ui!important;padding:10px 15px!important;border:1px solid #3b647b!important;border-radius:5px!important;height:auto!important;text-decoration:none!important; }
+#content #buttonz .subtabs .ui-tabs-active a { background:#16465a!important;border-color:#69dcef!important;color:#fff!important; }
+#content #buttonz .pagination { display:flex!important;gap:12px;flex-wrap:wrap;list-style:none!important;margin:18px 0!important;padding:0!important;background:none!important; }
+#content #buttonz .pagination li { display:block!important;float:none!important;background:#102838!important;border:1px solid #31566c!important;padding:6px 12px!important; }
+
+#content #buttonz :is(.js_subtabs_fleets,.js_subtabs_communication,.subtabs) { width:100%!important;max-width:none!important;box-sizing:border-box!important; }

@@ -156,6 +156,8 @@ export function createFleetPanel({
             ]) {
                 const row = el('p', 'fleet-stat')
                 row.append(el('span', '', label), el('strong', '', value))
+                if (label === t.op_duration)
+                    renderDuration(row.lastElementChild, result.duration, t)
                 host.append(row)
             }
             const allowed = Object.entries(result.orders || {})
@@ -172,13 +174,16 @@ export function createFleetPanel({
                 host.append(el('p', 'fleet-notice', error.message))
             setSendDisabled(
                 !result.orders?.[field('mission').value] ||
+                    result.missionPossible === false ||
                     result.consumption > result.fuelCapacity ||
                     result.consumption > state().resources.deuterium.amount ||
                     pending,
             )
             if (send.disabled)
                 document.querySelector('#fleet-send-hint').textContent =
-                    result.errors?.[0]?.message || t.quick_unavailable
+                    result.reason ||
+                    result.errors?.[0]?.message ||
+                    t.quick_unavailable
         } catch (error) {
             if (error.name !== 'AbortError' && version === revision) {
                 document.querySelector('#fleet-preview').textContent =
@@ -229,11 +234,12 @@ export function createFleetPanel({
             }
             input.max = ship.available
             input.disabled = ship.available === '0'
-            input.closest('label').hidden = ship.available === '0'
+            input.closest('label').hidden =
+                (ship.total ?? ship.available) === '0'
             input
                 .closest('label')
                 .querySelector('.fleet-available').textContent =
-                `${number(ship.available)} ${t.ready}`
+                `${t.op_total}: ${number(ship.total)} · ${t.op_available}: ${number(ship.available)} · ${t.op_on_mission}: ${number(ship.onMission)}`
             if (BigInt(input.value || '0') > BigInt(ship.available))
                 input.value = ship.available
         }
@@ -426,6 +432,8 @@ export function createFleetPanel({
             received = Date.now()
             document.querySelector('#fleet-slots').textContent =
                 `${t.fleet_slots}: ${next.slots.used} / ${next.slots.max} · ${t.op_mission} ${t.mission_15}: ${next.expeditions.used} / ${next.expeditions.max}`
+            document.querySelector('#fleet-inventory').textContent =
+                `${t.op_total}: ${number(next.ships.reduce((sum, ship) => sum + BigInt(ship.total), 0n))} · ${t.op_available}: ${number(next.ships.reduce((sum, ship) => sum + BigInt(ship.available), 0n))} · ${t.op_on_mission}: ${number(next.ships.reduce((sum, ship) => sum + BigInt(ship.onMission), 0n))}`
             const tactical = document.querySelector('#fleet-tactical-ratio')
             tactical.value = String(next.tacticalRetreat.ratio)
             tactical.querySelector('[value="3"]').disabled =

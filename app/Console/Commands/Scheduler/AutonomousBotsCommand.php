@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 use OGame\Services\AutonomousBotService;
 
 #[Description('Run one bounded decision for each due autonomous NPC')]
-#[Signature('ogamex:bots:tick {--limit=20 : Maximum due bots per invocation}')]
+#[Signature('ogamex:bots:tick {--limit=100 : Maximum due bots per invocation}')]
 class AutonomousBotsCommand extends Command
 {
     public function handle(AutonomousBotService $bots): int

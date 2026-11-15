@@ -49,6 +49,24 @@ export function createBotsPanel({ config, t, el, number }) {
         enabled.checked = data.enabled
         label.prepend(enabled)
         grid.append(label)
+        for (const key of [
+            'auto_build',
+            'auto_research',
+            'auto_shipbuilding',
+            'auto_raid',
+            'auto_fleet_save',
+            'raid_inactive_players',
+        ]) {
+            const label = el('label', 'fleet-check', t[`bots_${key}`]),
+                input = el('input')
+            input.type = 'checkbox'
+            input.name = key
+            input.checked =
+                data[key] ??
+                !['auto_raid', 'raid_inactive_players'].includes(key)
+            label.prepend(input)
+            grid.append(label)
+        }
         host.append(grid)
     }
     fields(document.querySelector('#bots-create-fields'))
@@ -74,7 +92,8 @@ export function createBotsPanel({ config, t, el, number }) {
     }
     function payload(form) {
         const body = Object.fromEntries(new FormData(form))
-        body.enabled = form.elements.namedItem('enabled').checked
+        for (const field of form.querySelectorAll('input[type=checkbox]'))
+            body[field.name] = field.checked
         return body
     }
     async function mutate(body, notice) {
@@ -108,17 +127,27 @@ export function createBotsPanel({ config, t, el, number }) {
                     ? t.bots_scheduler_active
                     : t.bots_scheduler_missing
             const host = document.querySelector('#bots-list')
+            const expanded = new Set(
+                [...host.querySelectorAll('details[open]')].map(
+                    (node) => node.dataset.botId,
+                ),
+            )
             host.replaceChildren()
             if (!data.bots.length) host.append(el('p', 'card', t.bots_empty))
             for (const bot of data.bots) {
-                const card = el('section', 'card bot-card')
+                const card = el('details', 'card bot-card'),
+                    summary = el('summary')
                 card.dataset.botId = bot.id
-                card.append(
+                card.open = expanded.has(String(bot.id))
+                summary.append(
                     el(
                         'h2',
                         '',
                         `${bot.name} · ${bot.enabled ? t.bots_running : t.bots_paused}`,
                     ),
+                )
+                card.append(
+                    summary,
                     el(
                         'p',
                         '',
@@ -135,6 +164,15 @@ export function createBotsPanel({ config, t, el, number }) {
                         ),
                     )
                 const form = el('form')
+                const name = el('label', '', t.bots_name),
+                    input = el('input')
+                input.name = 'name'
+                input.value = bot.name
+                input.minLength = 2
+                input.maxLength = 28
+                input.required = true
+                name.append(input)
+                form.append(name)
                 fields(form, bot)
                 const save = el('button', '', t.bots_save)
                 save.type = 'submit'
@@ -167,5 +205,7 @@ export function createBotsPanel({ config, t, el, number }) {
         mutate({ action: 'create', ...payload(create) }, t.bots_created)
     }
     document.querySelector('#bots-refresh').onclick = load
+    document.querySelector('#bots-populate').onclick = () =>
+        mutate({ action: 'populate' }, t.bots_populated)
     return { show: load }
 }

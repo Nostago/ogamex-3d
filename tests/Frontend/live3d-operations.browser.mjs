@@ -107,7 +107,9 @@ try {
     })
     if (await colonize.isEnabled()) {
         await colonize.click()
-        await page.locator('#quick-fleet-dialog[open] [data-quick-ship="208"]').waitFor()
+        await page
+            .locator('#quick-fleet-dialog[open] [data-quick-ship="208"]')
+            .waitFor()
         await page.locator('#quick-fleet-advanced').click()
         await page.waitForSelector('#fleet-form:visible')
         assert.equal(
@@ -144,6 +146,7 @@ try {
     assert.equal(created.success, true)
     const card = page.locator(`[data-bot-id="${created.id}"]`)
     await card.waitFor()
+    await card.locator('summary').click()
     await card
         .getByRole('button', {
             name: 'Eine Entscheidung ausführen',

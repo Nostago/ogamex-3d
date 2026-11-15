@@ -279,19 +279,9 @@ export function createSystemMap({
             { length: 15 },
             (_, index) => index + 1,
         ).filter((position) => position !== home)
-        for (let index = 0; index < positions.length; index++) {
-            const from = systemPosition(positions[index], home),
-                to = systemPosition(
-                    positions[(index + 1) % positions.length],
-                    home,
-                )
-            lines.append(
-                svg('line', { x1: from.x, y1: from.y, x2: to.x, y2: to.y }),
-            )
-            if (index % 3 === 0)
-                lines.append(
-                    svg('line', { x1: 50, y1: 50, x2: from.x, y2: from.y }),
-                )
+        for (const position of positions) {
+            const to = systemPosition(position, home)
+            lines.append(svg('line', { x1: 50, y1: 50, x2: to.x, y2: to.y }))
         }
     }
     function now() {

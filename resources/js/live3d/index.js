@@ -21,7 +21,7 @@ import { createObjectArtwork } from './objectArtwork.js'
 const config = JSON.parse(
         document.querySelector('#live-bootstrap').textContent,
     ),
-    t = {...config.t, ...config.operationsT}
+    t = { ...config.t, ...config.operationsT }
 initReadability()
 const objectArtwork = createObjectArtwork(t)
 const client = createLiveClient({
@@ -31,7 +31,25 @@ const client = createLiveClient({
 const root = document.querySelector('#prototype'),
     status = document.querySelector('#live-status'),
     frame = document.querySelector('#live-original')
-const originalPages = ['messages', 'alliance', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities', 'rewards', 'technology', 'inventory', 'market', 'jumpgate']
+const originalPages = [
+    'messages',
+    'alliance',
+    'officers',
+    'shop',
+    'merchant',
+    'notes',
+    'buddies',
+    'options',
+    'highscore',
+    'tools',
+    'production',
+    'facilities',
+    'rewards',
+    'technology',
+    'inventory',
+    'market',
+    'jumpgate',
+]
 const pages = [
     'planet',
     'buildings',
@@ -42,7 +60,22 @@ const pages = [
     'defense',
     'alliance',
     'messages',
-    'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore', 'tools', 'production', 'facilities', 'rewards', 'technology', 'inventory', 'market', 'movement', 'jumpgate',
+    'officers',
+    'shop',
+    'merchant',
+    'notes',
+    'buddies',
+    'options',
+    'highscore',
+    'tools',
+    'production',
+    'facilities',
+    'rewards',
+    'technology',
+    'inventory',
+    'market',
+    'movement',
+    'jumpgate',
 ]
 if (config.isAdmin) pages.push('admin')
 let state = config.initial,
@@ -109,8 +142,12 @@ function show(name, fromFrame = false, fleetTarget) {
     root.dataset.page = page
     document.querySelector('#live-heading').textContent = t[page]
     document.querySelector('#live-fleet-stock').hidden = true
-    document.querySelector('#live-page-fleets').hidden = !['fleets', 'movement'].includes(page)
-    if (['fleets', 'movement'].includes(page)) fleetPanel.show(page === 'movement' ? 'movement' : 'plan', fleetTarget)
+    document.querySelector('#live-page-fleets').hidden = ![
+        'fleets',
+        'movement',
+    ].includes(page)
+    if (['fleets', 'movement'].includes(page))
+        fleetPanel.show(page === 'movement' ? 'movement' : 'plan', fleetTarget)
     else fleetPanel.hide()
     document.querySelector('#live-page-planet').hidden = page !== 'planet'
     document.querySelector('#live-page-catalog').hidden = ![
@@ -121,7 +158,8 @@ function show(name, fromFrame = false, fleetTarget) {
     ].includes(page)
     document.querySelector('#live-page-admin').hidden = page !== 'admin'
     document.querySelector('#live-page-galaxy').hidden = page !== 'galaxy'
-    document.querySelector('#live-page-original').hidden = !originalPages.includes(page)
+    document.querySelector('#live-page-original').hidden =
+        !originalPages.includes(page)
     if (page === 'galaxy') {
         document.querySelector('#live-galaxy-original').href = contextUrl(
             config.links.galaxy,
@@ -206,7 +244,11 @@ function render() {
     adminPanel?.renderContext()
     renderFleetStock()
     const jump = document.querySelector('[data-nav-action=jumpgate]')
-    jump.hidden = state.planet.type !== 3 || !state.objects.some(o => o.key === 'jump_gate' && Number(o.amount) > 0)
+    jump.hidden =
+        state.planet.type !== 3 ||
+        !state.objects.some(
+            (o) => o.key === 'jump_gate' && Number(o.amount) > 0,
+        )
     const visual = visualState(state),
         signature = JSON.stringify(visual)
     if (scene && signature !== renderedScene) {
@@ -223,21 +265,26 @@ function render() {
     renderQueues()
     document.querySelector('#live-refresh').disabled = busy || stopped
 }
+function shipCounts(item) {
+    return `${t.op_total}: ${number(item.total ?? item.amount)} · ${t.op_available}: ${number(item.available ?? item.amount)} · ${t.op_on_mission}: ${number(item.onMission ?? '0')}`
+}
 function renderFleetStock() {
     const stock = document.querySelector('#live-fleet-stock')
     stock.replaceChildren(el('h2', '', t.fleet_stock))
     const grid = el('div', 'fleet-stock-grid')
     for (const item of state.objects.filter(
-        (o) => o.type === 'ship' && BigInt(o.amount) > 0n,
+        (o) => o.type === 'ship' && BigInt(o.total ?? o.amount) > 0n,
     )) {
         const card = el('button', 'fleet-stock-item'),
             image = el('img')
-        image.src = modelAliases[item.key] ? `/img/live3d/models/${modelAliases[item.key]}.webp` : item.image
+        image.src = modelAliases[item.key]
+            ? `/img/live3d/models/${modelAliases[item.key]}.webp`
+            : item.image
         image.alt = ''
         card.append(
             image,
             el('span', '', item.name),
-            el('strong', '', number(item.amount)),
+            el('strong', '', shipCounts(item)),
         )
         card.addEventListener('click', () => navigate('ships', null, item.id))
         grid.append(card)
@@ -270,8 +317,15 @@ function renderCatalog() {
         button.dataset.object = item.key
         button.setAttribute('aria-pressed', String(item.id === selected[page]))
         if (item.image) {
-            const image = el('img', modelAliases[item.key] ? 'object-thumbnail model-thumbnail' : 'object-thumbnail')
-            image.src = modelAliases[item.key] ? `/img/live3d/models/${modelAliases[item.key]}.webp` : item.image
+            const image = el(
+                'img',
+                modelAliases[item.key]
+                    ? 'object-thumbnail model-thumbnail'
+                    : 'object-thumbnail',
+            )
+            image.src = modelAliases[item.key]
+                ? `/img/live3d/models/${modelAliases[item.key]}.webp`
+                : item.image
             image.alt = ''
             image.loading = 'lazy'
             button.append(image)
@@ -282,7 +336,9 @@ function renderCatalog() {
             el(
                 'small',
                 '',
-                `${['ship', 'defense'].includes(item.type) ? t.ready : t.level}: ${number(item.amount)}`,
+                item.type === 'ship'
+                    ? shipCounts(item)
+                    : `${item.type === 'defense' ? t.ready : t.level}: ${number(item.amount)}`,
             ),
         )
         const pending =
@@ -314,15 +370,35 @@ function renderCatalog() {
         detail.append(el('p', '', t.empty))
         return
     }
-    const activeJob = [...state.queues.building, ...state.queues.unit.slice(0, 1)].find(job => job.objectId === item.id && job.active !== false)
-    detail.append(objectArtwork.set(item, activeJob ? { ...activeJob, seconds: activeJob.unitSeconds || activeJob.seconds, remaining: Math.max(0, (activeJob.nextRemaining ?? activeJob.remaining) - (Date.now() - received) / 1000) } : null))
+    const activeJob = [
+        ...state.queues.building,
+        ...state.queues.unit.slice(0, 1),
+    ].find((job) => job.objectId === item.id && job.active !== false)
+    detail.append(
+        objectArtwork.set(
+            item,
+            activeJob
+                ? {
+                      ...activeJob,
+                      seconds: activeJob.unitSeconds || activeJob.seconds,
+                      remaining: Math.max(
+                          0,
+                          (activeJob.nextRemaining ?? activeJob.remaining) -
+                              (Date.now() - received) / 1000,
+                      ),
+                  }
+                : null,
+        ),
+    )
     detail.append(
         el('h2', '', item.name),
         el('p', '', item.description),
         el(
             'p',
             '',
-            `${['ship', 'defense'].includes(item.type) ? t.ready : t.level}: ${number(item.amount)}`,
+            item.type === 'ship'
+                ? shipCounts(item)
+                : `${item.type === 'defense' ? t.ready : t.level}: ${number(item.amount)}`,
         ),
     )
     const technical = el('button', '', t.technology)
@@ -331,7 +407,11 @@ function renderCatalog() {
         loadOriginal(`/play-3d/technology?object_id=${item.id}&tab=2`)
     })
     detail.append(technical)
-    if (['jump_gate', 'missile_silo', 'alliance_depot', 'space_dock'].includes(item.key)) {
+    if (
+        ['jump_gate', 'missile_silo', 'alliance_depot', 'space_dock'].includes(
+            item.key,
+        )
+    ) {
         const action = el('button', '', t.facility_actions)
         action.addEventListener('click', () => show('facilities'))
         detail.append(action)
@@ -353,10 +433,23 @@ function renderCatalog() {
         const requirements = el('section', 'requirements-panel')
         requirements.append(el('h3', '', t.op_requirements))
         for (const requirement of item.requirements) {
-            const row = el('p', `requirement ${requirement.met ? 'requirement-met' : 'requirement-missing'}`)
+            const row = el(
+                'p',
+                `requirement ${requirement.met ? 'requirement-met' : 'requirement-missing'}`,
+            )
             row.dataset.requirement = requirement.key
-            row.append(el('strong', '', `${requirement.met ? '✓' : '✕'} ${requirement.name}: ${requirement.met ? t.op_met : t.op_missing}`),
-                el('span', '', `${t.op_current}: ${requirement.current} / ${t.op_required}: ${requirement.level}`))
+            row.append(
+                el(
+                    'strong',
+                    '',
+                    `${requirement.met ? '✓' : '✕'} ${requirement.name}: ${requirement.met ? t.op_met : t.op_missing}`,
+                ),
+                el(
+                    'span',
+                    '',
+                    `${t.op_current}: ${requirement.current} / ${t.op_required}: ${requirement.level}`,
+                ),
+            )
             requirements.append(row)
         }
         detail.append(requirements)
@@ -548,9 +641,10 @@ async function command(action, payload) {
 }
 async function switchPlanet(id) {
     if (busy || stopped) return
-    const previous = String(state.planet.id), version = ++planetSwitch
+    const previous = String(state.planet.id),
+        version = ++planetSwitch
     switching = true
-    if (['fleets','movement'].includes(page)) fleetPanel.hide()
+    if (['fleets', 'movement'].includes(page)) fleetPanel.hide()
     systemMap.hide()
     planet = String(id)
     try {
@@ -578,12 +672,14 @@ function originalLoading() {
     const loader = document.querySelector('#live-original-loader')
     loader.hidden = false
     loader.setAttribute('aria-busy', 'true')
-    document.querySelector('#live-original-loading-text').textContent = t.loading
+    document.querySelector('#live-original-loading-text').textContent =
+        t.loading
     document.querySelector('#live-original-retry').hidden = true
     clearTimeout(originalTimer)
     originalTimer = setTimeout(() => {
         loader.removeAttribute('aria-busy')
-        document.querySelector('#live-original-loading-text').textContent = t.error_request
+        document.querySelector('#live-original-loading-text').textContent =
+            t.error_request
         document.querySelector('#live-original-retry').hidden = false
     }, 20000)
 }
@@ -594,7 +690,11 @@ function loadOriginal(url) {
     originalPendingUrl = contextUrl(url)
     frame.src = originalPendingUrl
 }
-document.querySelector('#live-original-retry').addEventListener('click', () => loadOriginal(originalPendingUrl || config.links[page]))
+document
+    .querySelector('#live-original-retry')
+    .addEventListener('click', () =>
+        loadOriginal(originalPendingUrl || config.links[page]),
+    )
 frame.addEventListener('load', () => {
     try {
         const doc = frame.contentDocument
@@ -605,23 +705,30 @@ frame.addEventListener('load', () => {
             failure({ code: 'session' })
             return
         }
-        if (originalPendingUrl && url.pathname.split('/')[1] !== new URL(originalPendingUrl).pathname.split('/')[1]) return
+        if (
+            originalPendingUrl &&
+            url.pathname.split('/')[1] !==
+                new URL(originalPendingUrl).pathname.split('/')[1]
+        )
+            return
         originalPendingUrl = null
         const style = doc.createElement('style')
         style.textContent =
             'body{background:#07121f!important;min-width:0!important;color:#bcd3e4}#siteHeader,#siteFooter,#headerbarcomponent,#resourcesbarcomponent,#left,#right,#pageReloader{display:none!important}#pageContent{width:100%!important;min-width:0!important;margin:0!important;padding:0!important}#middle{width:100%!important;min-width:0!important;float:none!important;margin:0!important;padding:0!important}#inhalt{margin:0 auto!important}'
         doc.head.append(style)
-        skinOriginalArea(frame, { t, planet, refresh, openFleet, onLoading: originalLoading })
+        skinOriginalArea(frame, {
+            t,
+            planet,
+            refresh,
+            openFleet,
+            onLoading: originalLoading,
+        })
         clearTimeout(originalTimer)
         frame.dataset.ready = 'true'
         frame.ownerDocument.querySelector('#live-original-loader').hidden = true
         // A late load from a hidden original view must not undo navigation or
         // a planet selection in the surrounding interface.
-        if (
-            !originalPages.includes(page) ||
-            framePlanet !== planet
-        )
-            return
+        if (!originalPages.includes(page) || framePlanet !== planet) return
         const cp = url.searchParams.get('cp')
         if (cp && cp !== planet) {
             loadOriginal(config.links[page])
@@ -636,7 +743,10 @@ frame.addEventListener('load', () => {
                 : url.pathname.startsWith('/alliance')
                   ? 'alliance'
                   : null
-        if (area === 'fleets') { openFleet(url.href); return }
+        if (area === 'fleets') {
+            openFleet(url.href)
+            return
+        }
         if (area === 'galaxy') {
             show('galaxy')
             return
@@ -649,7 +759,8 @@ frame.addEventListener('load', () => {
         clearTimeout(originalTimer)
         frame.dataset.ready = 'false'
         document.querySelector('#live-original-loader').hidden = false
-        document.querySelector('#live-original-loading-text').textContent = t.error_request
+        document.querySelector('#live-original-loading-text').textContent =
+            t.error_request
         document.querySelector('#live-original-retry').hidden = false
         status.textContent = t.frame_fallback
     }
@@ -679,8 +790,7 @@ function setMode(next) {
     document.querySelector('.scene-panel').hidden = mode === 'map'
     if (mode === 'map') {
         if (page === 'planet') systemMap.show()
-    }
-    else {
+    } else {
         systemMap.hide()
         scene?.setMode(mode)
         if (scene && !sceneStarted) {
@@ -688,7 +798,9 @@ function setMode(next) {
             scene.start()
         }
     }
-    document.querySelector('#live-system-map-mode').setAttribute('aria-pressed', String(mode === 'map'))
+    document
+        .querySelector('#live-system-map-mode')
+        .setAttribute('aria-pressed', String(mode === 'map'))
     document
         .querySelector('#live-overview-mode')
         .setAttribute('aria-pressed', String(mode === 'overview'))
@@ -699,7 +811,9 @@ function setMode(next) {
         .querySelector('#live-orbit')
         .setAttribute('aria-pressed', String(mode === 'orbit'))
 }
-document.querySelector('#live-system-map-mode').addEventListener('click', () => setMode('map'))
+document
+    .querySelector('#live-system-map-mode')
+    .addEventListener('click', () => setMode('map'))
 document
     .querySelector('#live-overview-mode')
     .addEventListener('click', () => setMode('overview'))
@@ -724,7 +838,10 @@ document.querySelector('#live-rotate').addEventListener('click', (e) => {
     e.currentTarget.setAttribute('aria-pressed', String(rotating))
 })
 async function navigate(target, category, id, world) {
-    if (world && String(world) !== planet) { await switchPlanet(world); if (String(world) !== planet) return }
+    if (world && String(world) !== planet) {
+        await switchPlanet(world)
+        if (String(world) !== planet) return
+    }
     if (category && ['building', 'station', 'defense'].includes(category))
         group = category
     if (id) selected[target] = id
@@ -737,8 +854,12 @@ const galaxy = createGalaxy({
     number,
     context: () => state.planet,
     onError: failure,
-    openArea(url, area = 'tools') { show(area); loadOriginal(url) },
-    openFleet: value => quickFleet.open(value, { advanced: () => openFleet(value) }),
+    openArea(url, area = 'tools') {
+        show(area)
+        loadOriginal(url)
+    },
+    openFleet: (value) =>
+        quickFleet.open(value, { advanced: () => openFleet(value) }),
     config,
     refresh,
 })
@@ -756,13 +877,52 @@ const adminPanel = config.isAdmin
           refresh,
       })
     : null
-const fleetPanel = createFleetPanel({ config: {...config, token: document.querySelector('meta[name="csrf-token"]').content}, t, el, number, state: () => state, refresh, onError: failure })
-const quickFleet = createQuickFleet({ config, t, el, number, state: () => state, refresh, onError: failure, onSent: () => { status.textContent = t.op_sent; systemMap.refreshRadar() } })
-const systemMap = createSystemMap({ config, t, el, state: () => state, actions: galaxy, switchPlanet, fleetPanel, quickFleet, number, openFleet, onError: failure })
+const fleetPanel = createFleetPanel({
+    config: {
+        ...config,
+        token: document.querySelector('meta[name="csrf-token"]').content,
+    },
+    t,
+    el,
+    number,
+    state: () => state,
+    refresh,
+    onError: failure,
+})
+const quickFleet = createQuickFleet({
+    config,
+    t,
+    el,
+    number,
+    state: () => state,
+    refresh,
+    onError: failure,
+    onSent: () => {
+        status.textContent = t.op_sent
+        systemMap.refreshRadar()
+    },
+})
+const systemMap = createSystemMap({
+    config,
+    t,
+    el,
+    state: () => state,
+    actions: galaxy,
+    switchPlanet,
+    fleetPanel,
+    quickFleet,
+    number,
+    openFleet,
+    onError: failure,
+})
 function openFleet(value) {
     const url = new URL(value, location.origin)
     const target = Object.fromEntries(url.searchParams)
-    show(url.pathname.includes('movement') ? 'movement' : 'fleets', false, target)
+    show(
+        url.pathname.includes('movement') ? 'movement' : 'fleets',
+        false,
+        target,
+    )
 }
 renderIcons()
 paintSpaceBackdrop(document.querySelector('.orbital-stage'))
@@ -839,26 +999,53 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) refresh()
 })
 
-document.querySelectorAll('[data-nav-action]').forEach(link => link.addEventListener('click', event => {
-    event.preventDefault()
-    show(link.dataset.navAction)
-}))
-document.querySelector('#live-galaxy-original').addEventListener('click', event => {
-    event.preventDefault()
-    galaxy.show(true)
-})
+document.querySelectorAll('[data-nav-action]').forEach((link) =>
+    link.addEventListener('click', (event) => {
+        event.preventDefault()
+        show(link.dataset.navAction)
+    }),
+)
+document
+    .querySelector('#live-galaxy-original')
+    .addEventListener('click', (event) => {
+        event.preventDefault()
+        galaxy.show(true)
+    })
 
 function renderAreaTabs(area) {
     const hint = document.querySelector('#live-original-capability')
     hint.hidden = true
     const host = document.querySelector('#live-area-tabs')
     host.replaceChildren()
-    const links = area === 'messages' ? [[t.messages, '/messages'], [t.chat, '/chat']] : area === 'fleets' ? [[t.fleet_dispatch, '/fleet'], [t.fleet_movements, '/fleet/movement']] : area === 'merchant' ? [[t.merchant, '/merchant'], [t.resource_market, '/merchant/resource-market']] : []
+    const links =
+        area === 'messages'
+            ? [
+                  [t.messages, '/messages'],
+                  [t.chat, '/chat'],
+              ]
+            : area === 'fleets'
+              ? [
+                    [t.fleet_dispatch, '/fleet'],
+                    [t.fleet_movements, '/fleet/movement'],
+                ]
+              : area === 'merchant'
+                ? [
+                      [t.merchant, '/merchant'],
+                      [t.resource_market, '/merchant/resource-market'],
+                  ]
+                : []
     for (const [label, url] of links) {
         const button = el('button', '', label)
-        button.addEventListener('click', () => { loadOriginal(url) })
+        button.addEventListener('click', () => {
+            loadOriginal(url)
+        })
         host.append(button)
     }
 }
 
-document.querySelector('#live-production-link').addEventListener('click', event => { event.preventDefault(); show('production') })
+document
+    .querySelector('#live-production-link')
+    .addEventListener('click', (event) => {
+        event.preventDefault()
+        show('production')
+    })

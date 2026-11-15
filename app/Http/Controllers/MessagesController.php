@@ -131,6 +131,11 @@ class MessagesController extends OGameController
      */
     public function ajaxGetTabContents(Request $request, MessageService $messageService): View
     {
+        // A direct navigation needs the complete shell; AJAX still receives its original fragment.
+        if ($request->input('ui') === 'live3d' && !$request->ajax()) {
+            return $this->index($request, $messageService);
+        }
+
         $tabKey = $request->input('tab', 'fleets');
         $subtabKey = $request->input('subtab', '');
         $page = (int) $request->input('pagination', 1);

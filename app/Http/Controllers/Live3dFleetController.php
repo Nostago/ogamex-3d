@@ -14,6 +14,7 @@ use OGame\Models\Planet\Coordinate;
 use OGame\Services\CharacterClassService;
 use OGame\Services\FleetMissionService;
 use OGame\Services\FleetUnionService;
+use OGame\Services\Live3dShipInventory;
 use OGame\Services\ObjectService;
 use OGame\Services\PlayerService;
 use OGame\Services\SettingsService;
@@ -27,9 +28,10 @@ class Live3dFleetController extends Controller
         $this->bindPlanet($request, $player);
         $data = resolve(FleetController::class)->index($request, $player, $settings, $unions)->getData();
         $ships = [];
+        $inventory = resolve(Live3dShipInventory::class)->forPlanet($player, $player->planets->current());
         foreach ($data['units'] as $group) {
             foreach ($group as $unit) {
-                $ships[] = ['id' => $unit->object->id, 'key' => $unit->object->machine_name, 'name' => $unit->object->title, 'available' => (string)$unit->amount, 'image' => asset('img/objects/units/'.$unit->object->assets->imgSmall)];
+                $ships[] = ['id' => $unit->object->id, 'key' => $unit->object->machine_name, 'name' => $unit->object->title, ...$inventory[$unit->object->machine_name], 'image' => asset('img/objects/units/'.$unit->object->assets->imgSmall)];
             }
         }
         $movement = resolve(FleetController::class)->movement($player, $missions, $planets);
@@ -87,10 +89,38 @@ class Live3dFleetController extends Controller
         if (!$status->possible && $status->error !== '') {
             $data['errors'] = [['message' => $status->error]];
         }
+        $reason = $status->error;
+        if (!$status->possible && (int)$request->input('mission') === 7 && !$player->canColonizePosition($target->position)) {
+            $required = match ($target->position) {
+                1, 15 => 8, 2, 14 => 6, default => 4
+            };
+            $reason = __('t_operations.colony_astrophysics', ['position' => $target->position, 'required' => $required, 'current' => $player->getResearchLevel('astrophysics')]);
+        }
+        if (!$status->possible && $reason === '') {
+            $reason = __('t_operations.mission_target_unavailable');
+            if ($planet->getPlanetCoordinates()->equals($target) && $planet->getPlanetType()->value === (int)$request->input('type')) {
+                $reason = __('t_operations.mission_same_target');
+            } elseif ((int)$request->input('mission') === 6 && $units->getAmountByMachineName('espionage_probe') === 0) {
+                $reason = __('t_operations.mission_no_probes');
+            }
+        }
+        if ($player->getFleetSlotsInUse() >= $player->getFleetSlotsMax()) {
+            $reason = __('t_operations.mission_no_slot');
+        }
+        $data['reason'] = $reason;
+        $data['missionPossible'] = $status->possible && $player->getFleetSlotsInUse() < $player->getFleetSlotsMax();
         $data['duration'] = $missions->calculateFleetMissionDuration($planet, $target, $units, $mission, (float)$request->input('speed'));
         $data['consumption'] = (int)ceil($missions->calculateConsumption($planet, $units, $target, (int)$request->input('holdingtime'), (float)$request->input('speed')));
         $data['capacity'] = $units->getTotalCargoCapacity($player);
         $data['fuelCapacity'] = $units->getTotalFuelCapacity($player);
+        if ($data['consumption'] > $data['fuelCapacity']) {
+            $data['reason'] = __('t_operations.mission_fuel_capacity');
+        } elseif ($data['consumption'] + (int)$request->input('deuterium') > $planet->deuterium()->get()) {
+            $data['reason'] = __('t_operations.mission_fuel_missing');
+        } elseif ((int)$request->input('metal') + (int)$request->input('crystal') + (int)$request->input('deuterium') > $data['capacity']) {
+            $data['reason'] = __('t_operations.mission_cargo_exceeded');
+        }
+        $data['missionPossible'] = $data['missionPossible'] && $data['reason'] === '';
         return response()->json($data)->header('Cache-Control', 'private, no-store');
     }
 

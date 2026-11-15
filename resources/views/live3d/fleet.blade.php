@@ -1,5 +1,5 @@
 <nav class="live-groups" aria-label="{{ __('t_live3d.fleets') }}"><button type="button" data-fleet-tab="plan">{{ __('t_operations.op_plan') }}</button><button type="button" data-fleet-tab="movement">{{ __('t_operations.op_movements') }}</button><button type="button" id="fleet-refresh">{{ __('t_operations.op_refresh') }}</button></nav>
-<p id="fleet-status" role="status" aria-live="polite"></p><p id="fleet-slots"></p>
+<p id="fleet-status" role="status" aria-live="polite"></p><p id="fleet-slots"></p><p id="fleet-inventory" class="card" aria-live="polite"></p>
 <section id="fleet-plan"><form id="fleet-form">
 <div class="fleet-launch-bar"><p id="fleet-send-hint" role="status">{{ __('t_fleetquick.quick_choose') }}</p><button type="submit" id="fleet-send-top" class="fleet-launch" disabled>{{ __('t_fleetquick.quick_start') }}</button></div>
 <div class="card"><h2>{{ __('t_operations.op_select') }}</h2><div class="live-groups"><button type="button" id="fleet-all">{{ __('t_operations.op_all') }}</button><button type="button" id="fleet-clear">{{ __('t_operations.op_clear') }}</button></div><div id="fleet-ships" class="fleet-ship-grid"></div></div>

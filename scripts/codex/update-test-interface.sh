@@ -43,6 +43,9 @@ composer dump-autoload --optimize --no-scripts --no-plugins --no-interaction
 # Add only the named additive tables; leave unrelated pending migrations alone.
 php artisan migrate --force --path=database/migrations/2026_11_14_100000_create_premium_commerce_tables.php
 php artisan migrate --force --path=database/migrations/2026_11_14_160000_create_autonomous_bots_table.php
+php artisan migrate --force --path=database/migrations/2026_11_15_120000_add_autonomous_bot_operations.php
+# Requested initial population; idempotent and leaves existing human accounts untouched.
+php artisan ogamex:bots:populate --count=50
 # Enable bounded NPC decisions even when no browser is open.
 if command -v crontab >/dev/null; then
     bash scripts/codex/enable-bots-cron.sh
