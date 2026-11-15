@@ -1,4 +1,4 @@
-import { formatDuration } from './duration.js'
+import { formatDuration, renderDuration } from './duration.js'
 // Counts and the next event come from the original fleet eventbox controller,
 // including its original expedition/holding/return rules.
 export function createFleetMonitor({
@@ -36,7 +36,15 @@ export function createFleetMonitor({
     function tick() {
         const node = host.querySelector('.fleet-event-clock')
         if (node)
-            node.textContent = formatDuration(Math.max(0, event.eventTime - Math.floor((Date.now() - received) / 1000)), t)
+            renderDuration(
+                node,
+                Math.max(
+                    0,
+                    event.eventTime -
+                        Math.floor((Date.now() - received) / 1000),
+                ),
+                t,
+            )
     }
     async function refresh() {
         if (controller || document.hidden) return

@@ -3,7 +3,6 @@ import {
     sitePort,
     roadPoint,
     colonyDeckHeight,
-    clearGround,
 } from './colonyGround.js'
 import { surfacePosition } from './layout.js'
 
@@ -22,12 +21,6 @@ export function createInfrastructure(
         new THREE.Vector3(...surfacePosition(node, radius))
     const deckHeight = grounded ? colonyDeckHeight : 0.23
     const routes = []
-    const plotFrames = colonySites.map((site) =>
-        new THREE.Quaternion().setFromUnitVectors(
-            new THREE.Vector3(...site.normal),
-            new THREE.Vector3(0, 1, 0),
-        ),
-    )
     const sample = (route, progress) => {
         const p = roadPoint(
             route.start,
@@ -36,7 +29,7 @@ export function createInfrastructure(
             progress,
             deckHeight,
         )
-        return grounded ? clearGround(p, radius, plotFrames) : p
+        return p
     }
     const edges = [],
         seen = new Set()
@@ -205,14 +198,15 @@ export function createInfrastructure(
     }
     block(hub, palette.insulation, 0, 1.31, -0.1, 0.7, 0.27, 0.48)
     block(hub, palette.window, 0, 1.33, 0.15, 0.62, 0.12, 0.02)
+    const parcelBody = new THREE.MeshStandardMaterial({color:0xffb332,emissive:0x572400,roughness:0.45,metalness:0.3}), parcelStripe = new THREE.MeshStandardMaterial({color:0xf0f8ff,emissive:0x283b44,roughness:0.5})
     const parcels = []
     for (let i = 0; i < Math.min(6, routes.length * 2); i++) {
         const parcel = new THREE.Group()
         parcel.userData.transport = 'parcel'
         // Small cargo crates with securing bands; no cabins, wheels or chassis.
-        block(parcel, palette.painted, 0, 0.075, 0, 0.16, 0.12, 0.22)
-        block(parcel, palette.gold, 0, 0.139, 0, 0.022, 0.009, 0.23)
-        block(parcel, palette.cyan, 0, 0.08, 0.113, 0.09, 0.024, 0.006)
+        block(parcel, parcelBody, 0, 0.095, 0, 0.23, 0.16, 0.29)
+        block(parcel, parcelStripe, 0, 0.18, 0, 0.035, 0.012, 0.30)
+        block(parcel, palette.cyan, 0, 0.10, 0.149, 0.12, 0.03, 0.008)
         group.add(parcel)
         parcels.push(parcel)
     }
@@ -249,6 +243,8 @@ export function createInfrastructure(
         sample,
         animate,
         dispose() {
+            parcelBody.dispose()
+            parcelStripe.dispose()
             utilityMaterial.dispose()
         },
     }

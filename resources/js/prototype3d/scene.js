@@ -4,7 +4,8 @@ import { createShip } from './ships.js'
 import { createShipVariant } from './shipVariants.js'
 import { createBuilding } from './buildings.js'
 import { surfacePosition } from './layout.js'
-import { createSiteGround, colonyDeckHeight } from './colonyGround.js'
+import { colonyDeckHeight } from './colonyGround.js'
+import { groundBuilding } from './groundBuilding.js'
 import { createInfrastructure } from './infrastructure.js'
 import { createPlanetSurface } from './planetSurface.js'
 import { createOrbitalRing } from './orbitalRing.js'
@@ -258,12 +259,7 @@ export function createPlanetScene(
         group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
         colony.add(group)
         const model = createBuilding(data.type, data.level, materials.palette, {grounded: options.groundedColony})
-        if (options.groundedColony) {
-            const ground = new THREE.Mesh(createSiteGround(radius), globe.material)
-            ground.receiveShadow = true
-            ground.userData.colonyGround = true
-            group.add(ground)
-        }
+        if (options.groundedColony) groundBuilding(model.group, radius)
         group.add(model.group)
         const ring = mesh(
             new THREE.TorusGeometry(1.4, 0.016, 5, 48),
@@ -308,6 +304,7 @@ export function createPlanetScene(
         if (!solidSurface) globe.material.color.lerp(new THREE.Color(0xffffff), 0.82)
         host.dataset.surfaceColor = `#${globe.material.color.getHexString()}`
         host.dataset.grounded = String(Boolean(options.groundedColony))
+        host.dataset.groundSurface = options.groundedColony ? 'sphere' : 'legacy'
         clouds.scale.setScalar(radius / 8)
         atmosphere.scale.setScalar((radius + 0.22) / 8.22)
         orbitPath.scale.setScalar(orbitRadius / 11.4)

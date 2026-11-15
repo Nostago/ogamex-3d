@@ -104,8 +104,12 @@ Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::clas
 
     Route::get('/play-3d/technology', function (Request $request, PlayerService $player) {
         $request->validate(['object_id' => ['required', 'integer', Rule::in(array_map(fn ($object) => $object->id, ObjectService::getObjects()))], 'tab' => ['required', 'integer', 'between:1,4']]);
+        $object = ObjectService::getObjectById((int)$request->input('object_id'));
         $technology = resolve(TechtreeController::class)->ajax($request, $player);
-        return view('live3d.technology', ['liveTechnologyName' => $technology->name(), 'liveTechnologyData' => $technology->getData()]);
+        $requirementsRequest = clone $request;
+        $requirementsRequest->merge(['tab' => 1]);
+        $requirements = (int)$request->input('tab') === 1 ? $technology->getData() : resolve(TechtreeController::class)->ajax($requirementsRequest, $player)->getData();
+        return view('live3d.technology', ['liveTechnologyData' => $technology->getData(), 'liveRequirements' => $requirements, 'liveObjects' => ObjectService::getObjects(), 'liveLevel' => $object->type->value === 'research' ? $player->getResearchLevel($object->machine_name) : $player->planets->current()->getObjectLevel($object->machine_name)]);
     })->name('live3d.technology');
 
     // Overview

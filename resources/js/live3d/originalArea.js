@@ -1,8 +1,10 @@
+import { applyFrameReadability } from './readability.js'
 import embeddedCss from '../../css/live3d-embedded.css?inline'
 // Retain the original controllers/forms/scripts, replace their presentation shell.
 export function skinOriginalArea(frame, { t, planet, refresh, openFleet, onLoading }) {
     const doc = frame.contentDocument
     if (!doc?.body) return
+    applyFrameReadability(doc)
     doc.addEventListener('click', event => {
         const anchor = event.target.closest('a[href]')
         if (!anchor || !openFleet) return
@@ -23,8 +25,13 @@ export function skinOriginalArea(frame, { t, planet, refresh, openFleet, onLoadi
     function resizeFrame() {
         cancelAnimationFrame(sizing)
         sizing = requestAnimationFrame(() => {
-            if (!frame.isConnected || !frame.offsetWidth) return
-            const height = Math.max(300, Math.ceil(doc.body.getBoundingClientRect().height + 32))
+            if (!frame.isConnected || !frame.offsetWidth || frame.contentDocument !== doc) return
+            let bottom = doc.body.getBoundingClientRect().height
+            for (const element of doc.querySelectorAll('.ui-dialog,.ui-dialog form,.overlayDiv,#createNote,#createNote table,#technologytree')) {
+                const rect = element.getBoundingClientRect()
+                if (rect.width && rect.height && getComputedStyle(element).display !== 'none') bottom = Math.max(bottom, rect.bottom + doc.defaultView.scrollY)
+            }
+            const height = Math.max(300, Math.ceil(bottom + 32))
             if (Math.abs(frame.getBoundingClientRect().height - height) > 2) frame.style.height = `${height}px`
             frame.dataset.autoHeight = String(height)
         })

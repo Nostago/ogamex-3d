@@ -35,15 +35,16 @@ class BuddyRequestReceived extends GameMessage
             return '';
         }
 
+        $live = (bool)request()->attributes->get('live3d');
         return '
             <gradient-button sq30="">
-                <button class="custom_btn tooltip acceptRequest" data-buddyid="' . $buddyRequestId . '" data-tooltip-title="Accept buddy request">
-                    <span class="icon_nf icon_accept"></span>
+                <button class="custom_btn tooltip acceptRequest" data-buddyid="' . $buddyRequestId . '" aria-label="' . __('t_readability.buddy_accept') . '" data-tooltip-title="' . __('t_readability.buddy_accept') . '">
+                    <span class="icon_nf icon_accept" aria-hidden="true"></span>' . ($live ? '<span class="buddy-action-label">✓ ' . __('t_readability.buddy_accept') . '</span>' : '') . '
                 </button>
             </gradient-button>
             <gradient-button sq30="">
-                <button class="custom_btn tooltip rejectRequest" data-buddyid="' . $buddyRequestId . '" data-tooltip-title="Reject buddy request">
-                    <span class="icon_nf icon_refuse"></span>
+                <button class="custom_btn tooltip rejectRequest" data-buddyid="' . $buddyRequestId . '" aria-label="' . __('t_readability.buddy_decline') . '" data-tooltip-title="' . __('t_readability.buddy_decline') . '">
+                    <span class="icon_nf icon_refuse" aria-hidden="true"></span>' . ($live ? '<span class="buddy-action-label">✕ ' . __('t_readability.buddy_decline') . '</span>' : '') . '
                 </button>
             </gradient-button>
         ';

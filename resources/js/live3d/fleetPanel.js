@@ -1,4 +1,4 @@
-import { formatDuration } from './duration.js'
+import { formatDuration, renderDuration } from './duration.js'
 
 export function createFleetPanel({
     config,
@@ -389,14 +389,22 @@ export function createFleetPanel({
         tick()
     }
     function tick() {
-        for (const clock of root.querySelectorAll('[data-fleet-remaining]'))
-            clock.textContent =
-                (clock.dataset.prefix || '') +
-                formatDuration(
-                    Number(clock.dataset.fleetRemaining) -
-                        (Date.now() - received) / 1000,
-                    t,
+        for (const clock of root.querySelectorAll('[data-fleet-remaining]')) {
+            let timer = clock.querySelector('.fleet-time-value')
+            if (!timer) {
+                timer = el('span', 'fleet-time-value')
+                clock.replaceChildren(
+                    el('span', 'fleet-time-prefix', clock.dataset.prefix || ''),
+                    timer,
                 )
+            }
+            renderDuration(
+                timer,
+                Number(clock.dataset.fleetRemaining) -
+                    (Date.now() - received) / 1000,
+                t,
+            )
+        }
     }
     async function loadState() {
         if (!active) return

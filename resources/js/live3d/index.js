@@ -8,6 +8,7 @@ import { formatDuration } from './duration.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
 import { createQuickFleet } from './quickFleet.js'
+import { initReadability } from './readability.js'
 import { createSystemMap } from './systemMap.js'
 import { renderIcons } from './icons.js'
 import { createFleetPanel } from './fleetPanel.js'
@@ -21,6 +22,7 @@ const config = JSON.parse(
         document.querySelector('#live-bootstrap').textContent,
     ),
     t = {...config.t, ...config.operationsT}
+initReadability()
 const objectArtwork = createObjectArtwork(t)
 const client = createLiveClient({
     ...config,
@@ -103,6 +105,7 @@ function show(name, fromFrame = false, fleetTarget) {
         if (n.dataset.livePage === page) n.setAttribute('aria-current', 'page')
         else n.removeAttribute('aria-current')
     })
+    document.querySelector('#live-ui-settings').hidden = page !== 'options'
     root.dataset.page = page
     document.querySelector('#live-heading').textContent = t[page]
     document.querySelector('#live-fleet-stock').hidden = true

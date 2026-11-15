@@ -54,7 +54,8 @@ export function sitePort(site, radius, grounded = true, toward = null) {
             offset.z = (local.z * reach) / extent
         }
     }
-    return offset.applyQuaternion(rotation).addScaledVector(normal, radius)
+    const port = offset.applyQuaternion(rotation).addScaledVector(normal, radius)
+    return grounded ? port.normalize().multiplyScalar(radius + colonyDeckHeight) : port
 }
 
 // Both asphalt and parcels sample the same curve. Endpoints stop at the gate,

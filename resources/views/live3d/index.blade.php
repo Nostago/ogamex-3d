@@ -3,7 +3,7 @@
     $bootstrap = [
         'shipNames' => collect(\OGame\Services\ObjectService::getShipObjects())->mapWithKeys(fn ($ship) => [$ship->machine_name => $ship->title])->all(),
         'galaxyActionUrl' => route('live3d.galaxy.action'), 'galaxyMissilesUrl' => route('live3d.galaxy.missiles'),
-        'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de'), __('t_systemmap', [], 'de'), __('t_fleetquick', [], 'de')),
+        'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de'), __('t_systemmap', [], 'de'), __('t_fleetquick', [], 'de'), __('t_readability', [], 'de')),
         'botsUrl' => route('live3d.bots'),
         'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
@@ -95,6 +95,7 @@
                 <section id="live-admin-advanced" hidden><div class="admin-frame-toolbar"><p id="live-admin-tab-hint"></p><a id="live-admin-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-admin-sections" class="admin-section-switch" hidden></div><iframe id="live-admin-frame" title="{{ $t['admin'] }}"></iframe></section>
             </section>
             <section id="live-page-original" hidden>
+                <section id="live-ui-settings" class="card" hidden aria-labelledby="live-ui-settings-title"><h2 id="live-ui-settings-title">{{ __('t_readability.title') }}</h2><p>{{ __('t_readability.device_hint') }}</p><label for="live-ui-text-scale">{{ __('t_readability.text_size') }}</label><select id="live-ui-text-scale">@foreach(['1' => 'standard', '1.15' => 'large', '1.3' => 'larger', '1.5' => 'largest'] as $value => $key)<option value="{{ $value }}">{{ __('t_readability.'.$key) }}</option>@endforeach</select><button id="live-ui-text-reset" type="button">{{ __('t_readability.reset') }}</button></section>
                 <p id="live-original-capability" class="card" hidden></p><div id="live-area-tabs" class="live-groups"></div><section id="live-fleet-stock" class="card" hidden></section>
                 <div class="card original-note"><p>{{ $t['embedded'] }}</p><a id="live-original-link" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-original-loader" class="card area-loader" role="status"><span id="live-original-loading-text">{{ $t['loading'] }}</span><button id="live-original-retry" type="button" hidden>{{ __('t_operations.area_retry') }}</button></div><iframe id="live-original" data-ready="false" title="{{ $t['original_area'] }}"></iframe>
             </section>

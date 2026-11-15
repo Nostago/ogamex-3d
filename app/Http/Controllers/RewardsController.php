@@ -13,6 +13,6 @@ class RewardsController extends OGameController
      */
     public function index(): View
     {
-        return view('ingame.rewards.index');
+        return view(request()->attributes->get('live3d') ? 'live3d.rewards' : 'ingame.rewards.index');
     }
 }

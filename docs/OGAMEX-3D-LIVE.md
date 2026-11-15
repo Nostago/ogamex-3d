@@ -1,6 +1,8 @@
 # Neue Oberfläche am vorhandenen OGameX-Backend
 
-Aktuelle Bedienung: [Schnellversand und Flottenradar](OGAMEX-3D-QUICK-FLEETS.md).
+Aktuelle Korrekturen: [Lesbarkeit, Kolonisation und bodennahe Kolonie](OGAMEX-3D-LESBARKEIT.md).
+
+Vorherige Bedienung: [Schnellversand und Flottenradar](OGAMEX-3D-QUICK-FLEETS.md).
 
 Neue Standardansicht: [Sonnensystemkarte und lesbare Infokarten](OGAMEX-3D-SYSTEM-MAP.md).
 

@@ -374,7 +374,7 @@ class FleetController extends OGameController
 
         // Show warning when target is an empty planet (colonizable position)
         // This informs the user that a colony ship is required to colonize this position.
-        if (!$targetInhabited && $planetType === PlanetType::Planet
+        if (!$targetInhabited && $units->getAmountByMachineName('colony_ship') === 0 && $planetType === PlanetType::Planet
             && $position >= UniverseConstants::MIN_PLANET_POSITION
             && $position <= UniverseConstants::MAX_PLANET_POSITION) {
             $errors[] = ['message' => __('Colony ships must be sent to colonise this planet!'), 'error' => 0];

@@ -1,8 +1,13 @@
 import { planetTint } from './planetAppearance.js'
 import { createFleetTooltip, appendComposition } from './fleetTooltip.js'
 
-import { systemPosition, fleetPoint, reportFor } from './systemRadar.js'
-import { formatDuration } from './duration.js'
+import {
+    systemPosition,
+    fleetPoint,
+    reportFor,
+    spaceRadarContacts,
+} from './systemRadar.js'
+import { formatDuration, renderDuration } from './duration.js'
 const bodiesOf = (row) =>
     Array.isArray(row.planets) ? row.planets : row.planets ? [row.planets] : []
 function plain(value) {
@@ -402,7 +407,7 @@ export function createSystemMap({
             marker.dataset.relation = entry.dataset.relation = fleet.relation
             marker.dataset.fleetId = entry.dataset.fleetId = fleet.id
             marker.append(el('span', '', '➤'))
-            const title = `${fleet.label} · ${fleet.origin} → ${fleet.destination}${fleet.own ? ' · ' + number(fleet.count) + ' ' + t.ships : ''}`
+            const title = `${t[`mission_${fleet.mission}`] || fleet.label} · ${fleet.origin} → ${fleet.destination}${fleet.own ? ' · ' + number(fleet.count) + ' ' + t.ships : ''}`
             marker.setAttribute('aria-label', title)
             entry.append(el('strong', '', title), el('span', 'map-fleet-clock'))
             const open = () => {
@@ -463,16 +468,20 @@ export function createSystemMap({
         if (!active || !data || !tactical || document.hidden) return
         tooltip.tick()
         const home = Number(state().planet.coordinates.split(':')[2])
-        for (const { fleet, marker, entry, line } of radarContacts) {
-            const point = fleetPoint(
-                fleet,
-                data.galaxy,
-                data.system,
-                home,
-                now(),
-            )
-            marker.style.setProperty('--x', `${point.x}%`)
-            marker.style.setProperty('--y', `${point.y}%`)
+        const layer = document.querySelector('#system-map-radar')
+        const points = radarContacts.map(({ fleet }) =>
+            fleetPoint(fleet, data.galaxy, data.system, home, now()),
+        )
+        const displayed = spaceRadarContacts(
+            points,
+            Math.max(1, layer.clientWidth),
+            Math.max(1, layer.clientHeight),
+        )
+        for (let index = 0; index < radarContacts.length; index++) {
+            const { fleet, marker, entry, line } = radarContacts[index],
+                point = points[index]
+            marker.style.setProperty('--x', `${displayed[index].x}%`)
+            marker.style.setProperty('--y', `${displayed[index].y}%`)
             const angle =
                 (Math.atan2(
                     (point.to.y - point.from.y) *
@@ -490,14 +499,18 @@ export function createSystemMap({
                 y2: point.to.y,
             }))
                 line.setAttribute(key, value)
-            const left = Math.max(0, fleet.arrival - now()),
-                text = left ? formatDuration(left, t) : t.processing
-            marker.title = `${marker.getAttribute('aria-label')} · ${text}`
-            entry.querySelector('.map-fleet-clock').textContent = text
+            const left = Math.max(0, fleet.arrival - now())
+            marker.removeAttribute('title')
+            if (left)
+                renderDuration(entry.querySelector('.map-fleet-clock'), left, t)
+            else
+                entry.querySelector('.map-fleet-clock').textContent =
+                    t.processing
         }
         const clock = details.querySelector('.map-contact-clock')
         if (clock)
-            clock.textContent = formatDuration(
+            renderDuration(
+                clock,
                 Math.max(0, Number(clock.dataset.arrival) - now()),
                 t,
             )

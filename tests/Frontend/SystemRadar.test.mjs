@@ -76,3 +76,32 @@ test('historical reports never become intelligence about a new owner, destroyed 
     )
     assert.equal(reportFor([report], row, 3), null)
 })
+
+test('overlapping mission contacts stay independently reachable', async () => {
+    const { spaceRadarContacts } = await import(
+        '../../resources/js/live3d/systemRadar.js'
+    )
+    const points = spaceRadarContacts(
+        Array.from({ length: 16 }, () => ({ x: 50, y: 50 })),
+        1000,
+        720,
+    )
+    for (let i = 0; i < points.length; i++)
+        for (let j = 0; j < i; j++) {
+            assert.ok(
+                Math.hypot(
+                    (points[i].x - points[j].x) * 10,
+                    (points[i].y - points[j].y) * 7.2,
+                ) >= 45.9,
+            )
+        }
+    assert.ok(
+        points.every(
+            (point) =>
+                point.x >= 0 &&
+                point.x <= 100 &&
+                point.y >= 0 &&
+                point.y <= 100,
+        ),
+    )
+})

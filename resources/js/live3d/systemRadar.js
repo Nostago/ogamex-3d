@@ -75,3 +75,46 @@ export function reportFor(reports, row, type = 1) {
         ) || null
     )
 }
+
+// Nearby missions remain individually reachable; offsets are display spacing, not coordinates.
+export function spaceRadarContacts(points, width, height) {
+    const placed = [],
+        gap = 46
+    return points.map((point) => {
+        let candidate
+        for (let step = 0; step < 240; step++) {
+            const angle = step * 2.3999632297,
+                radius = step ? gap * Math.sqrt(step) : 0
+            candidate = {
+                x: Math.max(
+                    22,
+                    Math.min(
+                        width - 22,
+                        (point.x * width) / 100 + Math.cos(angle) * radius,
+                    ),
+                ),
+                y: Math.max(
+                    22,
+                    Math.min(
+                        height - 22,
+                        (point.y * height) / 100 + Math.sin(angle) * radius,
+                    ),
+                ),
+            }
+            if (
+                placed.every(
+                    (other) =>
+                        (other.x - candidate.x) ** 2 +
+                            (other.y - candidate.y) ** 2 >=
+                        gap ** 2,
+                )
+            )
+                break
+        }
+        placed.push(candidate)
+        return {
+            x: (candidate.x / width) * 100,
+            y: (candidate.y / height) * 100,
+        }
+    })
+}

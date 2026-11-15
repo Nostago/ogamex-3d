@@ -1414,3 +1414,51 @@
 @media(prefers-reduced-motion:reduce) { .system-fleet-contact::after { animation:none; } }
 .orbital-command .quick-fleet-ship,.orbital-command .quick-cargo label { font-size:20px; }
 .orbital-command .quick-fleet-ship input { font-size:22px; }
+
+/* Legible timers and a per-device readability preference. */
+:root { --ui-text-scale:1; }
+.duration-parts { display:inline-flex; flex-wrap:wrap; gap:8px; align-items:stretch; font-variant-numeric:tabular-nums; }
+.duration-part { display:inline-flex; flex-direction:column; align-items:center; min-width:64px; padding:8px 12px; border:1px solid #43869c; border-left:3px solid #6ce8fa; border-radius:5px; background:#082a3c; line-height:1.35; }
+.duration-part>span { font-size:calc(14px * var(--ui-text-scale)); color:#b8ddeb; }
+.duration-part>strong { font-size:calc(22px * var(--ui-text-scale)); color:#e3fcff; }
+.duration-part:nth-child(2) { border-left-color:#97baff; }.duration-part:nth-child(3) { border-left-color:#81e4bd; }.duration-part:nth-child(4) { border-left-color:#ffd294; }
+.fleet-time-prefix { display:block; margin:12px 0 8px; font-size:calc(18px * var(--ui-text-scale)); }
+#live-ui-settings { padding:24px; margin:0 0 24px; }
+#live-ui-settings h2 { font-size:calc(26px * var(--ui-text-scale)); }#live-ui-settings p,#live-ui-settings label { font-size:calc(18px * var(--ui-text-scale));line-height:1.6; }
+#live-ui-text-scale { width:min(100%,360px);font-size:calc(20px * var(--ui-text-scale));min-height:48px;margin:12px 18px 12px 0; }
+#live-ui-text-reset { font-size:calc(18px * var(--ui-text-scale)); }
+.orbital-command #live-page-fleets { font-size:calc(18px * var(--ui-text-scale));line-height:1.6; }
+.orbital-command #live-page-fleets :is(p,label,small,select,input,button,summary,.fleet-stat,.fleet-stat strong) { font-size:calc(18px * var(--ui-text-scale));line-height:1.6; }
+.orbital-command #live-page-fleets :is(h2,h3) { font-size:calc(24px * var(--ui-text-scale)); }
+.orbital-command #live-page-fleets .fleet-launch { font-size:calc(22px * var(--ui-text-scale)); }
+.orbital-command #live-page-fleets :is(input,select) { min-height:46px; }
+.orbital-command #live-page-fleets .fleet-ship { padding:18px; }
+.orbital-command .hud-panel .stat-line { font-size:calc(20px * var(--ui-text-scale)); }.orbital-command .hud-panel .stat-line strong { font-size:calc(22px * var(--ui-text-scale)); }
+.orbital-command .hud-panel h2 { font-size:calc(24px * var(--ui-text-scale)); }
+.orbital-command .main-nav .nav-entry>a[data-live-page],.orbital-command .main-nav>a[data-live-page] { font-size:calc(17px * var(--ui-text-scale)); }
+.orbital-command .workspace-heading h1 { font-size:calc(36px * var(--ui-text-scale)); }
+.orbital-command .fleet-radar-tooltip { width:min(calc(400px * var(--ui-text-scale)),calc(100vw - 20px)); }
+.orbital-command .radar-ship-row { font-size:calc(18px * var(--ui-text-scale)); }.orbital-command .radar-ship-row strong { font-size:calc(22px * var(--ui-text-scale)); }
+.orbital-command .quick-fleet-dialog { width:min(calc(580px * var(--ui-text-scale)),calc(100vw - 30px)); }
+.orbital-command .quick-fleet-ship { font-size:calc(20px * var(--ui-text-scale)); }.orbital-command .quick-fleet-ship input { font-size:calc(22px * var(--ui-text-scale)); }
+@media(min-width:1001px) { .orbital-command .app-shell { grid-template-columns:calc(250px * var(--ui-text-scale)) minmax(0,1fr); } }
+@media(max-width:600px) { .duration-part { padding:6px 8px;min-width:52px; }.duration-part>strong{font-size:calc(20px * var(--ui-text-scale));} }
+.orbital-command .workspace :is(p,label,td,th,li,small,button,input,select,summary,.muted,.eyebrow) { font-size:calc(18px * var(--ui-text-scale))!important;line-height:1.55; }
+.orbital-command .workspace strong { font-size:calc(22px * var(--ui-text-scale))!important; }
+.orbital-command .workspace :is(h2,h3) { font-size:calc(26px * var(--ui-text-scale)); }
+.orbital-command .workspace .duration-part>span { font-size:calc(16px * var(--ui-text-scale))!important; }
+.orbital-command .system-map-field { height:calc(720px * var(--ui-text-scale));min-height:calc(720px * var(--ui-text-scale)); }
+.orbital-command .workspace .system-map-node { line-height:1.3; }
+.orbital-command .workspace .map-node-name { font-size:calc(18px * var(--ui-text-scale))!important; }
+.orbital-command .workspace .map-node-coords { font-size:calc(16px * var(--ui-text-scale))!important; }
+.orbital-command .workspace :is(.map-node-state,.map-node-moon,.map-risk) { font-size:calc(15px * var(--ui-text-scale))!important; }
+.orbital-command .resource-balances { flex-wrap:wrap;overflow:visible;min-width:0; }
+.orbital-command .resource-balances>span { font-size:calc(14px * var(--ui-text-scale));flex:1 1 145px; }
+.orbital-command .resource-balances strong { font-size:calc(22px * var(--ui-text-scale)); }.orbital-command .resource-balances small { font-size:calc(14px * var(--ui-text-scale)); }
+.orbital-command .command-header { height:auto;min-height:90px; }
+.orbital-command .command-empire select { font-size:calc(17px * var(--ui-text-scale)); }
+.orbital-command .quick-fleet-dialog p { font-size:calc(18px * var(--ui-text-scale)); }.orbital-command .fleet-launch { font-size:calc(22px * var(--ui-text-scale)); }
+@media(max-width:600px) { .orbital-command .system-map-field { min-height:0;height:auto; }.orbital-command .workspace .system-map-node { min-height:180px; } }
+.orbital-command .resource-balances { grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(155px * var(--ui-text-scale))),1fr)); }
+.orbital-command .resource-balances>span { overflow-wrap:normal; }
+@media(min-width:1001px) { .orbital-command .command-header { grid-template-columns:calc(176px * var(--ui-text-scale)) calc(195px * var(--ui-text-scale)) minmax(0,1fr) calc(130px * var(--ui-text-scale)); } }

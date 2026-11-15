@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 use OGame\Factories\GameMissionFactory;
 use OGame\Factories\PlanetServiceFactory;
 use OGame\GameObjects\Models\Units\UnitCollection;
+use OGame\Models\Enums\PlanetType;
 use OGame\Models\Planet\Coordinate;
 use OGame\Services\CharacterClassService;
 use OGame\Services\FleetMissionService;
@@ -82,6 +83,10 @@ class Live3dFleetController extends Controller
         $target = new Coordinate((int)$request->input('galaxy'), (int)$request->input('system'), (int)$request->input('position'));
         $planet = $player->planets->current();
         $mission = GameMissionFactory::getMissionById((int)$request->input('mission'), []);
+        $status = $mission->isMissionPossible($planet, $target, PlanetType::from((int)$request->input('type')), $units);
+        if (!$status->possible && $status->error !== '') {
+            $data['errors'] = [['message' => $status->error]];
+        }
         $data['duration'] = $missions->calculateFleetMissionDuration($planet, $target, $units, $mission, (float)$request->input('speed'));
         $data['consumption'] = (int)ceil($missions->calculateConsumption($planet, $units, $target, (int)$request->input('holdingtime'), (float)$request->input('speed')));
         $data['capacity'] = $units->getTotalCargoCapacity($player);

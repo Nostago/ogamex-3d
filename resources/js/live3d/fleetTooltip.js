@@ -1,4 +1,4 @@
-import { formatDuration } from './duration.js'
+import { formatDuration, renderDuration } from './duration.js'
 export function appendComposition(host, fleet, t, el, number) {
     host.append(el('h3', '', t.quick_composition))
     if (!Array.isArray(fleet.ships)) {
@@ -31,10 +31,7 @@ export function createFleetTooltip({ t, el, number, now }) {
     function tick() {
         const clock = layer.querySelector('.radar-hover-clock')
         if (clock && fleet)
-            clock.textContent = formatDuration(
-                Math.max(0, fleet.arrival - now()),
-                t,
-            )
+            renderDuration(clock, Math.max(0, fleet.arrival - now()), t)
     }
     function show(element, value, event) {
         clearTimeout(timer)
@@ -42,7 +39,7 @@ export function createFleetTooltip({ t, el, number, now }) {
         origin = element
         fleet = value
         layer.replaceChildren(
-            el('h2', '', value.label),
+            el('h2', '', t[`mission_${value.mission}`] || value.label),
             el('p', '', `${value.origin} → ${value.destination}`),
             el('p', 'radar-hover-clock'),
         )
