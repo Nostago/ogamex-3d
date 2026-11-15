@@ -808,3 +808,7 @@
 #prototype .dock-order > strong{grid-column:2/-1}
 #prototype .dock-order > [data-remaining],#prototype .dock-order > progress{grid-column:1/-1;width:100%;min-width:0}
 #prototype .requirement-met>span,#prototype .requirement-missing>span{display:block;margin-top:5px}
+#prototype #live-original{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#prototype #live-original[data-ready=false]{visibility:hidden;height:1px!important;min-height:0!important}
+#prototype .area-loader{min-height:180px;display:flex;align-items:center;justify-content:center;gap:18px}
+#prototype .area-loader[hidden]{display:none}

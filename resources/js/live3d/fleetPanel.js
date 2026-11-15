@@ -581,6 +581,17 @@ export function createFleetPanel({
                 ])
                     if (target[key] !== undefined && target[key] !== null)
                         field(key).value = String(target[key])
+                if (Number(target.mission) === 7) {
+                    const colonyShip = root.querySelector(
+                        '[data-fleet-ship="208"]',
+                    )
+                    if (
+                        colonyShip &&
+                        BigInt(colonyShip.max || '0') > 0n &&
+                        BigInt(colonyShip.value || '0') === 0n
+                    )
+                        colonyShip.value = '1'
+                }
                 changed()
             }
         },

@@ -2,6 +2,7 @@
 
 // AI-TRANSLATED: verify against original OGame text
 return [
+    'area_retry' => 'Erneut laden',
     'op_duration_on_start' => 'Die Dauer wird beim Start berechnet.',
     'time_days' => 'Tage',
     'time_hours' => 'Stunden',
@@ -92,4 +93,7 @@ return [
     'op_tactical_off' => 'Deaktiviert',
     'op_tactical_save' => 'Rückzugseinstellung speichern',
     'op_admiral' => 'Admiral erforderlich',
+    'colony_create' => 'Neue Kolonie gründen',
+    'colony_hint' => 'Das Kolonieschiff wird in der Flottenplanung ausgewählt. Die Kolonie entsteht erst nach dem bestätigten Missionsstart und der Ankunft.',
+    'colony_unavailable' => 'Zum Kolonisieren werden ein verfügbares Kolonieschiff, passende Astrophysik und ein freier Flottenslot benötigt.',
 ];

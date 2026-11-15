@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'area_retry' => 'Reload',
     'op_duration_on_start' => 'Duration is calculated when the order starts.',
     'time_days' => 'Days',
     'time_hours' => 'Hours',
@@ -91,4 +92,7 @@ return [
     'op_tactical_off' => 'Disabled',
     'op_tactical_save' => 'Save retreat setting',
     'op_admiral' => 'Admiral required',
+    'colony_create' => 'Found a new colony',
+    'colony_hint' => 'A colony ship is selected in fleet planning. The colony is founded after you confirm dispatch and the fleet arrives.',
+    'colony_unavailable' => 'Colonisation requires an available colony ship, the necessary Astrophysics and a free fleet slot.',
 ];

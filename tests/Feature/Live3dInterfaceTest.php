@@ -35,6 +35,22 @@ class Live3dInterfaceTest extends IsolatedAccountTestCase
         $this->get('/play-3d/technology?object_id=999999&tab=9')->assertSessionHasErrors();
     }
 
+    public function testEmbeddedViewsHaveTheNewThemeBeforeFirstPaintWithoutAffectingClassicPages(): void
+    {
+        foreach (['alliance', 'messages', 'shop', 'merchant', 'options', 'play-3d/notes'] as $area) {
+            $html = $this->get('/'.$area.'?ui=live3d')->assertOk()->assertSee('data-live3d-embedded-style', false)->getContent();
+            $this->assertIsString($html);
+            $style = strpos($html, 'data-live3d-embedded-style');
+            $body = strpos($html, '<body');
+            $this->assertNotFalse($style);
+            $this->assertNotFalse($body);
+            $this->assertLessThan($body, $style);
+        }
+        $this->get('/alliance')->assertOk()->assertDontSee('data-live3d-embedded-style', false);
+        $this->get('/play-3d')->assertOk()->assertDontSee('data-live3d-embedded-style', false);
+        $this->getJson('/play-3d/state')->assertOk()->assertHeader('Content-Type', 'application/json');
+    }
+
     public function testLiveHighscoreUsesOriginalAdministratorExclusion(): void
     {
         resolve(SettingsService::class)->set('highscore_admin_visible', 1);

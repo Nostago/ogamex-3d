@@ -81,3 +81,50 @@ test('model cameras keep all corners visible on wide and narrow detail panels', 
         dispose(model.group);
     }
 });
+
+test('grounded models omit raised plinths and roads carry crates to plot boundaries', async () => {
+    const {createSiteGround,sitePort,roadPoint,colonyDeckHeight}=await import('../../resources/js/prototype3d/colonyGround.js')
+    for(const radius of [8,9.5,12]){
+        const sites=createLayout(radius,32).slice(0,4)
+        const infrastructure=createInfrastructure(palette,sites,radius,{grounded:true})
+        assert.equal(infrastructure.parcelCount,6)
+        const parcels=infrastructure.group.children.filter(o=>o.userData.transport==='parcel')
+        assert.equal(parcels.length,6)
+        assert.ok(parcels.every(p=>p.children.length===3))
+        for(const time of [0,5,14,29,57]){
+            infrastructure.animate(time,true)
+            for(const parcel of parcels)assert.ok(parcel.position.length()>=radius+colonyDeckHeight-0.001)
+        }
+        const {siteGroundHeight}=await import('../../resources/js/prototype3d/colonyGround.js')
+        for(const route of infrastructure.routes)for(let step=0;step<=40;step++){
+            const point=infrastructure.sample(route,step/40)
+            for(const site of sites){
+                const normal=new THREE.Vector3(...site.normal)
+                const local=point.clone().addScaledVector(normal,-radius).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(normal,new THREE.Vector3(0,1,0)))
+                if(Math.max(Math.abs(local.x),Math.abs(local.z))<1.6)assert.ok(local.y>=siteGroundHeight(radius,local.x,local.z)+0.01,'Roads and packages must stay above graded ground')
+            }
+        }
+        const a=sites[0],b=sites[1],start=sitePort(a,radius,true,b),end=sitePort(b,radius,true,a)
+        for(let step=0;step<=100;step++){
+            const point=roadPoint(start,end,radius,step/100)
+            assert.ok(point.length()>=radius+colonyDeckHeight-0.0001)
+            for(const site of [a,b]){
+                const normal=new THREE.Vector3(...site.normal)
+                const local=point.clone().addScaledVector(normal,-radius).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(normal,new THREE.Vector3(0,1,0)))
+                assert.ok(Math.abs(local.x)>=1.32||Math.abs(local.z)>=1.27,'Parcel route must not cross a building footprint')
+            }
+        }
+        const ground=createSiteGround(radius),positions=ground.attributes.position
+        for(let i=0;i<positions.count;i++){
+            const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i)
+            if(Math.max(Math.abs(x),Math.abs(z))<1.35)assert.ok(Math.abs(y-colonyDeckHeight)<0.0001)
+        }
+        ground.dispose();dispose(infrastructure.group);infrastructure.dispose()
+    }
+    for(const type of ['metal','crystal','deuterium','solar']){
+        const model=createBuilding(type,5,palette,{grounded:true})
+        assert.equal(model.group.userData.grounded,true)
+        assert.ok(model.group.position.y<0)
+        dispose(model.group)
+    }
+})

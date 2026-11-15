@@ -102,7 +102,7 @@ try {
     assert.equal(new URL(page.url()).hash, '#galaxy')
     assert.equal(await page.locator('#live-page-original').isHidden(), true)
     const colonize = detail.getByRole('button', {
-        name: 'Kolonisieren',
+        name: 'Neue Kolonie gründen',
         exact: true,
     })
     if (await colonize.isEnabled()) {

@@ -118,6 +118,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/ingame.css',
+                'resources/css/live3d-embedded.css',
                 'resources/css/outgame.css',
                 'resources/js/prototype3d/index.js',
                 'resources/js/live3d/index.js',

@@ -80,7 +80,8 @@ export function createSceneHost({ host, labels, names, select, t, onStatus }) {
             if (disposed || attempt !== generation) return
             renderer = createPlanetScene(host, labels, select, names, {
                 orbitalStyle: true,
-                planetTexture: '/img/live3d/planet-atlas.png',
+                surfaceStyle: 'solid',
+                groundedColony: true,
             })
             apply()
             // Shader compilation and the first render happen asynchronously.

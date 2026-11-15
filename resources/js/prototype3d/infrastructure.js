@@ -1,7 +1,18 @@
 import * as THREE from './vendor/three.module.min.js'
+import {
+    sitePort,
+    roadPoint,
+    colonyDeckHeight,
+    clearGround,
+} from './colonyGround.js'
 import { surfacePosition } from './layout.js'
 
-export function createInfrastructure(palette, colonySites, radius) {
+export function createInfrastructure(
+    palette,
+    colonySites,
+    radius,
+    { grounded = false } = {},
+) {
     const group = new THREE.Group(),
         positions = [],
         lines = [],
@@ -9,6 +20,24 @@ export function createInfrastructure(palette, colonySites, radius) {
     const nodes = [{ id: 'hub', normal: [0, 1, 0] }, ...colonySites]
     const point = (node, radius) =>
         new THREE.Vector3(...surfacePosition(node, radius))
+    const deckHeight = grounded ? colonyDeckHeight : 0.23
+    const routes = []
+    const plotFrames = colonySites.map((site) =>
+        new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(...site.normal),
+            new THREE.Vector3(0, 1, 0),
+        ),
+    )
+    const sample = (route, progress) => {
+        const p = roadPoint(
+            route.start,
+            route.end,
+            radius,
+            progress,
+            deckHeight,
+        )
+        return grounded ? clearGround(p, radius, plotFrames) : p
+    }
     const edges = [],
         seen = new Set()
     function connect(a, b) {
@@ -38,16 +67,13 @@ export function createInfrastructure(palette, colonySites, radius) {
     ])
         connect(colonySites[a], colonySites[b])
     for (const [a, b] of edges) {
-        const start = point(a, radius),
-            end = point(b, radius)
+        const start = sitePort(a, radius, grounded, b),
+            end = sitePort(b, radius, grounded, a)
+        routes.push({ start, end })
         let previous
         const conduitPoints = []
-        for (let step = 0; step <= 16; step++) {
-            const p = start
-                .clone()
-                .lerp(end, step / 16)
-                .normalize()
-                .multiplyScalar(radius + 0.035)
+        for (let step = 0; step <= 32; step++) {
+            const p = sample({ start, end }, step / 32)
             const normal = p.clone().normalize(),
                 tangent = end.clone().sub(start).normalize()
             const side = new THREE.Vector3()
@@ -71,12 +97,12 @@ export function createInfrastructure(palette, colonySites, radius) {
                     ...previous.right
                         .clone()
                         .normalize()
-                        .multiplyScalar(radius + 0.052)
+                        .multiplyScalar(previous.right.length() + 0.017)
                         .toArray(),
                     ...right
                         .clone()
                         .normalize()
-                        .multiplyScalar(radius + 0.052)
+                        .multiplyScalar(right.length() + 0.017)
                         .toArray(),
                 )
             }
@@ -84,12 +110,21 @@ export function createInfrastructure(palette, colonySites, radius) {
                 right
                     .clone()
                     .normalize()
-                    .multiplyScalar(radius + 0.085),
+                    .multiplyScalar(right.length() + 0.05),
             )
             if (step % 3 === 1) {
                 // Inset lane dashes and edge lights follow the surface normal.
-                const orientation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
-                markers.push({ position: p.clone().normalize().multiplyScalar(radius + 0.055), orientation })
+                const orientation = new THREE.Quaternion().setFromUnitVectors(
+                    new THREE.Vector3(0, 1, 0),
+                    normal,
+                )
+                markers.push({
+                    position: p
+                        .clone()
+                        .normalize()
+                        .multiplyScalar(p.length() + 0.02),
+                    orientation,
+                })
             }
             previous = { left, right }
         }
@@ -120,7 +155,11 @@ export function createInfrastructure(palette, colonySites, radius) {
     roads.receiveShadow = true
     group.add(roads)
     if (markers.length) {
-        const lane = new THREE.InstancedMesh(new THREE.BoxGeometry(0.07, 0.012, 0.09), palette.gold, markers.length)
+        const lane = new THREE.InstancedMesh(
+            new THREE.BoxGeometry(0.07, 0.012, 0.09),
+            palette.gold,
+            markers.length,
+        )
         const transform = new THREE.Matrix4()
         markers.forEach(({ position, orientation }, i) => {
             transform.compose(position, orientation, new THREE.Vector3(1, 1, 1))
@@ -142,7 +181,7 @@ export function createInfrastructure(palette, colonySites, radius) {
         return object
     }
     const hub = new THREE.Group()
-    hub.position.set(0, radius + 0.05, 0)
+    hub.position.set(0, radius + (grounded ? -0.08 : 0.05), 0)
     group.add(hub)
     block(hub, palette.concrete, 0, 0.05, 0, 0.9, 0.13, 0.9)
     block(hub, palette.painted, 0, 0.32, 0, 0.65, 0.45, 0.65)
@@ -153,55 +192,61 @@ export function createInfrastructure(palette, colonySites, radius) {
         block(hub, palette.painted, side * 0.28, 0.97, -0.1, 0.16, 1.45, 0.2)
         block(hub, palette.cyan, side * 0.28, 1.12, 0.01, 0.025, 1.2, 0.015)
         block(hub, palette.steel, side * 0.28, 1.87, -0.1, 0.025, 0.48, 0.025)
-        block(hub, palette.warmWindow, side * 0.28, 2.12, -0.1, 0.055, 0.04, 0.055)
+        block(
+            hub,
+            palette.warmWindow,
+            side * 0.28,
+            2.12,
+            -0.1,
+            0.055,
+            0.04,
+            0.055,
+        )
     }
     block(hub, palette.insulation, 0, 1.31, -0.1, 0.7, 0.27, 0.48)
     block(hub, palette.window, 0, 1.33, 0.15, 0.62, 0.12, 0.02)
-    const vehicles = []
-    for (let i = 0; i < Math.min(3, edges.length); i++) {
-        const vehicle = new THREE.Group()
-        block(vehicle, palette.steel, 0, 0.08, 0, 0.25, 0.12, 0.4)
-        block(vehicle, palette.gold, 0, 0.18, -0.07, 0.23, 0.13, 0.23)
-        block(vehicle, palette.window, 0, 0.15, 0.17, 0.2, 0.12, 0.1)
-        for (const side of [-1, 1])
-            for (const z of [-0.13, 0.13]) {
-                const wheel = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.065, 0.065, 0.055, 8),
-                    palette.dark,
-                )
-                wheel.rotation.z = Math.PI / 2
-                wheel.position.set(side * 0.14, 0.04, z)
-                vehicle.add(wheel)
-            }
-        group.add(vehicle)
-        vehicles.push(vehicle)
+    const parcels = []
+    for (let i = 0; i < Math.min(6, routes.length * 2); i++) {
+        const parcel = new THREE.Group()
+        parcel.userData.transport = 'parcel'
+        // Small cargo crates with securing bands; no cabins, wheels or chassis.
+        block(parcel, palette.painted, 0, 0.075, 0, 0.16, 0.12, 0.22)
+        block(parcel, palette.gold, 0, 0.139, 0, 0.022, 0.009, 0.23)
+        block(parcel, palette.cyan, 0, 0.08, 0.113, 0.09, 0.024, 0.006)
+        group.add(parcel)
+        parcels.push(parcel)
     }
     function animate(time, moving) {
-        vehicles.forEach((vehicle, index) => {
-            // Shuttle along an existing road, reversing at its endpoints.
-            const phase = ((moving ? time * 0.06 : 0) + index * 0.55) % 2
-            const edge = edges[index % edges.length]
-            const start = point(edge[phase < 1 ? 0 : 1], radius),
-                end = point(edge[phase < 1 ? 1 : 0], radius)
-            const normal = start
+        parcels.forEach((parcel, index) => {
+            const phase = ((moving ? time * 0.045 : 0.35) + index * 0.29) % 2
+            const route = routes[index % routes.length]
+            const t = phase < 1 ? phase : 2 - phase
+            const position = sample(route, t)
+            const normal = position.clone().normalize()
+            const forward = route.end
                 .clone()
-                .lerp(end, phase % 1)
-                .normalize()
-            const forward = end.clone().sub(start)
+                .sub(route.start)
+                .multiplyScalar(phase < 1 ? 1 : -1)
             forward.addScaledVector(normal, -forward.dot(normal)).normalize()
             const right = new THREE.Vector3()
                 .crossVectors(normal, forward)
                 .normalize()
-            vehicle.position.copy(normal).multiplyScalar(radius + 0.13)
-            vehicle.quaternion.setFromRotationMatrix(
+            parcel.position.copy(position)
+            parcel.quaternion.setFromRotationMatrix(
                 new THREE.Matrix4().makeBasis(right, normal, forward),
             )
+            // Crates load/unload outside the entrance instead of passing through walls.
+            const fade = Math.min(1, t * 16, (1 - t) * 16)
+            parcel.scale.setScalar(Math.max(0.001, fade))
         })
     }
     animate(0, false)
     return {
         group,
         roadCount: edges.length,
+        parcelCount: parcels.length,
+        routes,
+        sample,
         animate,
         dispose() {
             utilityMaterial.dispose()

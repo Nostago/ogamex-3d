@@ -1,5 +1,6 @@
+import embeddedCss from '../../css/live3d-embedded.css?inline'
 // Retain the original controllers/forms/scripts, replace their presentation shell.
-export function skinOriginalArea(frame, { t, planet, refresh, openFleet }) {
+export function skinOriginalArea(frame, { t, planet, refresh, openFleet, onLoading }) {
     const doc = frame.contentDocument
     if (!doc?.body) return
     doc.addEventListener('click', event => {
@@ -12,57 +13,11 @@ export function skinOriginalArea(frame, { t, planet, refresh, openFleet }) {
             openFleet(target.href)
         }
     }, true)
-    const style = doc.createElement('style')
-    style.textContent = `
-    html,body{min-width:0!important;margin:0!important;background:#071521!important;color:#d3e7f0!important;font:14px/1.6 system-ui,sans-serif!important}
-    #top,#left,#right,#siteHeader,#siteFooter,#adminbar,#pageReloader,#eventboxContent,#fadeBox{display:none!important}
-    #pageContent,#middle,#inhalt,.maincontent,#buttonz,.content,.contentbox,.contentBox,.buddylistContent{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;float:none!important;margin:0!important;background-image:none!important}
-    #inhalt{padding:16px!important}#planet.shortHeader{display:none!important}
-    #chatBarPlayerList{display:none!important}#chatBar{display:block!important;background:#0a2030!important;color:#d4edf6!important;border-color:#31576e!important}
-    #chatBar .chat_box,#chatBar .chat_box_ctn,#chatBar .chat_content{background:#0a2030!important;color:#d4edf6!important;background-image:none!important}
-    #inhalt .c-left,#inhalt .c-right{display:none!important}
-    #technologies{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:100%}
-    #technologies>div{width:auto!important;min-width:0!important;float:none!important}
-    #technologies ul{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:0!important;list-style:none!important}
-    #technologies li.technology{display:grid!important;grid-template-columns:80px minmax(0,1fr);gap:5px 9px;width:auto!important;height:auto!important;min-height:115px;padding:9px!important;margin:0!important;float:none!important;background:#102635!important;border:1px solid #31536a;border-radius:5px;box-sizing:border-box}
-    #technologies li .icon{grid-row:1/4;grid-column:1;position:relative!important;top:auto!important;left:auto!important;margin:0!important}
-    #technologies li .amount{color:#c6e5f0!important;background:#071723dd!important;font-size:12px!important}
-    #technologies .live-unit-name{grid-column:2;min-width:0;overflow-wrap:anywhere;font-size:12px;color:#cdeefa;line-height:1.4;font-weight:600}
-    #technologies .live-unit-stock{grid-column:2;font-size:11px;color:#85c4d9}
-    #technologies li input{grid-column:2;position:static!important;min-width:0!important;width:100%!important;margin:0!important;float:none!important}
-    #technologies li[data-status=off]{opacity:.5}
-    @media(max-width:700px){#technologies{grid-template-columns:minmax(0,1fr)}#technologies ul{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}}
-    .requirement-met{background:#0d3025!important;border:1px solid #4fae83!important;color:#a1ffd0!important}
-    .requirement-missing{background:#371c25!important;border:1px solid #d97b85!important;color:#ffd0d4!important}
-    .live-requirement-status{padding:12px 14px;border-radius:5px;line-height:1.6;margin:10px 0}
-    .techImage.built{outline:3px solid #73e6a2!important}.techImage.notBuilt{outline:3px solid #ff8d9a!important}
-    .applications [data-prerequisites-met=true]{outline:3px solid #73e6a2!important}.applications [data-prerequisites-met=false]{outline:3px solid #ff8d9a!important}
-    #inhalt .maincontent>#planet,#inhalt>#planet{display:none!important}
-    #inhalt .header,#inhalt .footer,#inhalt .tabs,#inhalt .tabs a,#inhalt .tab,#inhalt .tabwrapper,#inhalt .box_highlight{background-image:none!important;box-shadow:none!important}
-    #inhalt label,#inhalt p,#inhalt .textBeefy{font-family:system-ui,sans-serif!important}
-    #inhalt input[type=checkbox],#inhalt input[type=radio]{appearance:auto!important;opacity:1!important;position:static!important;width:auto!important;height:auto!important}
-    #live-notes-content .overlayDiv.notices{display:block!important;position:static!important;width:100%!important;max-width:100%!important}
-    #inhalt a.continue,#inhalt a.start{background:#14556b!important;border:1px solid #57b9d2!important;border-radius:5px!important;padding:8px 16px!important;min-height:38px;box-sizing:border-box!important;color:#d2f6ff!important}
-    #inhalt a.continue.off,#inhalt a.start.off{opacity:.45}
-    .header,.footer,.new_footer,.new_header,.box_highlight{background-image:none!important;height:auto!important;color:#a6ecfa!important}
-    .header h2,h2,h3{font:600 20px/1.5 system-ui!important;color:#a6ecfa!important}
-    .content,.sectioncontent,.group,.contentbox,.contentBox{background-color:#0a2030!important;border:1px solid #294c60!important;border-radius:7px!important;padding:16px!important;box-sizing:border-box!important}
-    input,select,textarea{background:#061724!important;color:#e1f3fc!important;border:1px solid #3b647b!important;border-radius:5px!important;box-shadow:none!important;font:inherit!important;box-sizing:border-box!important;max-width:100%!important}
-    input[type=text],input[type=number],input[type=password],select,textarea{padding:9px!important;height:auto!important}
-    button,.btn_blue,.btn_blue span,input[type=submit],.buttonSave,a.btn_blue{height:auto!important;min-height:36px;white-space:normal!important;background:#14475c!important;background-image:none!important;color:#c9f6ff!important;border:1px solid #368aa6!important;border-radius:5px!important;padding:8px 13px!important;font:inherit!important;text-shadow:none!important;cursor:pointer!important;box-sizing:border-box!important}
-    button:disabled,input:disabled{opacity:.5;cursor:not-allowed!important}
-    a{color:#73dff5!important}table{width:100%!important;background:none!important;border-collapse:collapse!important}td,th{padding:10px!important;background-image:none!important;border-bottom:1px solid #244354!important;overflow-wrap:break-word}
-    .ui-dialog,.ui-dialog-content,.tooltip,.tip{background:#0a2030!important;color:#d3e7f0!important;border-color:#368aa6!important;background-image:none!important}
-    .footer{position:static!important;clear:both!important;pointer-events:auto!important;height:auto!important;min-height:50px!important;padding:16px!important;background:#0a2030!important}
-    .footer input,.footer button{position:relative!important;z-index:10!important;width:auto!important;min-width:160px!important;pointer-events:auto!important}
-    @media(max-width:700px){#inhalt{padding:6px!important}.content,.group{padding:8px!important}table{font-size:12px!important}td,th{padding:6px!important}.w250,.w300,.w500{max-width:100%!important}}
-    `
-    style.textContent += `
-    html,body{height:auto!important;min-height:0!important;overflow-y:hidden!important}
-    #pageContent,#middle,#inhalt,.maincontent,.content,.contentbox,.contentBox{height:auto!important;min-height:0!important;max-height:none!important}
-    .footer{width:100%!important;box-sizing:border-box!important}
-    `
-    doc.head.append(style)
+    if (!doc.querySelector('link[data-live3d-embedded-style]')) {
+        const style = doc.createElement('style')
+        style.textContent = embeddedCss
+        doc.head.append(style)
+    }
     frame.setAttribute('scrolling', 'no')
     let sizing
     function resizeFrame() {
@@ -109,7 +64,7 @@ export function skinOriginalArea(frame, { t, planet, refresh, openFleet }) {
     bind()
     const observer = new MutationObserver(() => { observer.disconnect(); bind(); resizeFrame(); observer.observe(doc.body, {childList:true, subtree:true}) })
     observer.observe(doc.body, {childList:true, subtree:true})
-    frame.contentWindow.addEventListener('pagehide', () => { observer.disconnect(); sizeObserver.disconnect(); cancelAnimationFrame(sizing) }, {once:true})
+    frame.contentWindow.addEventListener('pagehide', () => { onLoading?.(); observer.disconnect(); sizeObserver.disconnect(); cancelAnimationFrame(sizing) }, {once:true})
     // Mutations continue to use the original server endpoints; update the outer HUD.
     const jq = frame.contentWindow.jQuery
     if (jq) {
@@ -125,6 +80,19 @@ export function skinOriginalArea(frame, { t, planet, refresh, openFleet }) {
         jq(doc).on('input.live3d', '#technologies li input,#fleet2 input#galaxy,#fleet2 input#system,#fleet2 input#position,#fleet2 input#metal,#fleet2 input#crystal,#fleet2 input#deuterium', event => jq(event.target).trigger('keyup'))
         jq(doc).ajaxComplete(() => { refresh() })
     }
+    // Keep navigation in this content area; the surrounding game shell stays put.
+    for (const form of doc.forms) if (['_top', '_parent'].includes(form.target)) form.target = '_self'
+    doc.addEventListener('click', event => {
+        const anchor = event.target.closest('a[href]')
+        if (!anchor || anchor.hasAttribute('download') || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || anchor.target === '_blank') return
+        const target = new URL(anchor.href, doc.location.href)
+        if (target.origin !== location.origin || !/^https?:$/.test(target.protocol) || anchor.getAttribute('href').startsWith('#')) return
+        if (['_top', '_parent'].includes(anchor.target)) anchor.target = '_self'
+        setTimeout(() => { if (frame.contentDocument === doc && !event.defaultPrevented && target.href !== doc.location.href) onLoading?.() }, 0)
+    }, true)
+    doc.addEventListener('submit', event => {
+        setTimeout(() => { if (frame.contentDocument === doc && !event.defaultPrevented) onLoading?.() }, 0)
+    }, true)
     frame.dataset.areaReady = frame.contentWindow.location.pathname
     frame.title = t.original_area
     refresh()

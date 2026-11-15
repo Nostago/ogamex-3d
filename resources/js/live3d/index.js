@@ -126,7 +126,7 @@ function show(name, fromFrame = false, fleetTarget) {
         if (!fromFrame && (framePage !== page || framePlanet !== planet)) {
             framePage = page
             framePlanet = planet
-            frame.src = contextUrl(config.links[page])
+            loadOriginal(config.links[page])
         }
     } else renderCatalog()
     if (!fromFrame) window.scrollTo({ top: 0, behavior: 'instant' })
@@ -316,7 +316,7 @@ function renderCatalog() {
     const technical = el('button', '', t.technology)
     technical.addEventListener('click', () => {
         show('technology')
-        frame.src = contextUrl(`/play-3d/technology?object_id=${item.id}&tab=2`)
+        loadOriginal(`/play-3d/technology?object_id=${item.id}&tab=2`)
     })
     detail.append(technical)
     if (['jump_gate', 'missile_silo', 'alliance_depot', 'space_dock'].includes(item.key)) {
@@ -554,20 +554,49 @@ async function switchPlanet(id) {
         show(page)
     }
 }
+let originalTimer, originalPendingUrl
+function originalLoading() {
+    frame.dataset.ready = 'false'
+    const loader = document.querySelector('#live-original-loader')
+    loader.hidden = false
+    loader.setAttribute('aria-busy', 'true')
+    document.querySelector('#live-original-loading-text').textContent = t.loading
+    document.querySelector('#live-original-retry').hidden = true
+    clearTimeout(originalTimer)
+    originalTimer = setTimeout(() => {
+        loader.removeAttribute('aria-busy')
+        document.querySelector('#live-original-loading-text').textContent = t.error_request
+        document.querySelector('#live-original-retry').hidden = false
+    }, 20000)
+}
+function loadOriginal(url) {
+    framePage = page
+    framePlanet = planet
+    originalLoading()
+    originalPendingUrl = contextUrl(url)
+    frame.src = originalPendingUrl
+}
+document.querySelector('#live-original-retry').addEventListener('click', () => loadOriginal(originalPendingUrl || config.links[page]))
 frame.addEventListener('load', () => {
     try {
-        const document = frame.contentDocument
-        if (!document) return
+        const doc = frame.contentDocument
+        if (!doc) return
         const url = new URL(frame.contentWindow.location.href)
+        if (url.href === 'about:blank') return
         if (url.pathname.startsWith('/login')) {
             failure({ code: 'session' })
             return
         }
-        const style = document.createElement('style')
+        if (originalPendingUrl && url.pathname.split('/')[1] !== new URL(originalPendingUrl).pathname.split('/')[1]) return
+        originalPendingUrl = null
+        const style = doc.createElement('style')
         style.textContent =
             'body{background:#07121f!important;min-width:0!important;color:#bcd3e4}#siteHeader,#siteFooter,#headerbarcomponent,#resourcesbarcomponent,#left,#right,#pageReloader{display:none!important}#pageContent{width:100%!important;min-width:0!important;margin:0!important;padding:0!important}#middle{width:100%!important;min-width:0!important;float:none!important;margin:0!important;padding:0!important}#inhalt{margin:0 auto!important}'
-        document.head.append(style)
-        skinOriginalArea(frame, { t, planet, refresh, openFleet })
+        doc.head.append(style)
+        skinOriginalArea(frame, { t, planet, refresh, openFleet, onLoading: originalLoading })
+        clearTimeout(originalTimer)
+        frame.dataset.ready = 'true'
+        frame.ownerDocument.querySelector('#live-original-loader').hidden = true
         // A late load from a hidden original view must not undo navigation or
         // a planet selection in the surrounding interface.
         if (
@@ -576,12 +605,8 @@ frame.addEventListener('load', () => {
         )
             return
         const cp = url.searchParams.get('cp')
-        if (
-            cp &&
-            cp !== planet &&
-            state.planets.some((p) => String(p.id) === cp)
-        ) {
-            switchPlanet(cp)
+        if (cp && cp !== planet) {
+            loadOriginal(config.links[page])
             return
         }
         const area = url.pathname.startsWith('/fleet')
@@ -603,6 +628,11 @@ frame.addEventListener('load', () => {
             show(area, true)
         }
     } catch {
+        clearTimeout(originalTimer)
+        frame.dataset.ready = 'false'
+        document.querySelector('#live-original-loader').hidden = false
+        document.querySelector('#live-original-loading-text').textContent = t.error_request
+        document.querySelector('#live-original-retry').hidden = false
         status.textContent = t.frame_fallback
     }
 })
@@ -674,7 +704,7 @@ const galaxy = createGalaxy({
     number,
     context: () => state.planet,
     onError: failure,
-    openArea(url, area = 'tools') { show(area); frame.src = contextUrl(url) },
+    openArea(url, area = 'tools') { show(area); loadOriginal(url) },
     openFleet,
     config,
     refresh,
@@ -758,6 +788,7 @@ window.addEventListener('pagehide', (event) => {
     if (event.persisted) return
     clearInterval(poll)
     clearInterval(clock)
+    clearTimeout(originalTimer)
     galaxy.dispose()
     fleetMonitor.dispose()
     fleetPanel.dispose()
@@ -789,7 +820,7 @@ function renderAreaTabs(area) {
     const links = area === 'messages' ? [[t.messages, '/messages'], [t.chat, '/chat']] : area === 'fleets' ? [[t.fleet_dispatch, '/fleet'], [t.fleet_movements, '/fleet/movement']] : area === 'merchant' ? [[t.merchant, '/merchant'], [t.resource_market, '/merchant/resource-market']] : []
     for (const [label, url] of links) {
         const button = el('button', '', label)
-        button.addEventListener('click', () => { frame.src = contextUrl(url) })
+        button.addEventListener('click', () => { loadOriginal(url) })
         host.append(button)
     }
 }

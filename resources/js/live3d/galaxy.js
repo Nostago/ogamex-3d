@@ -169,16 +169,19 @@ export function createGalaxy({
         })
         return target.href
     }
-    function missionButtons(host, row, body) {
+    function missionButtons(host, row, body, details = false) {
         for (const mission of body.availableMissions || []) {
             if (!mission.missionType) continue
             const caption =
-                t[`mission_${mission.missionType}`] || plain(mission.name)
+                details && mission.missionType === 7
+                    ? t.colony_create
+                    : t[`mission_${mission.missionType}`] || plain(mission.name)
             const button = el(
                 'button',
                 '',
                 `${body.planetType === 3 ? t.moon + ' · ' : body.planetType === 2 ? t.debris + ' · ' : ''}${caption}`,
             )
+            button.dataset.mission = String(mission.missionType)
             if (
                 mission.link === '#' ||
                 (body.planetType === 2 && body.recyclePossible === false)
@@ -189,6 +192,16 @@ export function createGalaxy({
                 button.onclick = () =>
                     openFleet(fleetUrl(row, body, mission.missionType))
             host.append(button)
+            if (details && mission.missionType === 7) {
+                const hint = el(
+                    'p',
+                    button.disabled ? 'colony-unavailable' : 'muted',
+                    button.disabled
+                        ? plain(mission.description || t.colony_unavailable)
+                        : t.colony_hint,
+                )
+                host.append(hint)
+            }
         }
     }
     async function actionApi(path, body, method = 'POST') {
@@ -280,7 +293,7 @@ export function createGalaxy({
                           : t.planet,
                 ),
             )
-            missionButtons(group, row, body)
+            missionButtons(group, row, body, true)
             if (body.requiredShips !== undefined)
                 group.append(
                     el(

@@ -8,6 +8,7 @@ export function createSoftwareScene(host, labels, select, names) {
     labels.replaceChildren()
     canvas.setAttribute('aria-label', names.scene || '')
     host.dataset.renderer = 'software'
+    host.dataset.surface = 'solid'
     let snapshot,
         width = 1,
         height = 1,
@@ -37,36 +38,11 @@ export function createSoftwareScene(host, labels, select, names) {
         }
     function sphere() {
         image.data.fill(0)
-        const c = Math.cos(angle),
-            s = Math.sin(angle),
-            ct = Math.cos(tilt),
-            st = Math.sin(tilt)
-        for (const [i, x, vy, vz] of samples) {
-            const y = vy * ct - vz * st,
-                zz = vy * st + vz * ct,
-                z = zz * c - x * s,
-                xx = x * c + zz * s
-            const n =
-                Math.sin(xx * 3 + Math.cos(z * 3)) +
-                0.6 * Math.cos(z * 4 + y * 3) +
-                0.45 * Math.sin(y * 5 + xx * 2)
-            const land = n > 0.05,
-                ice = Math.abs(y) > 0.94,
-                light = Math.max(0.09, -0.45 * x + 0.4 * vy + 0.7 * vz)
-            let rgb = ice
-                ? [195, 216, 225]
-                : land
-                  ? [48 + n * 15, 89 + n * 12, 61 + n * 9]
-                  : [12, 51, 91]
-            const cloud =
-                Math.max(
-                    0,
-                    Math.sin(xx * 16 + Math.cos(z * 8)) +
-                        Math.sin(y * 19 + z * 11) -
-                        1.1,
-                ) * 0.65
-            rgb = rgb.map((v) => (v * (1 - cloud) + 215 * cloud) * light)
-            for (let j = 0; j < 3; j++) image.data[i + j] = rgb[j]
+        const tint = snapshot.planet.tint
+        const rgb = [(tint >> 16) & 255, (tint >> 8) & 255, tint & 255]
+        for (const [i, x, y, z] of samples) {
+            const light = Math.max(0.09, -0.45 * x + 0.4 * y + 0.7 * z)
+            for (let channel = 0; channel < 3; channel++) image.data[i + channel] = rgb[channel] * light
             image.data[i + 3] = 255
         }
         pixels.putImageData(image, 0, 0)
@@ -303,6 +279,7 @@ export function createSoftwareScene(host, labels, select, names) {
     return {
         update(value) {
             snapshot = value
+            host.dataset.surfaceColor = `#${value.planet.tint.toString(16).padStart(6, '0')}`
             dirty = true
         },
         setMode(value) {

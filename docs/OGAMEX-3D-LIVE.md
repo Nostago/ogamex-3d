@@ -1,5 +1,7 @@
 # Neue Oberfläche am vorhandenen OGameX-Backend
 
+Aktuelle Korrekturen: [Planeten, Bodentransporte und einheitliche Seitenwechsel](OGAMEX-3D-PLANET-NAVIGATION.md).
+
 Aktuelle Erweiterung: [Native Flotten, Galaxieaktionen und autonome NPCs](OGAMEX-3D-OPERATIONS-BOTS.md).
 
 ## Grundentscheidung

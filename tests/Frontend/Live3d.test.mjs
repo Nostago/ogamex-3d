@@ -183,3 +183,16 @@ test('production durations preserve day boundaries and use explicit German units
     assert.equal(formatDuration(86400), 'Tage: 1 Stunden: 0 Minuten: 0 Sekunden: 0')
     assert.equal(formatDuration(-5), 'Tage: 0 Stunden: 0 Minuten: 0 Sekunden: 0')
 })
+
+test('planet colours are stable per world, varied and independent of buildings or reloads', async () => {
+    const {planetTint}=await import('../../resources/js/live3d/planetAppearance.js')
+    const colours=new Set()
+    for(let id=1;id<=100;id++){
+        const colour=planetTint(id,1)
+        assert.equal(colour,planetTint(String(id),1))
+        assert.ok(Number.isInteger(colour)&&colour>=0&&colour<=0xffffff)
+        colours.add(colour)
+    }
+    assert.ok(colours.size>95)
+    assert.notEqual(planetTint(42,1),planetTint(42,3))
+})

@@ -43,7 +43,7 @@ function consolidate(root) {
     }
 }
 
-export function createBuilding(id, level, palette) {
+export function createBuilding(id, level, palette, options = {}) {
     if (!buildingModelTypes.includes(id)) throw new Error(`Unknown model: ${id}`)
     const group = new THREE.Group(), motion = [],
         tier = Math.min(3, Math.max(0, Math.floor((Math.max(1, level) - 1) / 2)))
@@ -133,8 +133,10 @@ export function createBuilding(id, level, palette) {
         for (const s of [-1, 1]) box(dark, x + s * width * 0.35, height + 0.32, z, width * 0.18, 0.09, depth * 0.7)
     }
     // Terraced industrial plot; the open entrance meets the road network.
-    hull(concrete, 0, 0.065, 0, 2.65, 0.16, 2.55)
-    hull(dark, 0, 0.15, 0, 2.55, 0.065, 2.45)
+    if (!options.grounded) {
+        hull(concrete, 0, 0.065, 0, 2.65, 0.16, 2.55)
+        hull(dark, 0, 0.15, 0, 2.55, 0.065, 2.45)
+    }
     for (const s of [-1, 1]) {
         box(steel, s * 1.26, 0.22, 0, 0.035, 0.12, 2.4)
         box(cyan, s * 1.28, 0.23, -0.3, 0.018, 0.025, 1.3)
@@ -349,6 +351,8 @@ export function createBuilding(id, level, palette) {
         motion.push((time) => { fan.rotation.z = time * 1.1 })
     }
     group.scale.y = 1 + tier * 0.015
+    if (options.grounded) group.position.y = -0.18 * group.scale.y
+    group.userData.grounded = Boolean(options.grounded)
     const bounds = new THREE.Box3().setFromObject(group)
     group.userData.modelRevision = 'colony-2'
     group.userData.modelType = id

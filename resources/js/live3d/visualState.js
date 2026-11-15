@@ -1,3 +1,4 @@
+import { planetTint } from './planetAppearance.js'
 import { createLayout, chooseSite } from '../prototype3d/layout.js'
 import { buildingCatalog } from '../prototype3d/catalog.js'
 export const modelAliases = Object.freeze({
@@ -99,7 +100,7 @@ export function visualState(snapshot) {
         planet: {
             id: String(snapshot.planet.id),
             renderRadius: radius,
-            tint: snapshot.planet.type === 3 ? 0xb8b5b2 : 0xffffff,
+            tint: planetTint(snapshot.planet.id, snapshot.planet.type),
         },
         fleetSummary: { total: snapshot.shipTotal ?? 0 },
         layout,

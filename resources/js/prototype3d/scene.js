@@ -4,6 +4,7 @@ import { createShip } from './ships.js'
 import { createShipVariant } from './shipVariants.js'
 import { createBuilding } from './buildings.js'
 import { surfacePosition } from './layout.js'
+import { createSiteGround, colonyDeckHeight } from './colonyGround.js'
 import { createInfrastructure } from './infrastructure.js'
 import { createPlanetSurface } from './planetSurface.js'
 import { createOrbitalRing } from './orbitalRing.js'
@@ -95,18 +96,18 @@ export function createPlanetScene(
             z,
         )
     const terrain = new THREE.SphereGeometry(8, 96, 64)
-    const planetTextures = createPlanetSurface(
-        options.orbitalStyle ? 2048 : 1024,
-    )
+    const solidSurface = options.surfaceStyle === 'solid'
+    const planetTextures = solidSurface ? null : createPlanetSurface(options.orbitalStyle ? 2048 : 1024)
+    host.dataset.surface = solidSurface ? 'solid' : 'procedural'
     const globe = mesh(
         terrain,
         new THREE.MeshStandardMaterial({
-            map: planetTextures.surface,
-            bumpMap: planetTextures.surface,
+            map: planetTextures?.surface || null,
+            bumpMap: planetTextures?.surface || null,
             bumpScale: 0.035,
-            emissiveMap: planetTextures.cities,
-            emissive: 0xffcb79,
-            emissiveIntensity: options.orbitalStyle ? 0.65 : 0.15,
+            emissiveMap: planetTextures?.cities || null,
+            emissive: solidSurface ? 0x000000 : 0xffcb79,
+            emissiveIntensity: solidSurface ? 0 : (options.orbitalStyle ? 0.65 : 0.15),
             roughness: 0.84,
             metalness: 0.02,
         }),
@@ -116,7 +117,7 @@ export function createPlanetScene(
     let authoredCities = null,
         authoredTexture = null,
         disposed = false
-    if (options.planetTexture)
+    if (!solidSurface && options.planetTexture)
         new THREE.TextureLoader().load(
             options.planetTexture,
             (texture) => {
@@ -179,7 +180,7 @@ export function createPlanetScene(
     const clouds = mesh(
         new THREE.SphereGeometry(8.065, 64, 48),
         new THREE.MeshStandardMaterial({
-            map: planetTextures.clouds,
+            map: planetTextures?.clouds || null,
             transparent: true,
             depthWrite: false,
             roughness: 1,
@@ -187,6 +188,7 @@ export function createPlanetScene(
         }),
         world,
     )
+    clouds.visible = !solidSurface
     const atmosphere = mesh(
         new THREE.SphereGeometry(8.22, 64, 48),
         new THREE.ShaderMaterial({
@@ -252,17 +254,23 @@ export function createPlanetScene(
         const normal = new THREE.Vector3(
             ...surfacePosition(site, radius),
         ).normalize()
-        group.position.copy(normal).multiplyScalar(radius + 0.02)
+        group.position.copy(normal).multiplyScalar(options.groundedColony ? radius : radius + 0.02)
         group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
         colony.add(group)
-        const model = createBuilding(data.type, data.level, materials.palette)
+        const model = createBuilding(data.type, data.level, materials.palette, {grounded: options.groundedColony})
+        if (options.groundedColony) {
+            const ground = new THREE.Mesh(createSiteGround(radius), globe.material)
+            ground.receiveShadow = true
+            ground.userData.colonyGround = true
+            group.add(ground)
+        }
         group.add(model.group)
         const ring = mesh(
             new THREE.TorusGeometry(1.4, 0.016, 5, 48),
             selectionMat,
             group,
             0,
-            0.22,
+            options.groundedColony ? colonyDeckHeight + 0.025 : 0.22,
             0,
         )
         ring.rotation.x = Math.PI / 2
@@ -296,9 +304,10 @@ export function createPlanetScene(
         host.dataset.radius = String(radius)
         host.dataset.planet = renderPlanet
         globe.scale.setScalar(radius / 8)
-        globe.material.color
-            .setHex(data.planet.tint)
-            .lerp(new THREE.Color(0xffffff), 0.82)
+        globe.material.color.setHex(data.planet.tint)
+        if (!solidSurface) globe.material.color.lerp(new THREE.Color(0xffffff), 0.82)
+        host.dataset.surfaceColor = `#${globe.material.color.getHexString()}`
+        host.dataset.grounded = String(Boolean(options.groundedColony))
         clouds.scale.setScalar(radius / 8)
         atmosphere.scale.setScalar((radius + 0.22) / 8.22)
         orbitPath.scale.setScalar(orbitRadius / 11.4)
@@ -333,7 +342,10 @@ export function createPlanetScene(
                 materials.palette,
                 sites,
                 radius,
+                {grounded: Boolean(options.groundedColony)},
             )
+            host.dataset.transport = 'parcels'
+            host.dataset.parcels = String(infrastructure.parcelCount)
             world.add(infrastructure.group)
             host.dataset.roads = String(infrastructure.roadCount)
             networkKey = key
@@ -928,7 +940,7 @@ export function createPlanetScene(
                 atmosphere.material,
             ].forEach((mat) => mat.dispose())
             infrastructure?.dispose()
-            planetTextures.dispose()
+            planetTextures?.dispose()
             orbitalRing?.userData.dispose?.()
             materials.dispose()
             renderer.dispose()

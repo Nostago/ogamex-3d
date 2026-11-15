@@ -11,7 +11,7 @@
         'initial' => $initial, 't' => $t, 'models' => __('t_prototype3d', [], 'de'),
         'stateUrl' => route('live3d.state'), 'commandUrl' => route('live3d.command'),
         'galaxyUrl' => route('live3d.galaxy'), 'fleetEventsUrl' => route('fleet.eventbox.fetch'),
-        'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index', ['prototype3d' => 1]), 'alliance' => route('alliance.index'), 'officers' => route('premium.index'), 'shop' => route('shop.index'), 'merchant' => route('merchant.index'), 'notes' => route('live3d.notes'), 'buddies' => route('buddies.index'), 'options' => route('options.index'), 'highscore' => route('highscore.index'), 'tools' => route('galaxy.index'), 'production' => route('resources.settings'), 'facilities' => route('facilities.index'), 'rewards' => route('rewards.index'), 'technology' => route('live3d.technology', ['object_id'=>1,'tab'=>3,'open'=>'all']), 'inventory' => route('shop.index',['inventory'=>1]), 'market' => route('merchant.resource-market'), 'movement' => route('fleet.movement'), 'jumpgate' => route('jumpgate.index')],
+        'links' => ['fleets' => route('fleet.index'), 'galaxy' => route('galaxy.index'), 'messages' => route('messages.index'), 'alliance' => route('alliance.index'), 'officers' => route('premium.index'), 'shop' => route('shop.index'), 'merchant' => route('merchant.index'), 'notes' => route('live3d.notes'), 'buddies' => route('buddies.index'), 'options' => route('options.index'), 'highscore' => route('highscore.index'), 'tools' => route('galaxy.index'), 'production' => route('resources.settings'), 'facilities' => route('facilities.index'), 'rewards' => route('rewards.index'), 'technology' => route('live3d.technology', ['object_id'=>1,'tab'=>3,'open'=>'all']), 'inventory' => route('shop.index',['inventory'=>1]), 'market' => route('merchant.resource-market'), 'movement' => route('fleet.movement'), 'jumpgate' => route('jumpgate.index')],
     ];
     $liveVite = clone app(\Illuminate\Foundation\Vite::class);
     $liveVite->useScriptTagAttributes(['type' => 'module']);
@@ -94,7 +94,7 @@
             </section>
             <section id="live-page-original" hidden>
                 <p id="live-original-capability" class="card" hidden></p><div id="live-area-tabs" class="live-groups"></div><section id="live-fleet-stock" class="card" hidden></section>
-                <div class="card original-note"><p>{{ $t['embedded'] }}</p><a id="live-original-link" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><iframe id="live-original" title="{{ $t['original_area'] }}"></iframe>
+                <div class="card original-note"><p>{{ $t['embedded'] }}</p><a id="live-original-link" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-original-loader" class="card area-loader" role="status"><span id="live-original-loading-text">{{ $t['loading'] }}</span><button id="live-original-retry" type="button" hidden>{{ __('t_operations.area_retry') }}</button></div><iframe id="live-original" data-ready="false" title="{{ $t['original_area'] }}"></iframe>
             </section>
         </main>
     </div>
