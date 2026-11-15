@@ -17,7 +17,10 @@ weitere Kolonie gründen. Der Browser prüft zusätzlich den tatsächlichen Schn
 
 ## Schrift und Flugzeiten
 
-Unter **Einstellungen → Lesbarkeit** stehen 100 %, 115 %, 130 % und 150 % zur Wahl.
+Unter **Einstellungen → Lesbarkeit** lassen sich Beschreibungstexte und Überschriften
+unabhängig in 1-%-Schritten zwischen 80 % und 160 % einstellen. Überschriften sind
+bei 100 % gegenüber dem bisherigen Stand um 20 % kleiner. Frühere Textgrößen
+werden übernommen; Überschriften beginnen unabhängig davon bei 100 %.
 Bereits die Standardeinstellung verwendet für normalen Text überwiegend 18–22 Pixel.
 Die Einstellung vergrößert Schrift und Bedienelemente und wird auf dem jeweiligen
 Gerät im Browser gespeichert. Eingebettete Spielbereiche übernehmen die Auswahl;

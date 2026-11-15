@@ -43,6 +43,13 @@ export function skinOriginalArea(
                 return
             // Measure at a minimal viewport. Legacy 100% wrappers otherwise measure
             // the previous iframe height and grow by the padding on every observation.
+            const reserve = frame.parentElement,
+                previousMin = reserve.style.minHeight,
+                previousAnchor = reserve.style.overflowAnchor,
+                scrollX = window.scrollX,
+                scrollY = window.scrollY
+            reserve.style.minHeight = `${reserve.getBoundingClientRect().height}px`
+            reserve.style.overflowAnchor = 'none'
             frame.style.height = '1px'
             let bottom = doc.body.getBoundingClientRect().height
             for (const element of doc.querySelectorAll(
@@ -62,6 +69,15 @@ export function skinOriginalArea(
             const height = Math.max(300, Math.ceil(bottom + 32))
             frame.style.height = `${height}px`
             frame.dataset.autoHeight = String(height)
+            reserve.style.minHeight = previousMin
+            reserve.style.overflowAnchor = previousAnchor
+            // Synchronous measurement must not reset the surrounding document's scroll.
+            if (window.scrollX !== scrollX || window.scrollY !== scrollY)
+                window.scrollTo({
+                    left: scrollX,
+                    top: scrollY,
+                    behavior: 'instant',
+                })
         })
     }
     const sizeObserver = new ResizeObserver(resizeFrame)

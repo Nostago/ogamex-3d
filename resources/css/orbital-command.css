@@ -370,7 +370,7 @@
 }
 .stage-heading h1 {
     margin: 0 0 5px;
-    font-size: 27px;
+    font-size:calc(27px * var(--ui-heading-scale,.8));
     font-weight: 500;
     letter-spacing: -0.03em;
 }
@@ -412,13 +412,13 @@
     backdrop-filter: blur(8px);
 }
 .orbital-command .hud-panel h2 {
-    font-size: 14px;
+    font-size:calc(14px * var(--ui-heading-scale,.8));
     color: #9deaff;
     margin-bottom: 14px;
     letter-spacing: 0.01em;
 }
 .orbital-command #live-overview h2 {
-    font-size: 20px;
+    font-size:calc(20px * var(--ui-heading-scale,.8));
 }
 .orbital-command .planet-portrait {
     width: 42px;
@@ -768,7 +768,7 @@
         left: 18px;
     }
     .stage-heading h1 {
-        font-size: 21px;
+        font-size:calc(21px * var(--ui-heading-scale,.8));
     }
     .stage-heading > span {
         padding: 8px;
@@ -834,7 +834,7 @@
 }
 .admin-intro h2 {
     margin: 8px 0 12px;
-    font-size: 25px;
+    font-size:calc(25px * var(--ui-heading-scale,.8));
 }
 .admin-intro p,
 .admin-bot-note p {
@@ -1007,7 +1007,7 @@
 }
 #live-page-admin .admin-intro h2 {
     margin: 5px 0 8px;
-    font-size: 25px;
+    font-size:calc(25px * var(--ui-heading-scale,.8));
 }
 #live-page-admin .admin-intro p {
     margin: 0;
@@ -1234,8 +1234,8 @@
 
 /* Readable command cards, including keyboard/touch users without hover. */
 .orbital-command .hud-panel { padding: 20px; }
-.orbital-command .hud-panel h2 { font-size: 22px; line-height: 1.35; }
-.orbital-command #live-overview h2 { font-size: 28px; overflow-wrap: anywhere; padding-right: 30px; }
+.orbital-command .hud-panel h2 { font-size:calc(22px * var(--ui-heading-scale,.8)); line-height: 1.35; }
+.orbital-command #live-overview h2 { font-size:calc(28px * var(--ui-heading-scale,.8)); overflow-wrap: anywhere; padding-right: 30px; }
 .orbital-command .hud-panel .eyebrow { font-size: 16px; }
 .orbital-command .stat-line { font-size: 20px; line-height: 1.5; padding: 12px 0; gap: 12px; text-align: left; }
 .orbital-command .stat-line strong { font-size: 22px; text-align: right; white-space: normal; }
@@ -1265,7 +1265,7 @@
 
 .system-map { position: relative; grid-column: 1 / -1; grid-row: 2; min-width: 0; z-index: 1; border: 1px solid #226579; border-radius: 12px; background: radial-gradient(ellipse at 50% 47%, #07546e30, #00030a33 60%); display: flex; flex-direction: column; }
 .system-map-heading { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 20px 24px 0; }
-.orbital-command .system-map-heading h2 { font-size: 26px; margin: 6px 0; color: #b0f5ff; }
+.orbital-command .system-map-heading h2 { font-size:calc(26px * var(--ui-heading-scale,.8)); margin: 6px 0; color: #b0f5ff; }
 .system-map-heading .eyebrow { font-size: 14px; }
 #system-map-status { margin: 12px 24px; font-size: 16px; line-height: 1.5; color: #c2deec; }
 .system-map-legend { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 0 24px; font-size: 16px; }
@@ -1291,15 +1291,15 @@
 .orbital-command dialog.system-map-dialog { position: fixed; margin: auto; width: min(540px, calc(100vw - 40px)); max-height: calc(100dvh - 48px); overflow-y: auto; box-sizing: border-box; padding: 24px; background: #061723; color: #e2f4ff; border: 1px solid #64dafa; border-radius: 10px; box-shadow: 0 12px 100px #000c, 0 0 35px #0bd6f926; font-size: 18px; }
 .system-map-dialog::backdrop { background: #010711bb; backdrop-filter: blur(4px); }
 .system-map-dialog header, .system-map-planner > header { display: flex; justify-content: space-between; gap: 20px; align-items: start; }
-.system-map-dialog header h2 { margin: 0 0 16px; font-size: 24px; line-height: 1.4; overflow-wrap: anywhere; }
+.system-map-dialog header h2 { margin: 0 0 16px; font-size:calc(24px * var(--ui-heading-scale,.8)); line-height: 1.4; overflow-wrap: anywhere; }
 .system-map-dialog #system-map-close { font-size: 26px; min-width: 44px; padding: 2px 12px; }
-#system-map-details > h2 { font-size: 18px; color: #9abfd2; }
-#system-map-details h3 { font-size: 20px; }
+#system-map-details > h2 { font-size:calc(18px * var(--ui-heading-scale,.8)); color: #9abfd2; }
+#system-map-details h3 { font-size:calc(20px * var(--ui-heading-scale,.8)); }
 #system-map-details button { font-size: 16px; min-height: 44px; margin: 5px; padding: 10px 14px; }
 #system-map-details p { font-size: 16px; line-height: 1.6; }
 #system-map-details .galaxy-action-form { display: grid; }
 .system-map-planner { grid-column: 1 / -1; grid-row: 4; padding: 24px; border: 1px solid #3cbacf; border-radius: 8px; background: #061522; min-width: 0; }
-.system-map-planner h2 { font-size: 24px; }
+.system-map-planner h2 { font-size:calc(24px * var(--ui-heading-scale,.8)); }
 .system-map-planner > p { font-size: 18px; line-height: 1.5; }
 @media (max-width: 1000px) {
     .orbital-command .orbital-stage { padding: 16px; grid-template-rows: auto minmax(800px, auto) auto auto auto; }
@@ -1311,7 +1311,7 @@
     .orbital-command .orbital-stage > .scene-panel { position: relative; inset: auto; height: 560px; min-height: 560px; }
     .orbital-command .hud-left, .orbital-command .hud-right { width: 100%; }
     .system-map-heading { padding: 16px 12px 0; flex-wrap: wrap; }
-    .orbital-command .system-map-heading h2 { font-size: 23px; }
+    .orbital-command .system-map-heading h2 { font-size:calc(23px * var(--ui-heading-scale,.8)); }
     #system-map-status, .system-map-legend { margin: 12px; }
     .system-map-nodes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; min-height: 0; margin: 12px; }
     .orbital-command button.system-map-node { position: relative; left: auto; top: auto; transform: none; width: 100%; min-height: 150px; background: #04162299; border-color: #245267; }
@@ -1347,7 +1347,7 @@
 .orbital-command button.system-fleet-contact[data-relation="hostile"] { color: #ffc09a; border-color: #ff9361; box-shadow: 0 0 16px #ff643144; }
 .orbital-command button.system-fleet-contact:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 .map-fleet-list { margin: 12px 24px; position: relative; }
-.map-fleet-list h3 { font-size: 20px; color: #a4f0ff; margin: 10px 0; }
+.map-fleet-list h3 { font-size:calc(20px * var(--ui-heading-scale,.8)); color: #a4f0ff; margin: 10px 0; }
 .map-fleet-list > p { font-size: 16px; line-height: 1.6; }
 .orbital-command .map-fleet-entry { display: flex; justify-content: space-between; align-items: center; gap: 16px; width: 100%; text-align: left; padding: 12px; margin: 8px 0; font-size: 16px; line-height: 1.5; border-color: #24647b; }
 .map-fleet-entry strong { font-size: 16px; }
@@ -1355,7 +1355,7 @@
 .map-fleet-entry[data-relation="hostile"] { border-color: #e69669; }
 .map-tactical-error { color: #ffd4a4; }
 .map-intelligence { padding: 14px 0; border-block: 1px solid #31586b; margin: 12px 0; }
-.map-report h4 { font-size: 20px; margin: 14px 0; }
+.map-report h4 { font-size:calc(20px * var(--ui-heading-scale,.8)); margin: 14px 0; }
 .map-report-risk { font-size: 18px; color: #b1e2df; }
 [data-assessment="armed"] .map-report-risk { color: #ffbb9f; }
 .map-report-section { margin: 10px 0; padding: 12px; border: 1px solid #2e5d71; border-radius: 6px; }
@@ -1382,7 +1382,7 @@
 .orbital-command .quick-fleet-dialog { position:fixed; margin:auto; width:min(580px,calc(100vw - 30px)); box-sizing:border-box; max-height:calc(100dvh - 30px); overflow-y:auto; padding:24px; border:1px solid #69e8ff; border-radius:12px; background:#071c2b; color:#e5f7ff; box-shadow:0 20px 100px #000b; font-size:18px; }
 .quick-fleet-dialog::backdrop { background:#010914c9; backdrop-filter:blur(4px); }
 .quick-fleet-dialog header { display:flex; justify-content:space-between; gap:20px; align-items:start; }
-.orbital-command .quick-fleet-dialog h2 { font-size:26px; margin:0 0 16px; color:#b2f4ff; }
+.orbital-command .quick-fleet-dialog h2 { font-size:calc(26px * var(--ui-heading-scale,.8)); margin:0 0 16px; color:#b2f4ff; }
 .orbital-command #quick-fleet-close { min-width:44px; font-size:26px; padding:0 10px; }
 #quick-fleet-target,#quick-fleet-availability,#quick-fleet-status { font-size:17px; line-height:1.6; }
 .quick-fleet-ship { display:grid; grid-template-columns:minmax(0,1fr) 130px; gap:8px 16px; padding:16px 0; border-bottom:1px solid #31566a; font-size:20px; }
@@ -1404,8 +1404,8 @@
 .system-fleet-contact::after { content:''; position:absolute; inset:-8px; border:1px solid #82f5ff88; border-radius:50%; animation:fleet-contact-pulse 2.8s ease-out infinite; pointer-events:none; }
 @keyframes fleet-contact-pulse { to { transform:scale(1.5); opacity:0; } }
 .fleet-radar-tooltip { position:fixed; z-index:10000; width:min(380px,calc(100vw - 20px)); box-sizing:border-box; max-height:calc(100dvh - 20px); overflow-y:auto; padding:20px; color:#e7f7ff; background:#041827f5; border:1px solid #76e6fb; border-radius:9px; box-shadow:0 12px 55px #000b; font-size:18px; }
-.orbital-command .fleet-radar-tooltip h2 { font-size:22px; margin:0 0 12px; color:#b5f6ff; }
-.orbital-command .fleet-radar-tooltip h3 { font-size:18px; margin:16px 0 10px; }
+.orbital-command .fleet-radar-tooltip h2 { font-size:calc(22px * var(--ui-heading-scale,.8)); margin:0 0 12px; color:#b5f6ff; }
+.orbital-command .fleet-radar-tooltip h3 { font-size:calc(18px * var(--ui-heading-scale,.8)); margin:16px 0 10px; }
 .fleet-radar-tooltip p { font-size:16px; line-height:1.6; }
 .radar-ship-row { display:flex; justify-content:space-between; gap:18px; padding:10px 0; border-bottom:1px solid #315769; font-size:18px; }
 .radar-ship-row strong { color:#b6f3ff; font-size:20px; font-variant-numeric:tabular-nums; }
@@ -1416,7 +1416,7 @@
 .orbital-command .quick-fleet-ship input { font-size:22px; }
 
 /* Legible timers and a per-device readability preference. */
-:root { --ui-text-scale:1; }
+:root { --ui-text-scale:1; --ui-heading-scale:.8; }
 .duration-parts { display:inline-flex; flex-wrap:wrap; gap:8px; align-items:stretch; font-variant-numeric:tabular-nums; }
 .duration-part { display:inline-flex; flex-direction:column; align-items:center; min-width:64px; padding:8px 12px; border:1px solid #43869c; border-left:3px solid #6ce8fa; border-radius:5px; background:#082a3c; line-height:1.35; }
 .duration-part>span { font-size:calc(14px * var(--ui-text-scale)); color:#b8ddeb; }
@@ -1424,19 +1424,19 @@
 .duration-part:nth-child(2) { border-left-color:#97baff; }.duration-part:nth-child(3) { border-left-color:#81e4bd; }.duration-part:nth-child(4) { border-left-color:#ffd294; }
 .fleet-time-prefix { display:block; margin:12px 0 8px; font-size:calc(18px * var(--ui-text-scale)); }
 #live-ui-settings { padding:24px; margin:0 0 24px; }
-#live-ui-settings h2 { font-size:calc(26px * var(--ui-text-scale)); }#live-ui-settings p,#live-ui-settings label { font-size:calc(18px * var(--ui-text-scale));line-height:1.6; }
+#live-ui-settings h2 { font-size:calc(26px * var(--ui-heading-scale)); }#live-ui-settings p,#live-ui-settings label { font-size:calc(18px * var(--ui-text-scale));line-height:1.6; }
 #live-ui-text-scale { width:min(100%,360px);font-size:calc(20px * var(--ui-text-scale));min-height:48px;margin:12px 18px 12px 0; }
 #live-ui-text-reset { font-size:calc(18px * var(--ui-text-scale)); }
 .orbital-command #live-page-fleets { font-size:calc(18px * var(--ui-text-scale));line-height:1.6; }
 .orbital-command #live-page-fleets :is(p,label,small,select,input,button,summary,.fleet-stat,.fleet-stat strong) { font-size:calc(18px * var(--ui-text-scale));line-height:1.6; }
-.orbital-command #live-page-fleets :is(h2,h3) { font-size:calc(24px * var(--ui-text-scale)); }
+.orbital-command #live-page-fleets :is(h2,h3) { font-size:calc(24px * var(--ui-heading-scale)); }
 .orbital-command #live-page-fleets .fleet-launch { font-size:calc(22px * var(--ui-text-scale)); }
 .orbital-command #live-page-fleets :is(input,select) { min-height:46px; }
 .orbital-command #live-page-fleets .fleet-ship { padding:18px; }
 .orbital-command .hud-panel .stat-line { font-size:calc(20px * var(--ui-text-scale)); }.orbital-command .hud-panel .stat-line strong { font-size:calc(22px * var(--ui-text-scale)); }
-.orbital-command .hud-panel h2 { font-size:calc(24px * var(--ui-text-scale)); }
+.orbital-command .hud-panel h2 { font-size:calc(24px * var(--ui-heading-scale)); }
 .orbital-command .main-nav .nav-entry>a[data-live-page],.orbital-command .main-nav>a[data-live-page] { font-size:calc(17px * var(--ui-text-scale)); }
-.orbital-command .workspace-heading h1 { font-size:calc(36px * var(--ui-text-scale)); }
+.orbital-command .workspace-heading h1 { font-size:calc(36px * var(--ui-heading-scale)); }
 .orbital-command .fleet-radar-tooltip { width:min(calc(400px * var(--ui-text-scale)),calc(100vw - 20px)); }
 .orbital-command .radar-ship-row { font-size:calc(18px * var(--ui-text-scale)); }.orbital-command .radar-ship-row strong { font-size:calc(22px * var(--ui-text-scale)); }
 .orbital-command .quick-fleet-dialog { width:min(calc(580px * var(--ui-text-scale)),calc(100vw - 30px)); }
@@ -1445,7 +1445,7 @@
 @media(max-width:600px) { .duration-part { padding:6px 8px;min-width:52px; }.duration-part>strong{font-size:calc(20px * var(--ui-text-scale));} }
 .orbital-command .workspace :is(p,label,td,th,li,small,button,input,select,summary,.muted,.eyebrow) { font-size:calc(18px * var(--ui-text-scale))!important;line-height:1.55; }
 .orbital-command .workspace strong { font-size:calc(22px * var(--ui-text-scale))!important; }
-.orbital-command .workspace :is(h2,h3) { font-size:calc(26px * var(--ui-text-scale)); }
+.orbital-command .workspace :is(h2,h3) { font-size:calc(26px * var(--ui-heading-scale)); }
 .orbital-command .workspace .duration-part>span { font-size:calc(16px * var(--ui-text-scale))!important; }
 .orbital-command .system-map-field { height:calc(720px * var(--ui-text-scale));min-height:calc(720px * var(--ui-text-scale)); }
 .orbital-command .workspace .system-map-node { line-height:1.3; }
@@ -1463,4 +1463,15 @@
 .orbital-command .resource-balances>span { overflow-wrap:normal; }
 @media(min-width:1001px) { .orbital-command .command-header { grid-template-columns:calc(176px * var(--ui-text-scale)) calc(195px * var(--ui-text-scale)) minmax(0,1fr) calc(130px * var(--ui-text-scale)); } }
 
-.orbital-command .bot-card summary { cursor:pointer;padding:8px; }.orbital-command .bot-card summary h2 { display:inline;margin:0;font-size:calc(20px * var(--ui-text-scale,1)); }.orbital-command .bot-card[open] summary { border-bottom:1px solid #31566c;padding-bottom:18px;margin-bottom:18px; }
+.orbital-command .bot-card summary { cursor:pointer;padding:8px; }.orbital-command .bot-card summary h2 { display:inline;margin:0;font-size:calc(20px * var(--ui-heading-scale,1)); }.orbital-command .bot-card[open] summary { border-bottom:1px solid #31566c;padding-bottom:18px;margin-bottom:18px; }
+
+.orbital-command .workspace :is(h1,h2,h3,h4,h5,h6) { max-width:100%;min-width:0;height:auto;overflow-wrap:anywhere;line-height:1.35; }
+.orbital-command :is(h1,h2,h3,h4,h5,h6) strong { font:inherit!important; }
+.orbital-command .workspace .object-text>strong,.orbital-command .workspace .fleet-ship>strong { font-size:calc(22px * var(--ui-heading-scale,.8))!important;overflow-wrap:anywhere; }
+.orbital-command .stage-heading { flex-wrap:wrap; }
+.orbital-command #live-rename-open { pointer-events:auto; margin-left:auto; }
+.readability-controls { display:flex;flex-wrap:wrap;gap:24px;align-items:start; }
+.readability-controls label { display:grid;gap:8px;min-width:200px; }
+.orbital-command #live-ui-settings input { width:110px;min-height:48px;font:inherit; }
+.orbital-command #live-rename-name { display:block;width:100%;box-sizing:border-box;font-size:calc(20px * var(--ui-text-scale,1));padding:12px; }
+.orbital-command #live-ui-settings input { margin:0; }.readability-controls label>span { display:flex;align-items:center;gap:8px; }

@@ -613,3 +613,5 @@ und blockierte 3D-Moduldateien. Beide Fälle müssen die Spieloberfläche und ei
 interaktive Kompatibilitätsansicht erhalten.
 
 Weitere Etappe: [Flottenprüfung, Nachrichten und autonome NPCs](OGAMEX-3D-BOT-OPERATIONS.md).
+
+Weitere Etappe: [Planetenname, Schriftgrößen und Scrollposition](OGAMEX-3D-UI-CONTROLS.md).

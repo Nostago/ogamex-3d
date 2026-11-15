@@ -1,27 +1,47 @@
-const storageKey = 'ogamex-ui-text-scale-v1',
-    allowed = ['1', '1.15', '1.3', '1.5']
+const storageKey = 'ogamex-ui-readability-v2',
+    legacyKey = 'ogamex-ui-text-scale-v1'
+const bounds = (value) =>
+    Math.max(80, Math.min(160, Math.round(Number(value) || 100)))
 export function applyFrameReadability(doc) {
-    if (doc?.documentElement)
+    if (!doc?.documentElement) return
+    for (const [key, fallback] of [
+        ['--ui-text-scale', '1'],
+        ['--ui-heading-scale', '0.8'],
+    ])
         doc.documentElement.style.setProperty(
-            '--ui-text-scale',
-            document.documentElement.style.getPropertyValue(
-                '--ui-text-scale',
-            ) || '1',
+            key,
+            document.documentElement.style.getPropertyValue(key) || fallback,
         )
 }
 export function initReadability() {
-    const select = document.querySelector('#live-ui-text-scale')
-    let value = '1'
+    const text = document.querySelector('#live-ui-text-scale'),
+        headings = document.querySelector('#live-ui-heading-scale')
+    let values = { text: 100, headings: 100 }
     try {
         const saved = localStorage.getItem(storageKey)
-        if (allowed.includes(saved)) value = saved
+        if (saved) {
+            const parsed = JSON.parse(saved)
+            values = {
+                text: bounds(parsed?.text),
+                headings: bounds(parsed?.headings),
+            }
+        } else {
+            const old = localStorage.getItem(legacyKey)
+            if (['1', '1.15', '1.3', '1.5'].includes(old))
+                values.text = bounds(Number(old) * 100)
+        }
     } catch {
-        /* Private browsing may disable storage. */
+        /* Settings remain usable without browser storage. */
     }
-    function apply(next, save = true) {
-        value = allowed.includes(next) ? next : '1'
-        select.value = value
-        document.documentElement.style.setProperty('--ui-text-scale', value)
+    function apply(save = true) {
+        document.documentElement.style.setProperty(
+            '--ui-text-scale',
+            String(values.text / 100),
+        )
+        document.documentElement.style.setProperty(
+            '--ui-heading-scale',
+            String((values.headings * 0.8) / 100),
+        )
         for (const frame of document.querySelectorAll('iframe')) {
             try {
                 applyFrameReadability(frame.contentDocument)
@@ -31,14 +51,31 @@ export function initReadability() {
         }
         if (save)
             try {
-                localStorage.setItem(storageKey, value)
+                localStorage.setItem(storageKey, JSON.stringify(values))
             } catch {
-                /* The current setting still works. */
+                /* Current settings still work. */
             }
     }
-    select.addEventListener('change', () => apply(select.value))
-    document
-        .querySelector('#live-ui-text-reset')
-        .addEventListener('click', () => apply('1'))
-    apply(value, false)
+    for (const [key, field] of [
+        ['text', text],
+        ['headings', headings],
+    ]) {
+        field.value = values[key]
+        field.addEventListener('input', () => {
+            if (!field.value || !field.validity.valid) return
+            values[key] = bounds(field.value)
+            apply()
+        })
+        field.addEventListener('change', () => {
+            values[key] = bounds(field.value)
+            field.value = values[key]
+            apply()
+        })
+    }
+    document.querySelector('#live-ui-text-reset').onclick = () => {
+        values = { text: 100, headings: 100 }
+        text.value = headings.value = '100'
+        apply()
+    }
+    apply(false)
 }

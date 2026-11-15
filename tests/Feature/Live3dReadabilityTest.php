@@ -52,6 +52,6 @@ class Live3dReadabilityTest extends IsolatedAccountTestCase
         }
         $this->playerSetResearchLevel('energy_technology', 5);
         $this->get('/play-3d/technology?object_id=113&tab=3')->assertOk()->assertSee('Energietechnik')->assertSee('<strong>5</strong>', false);
-        $this->get('/play-3d')->assertOk()->assertSee('live-ui-text-scale')->assertSee('Extra groß');
+        $this->get('/play-3d')->assertOk()->assertSee('live-ui-text-scale')->assertSee('live-ui-heading-scale')->assertSee('step="1"', false);
     }
 }

@@ -3,7 +3,7 @@
 return [
     'title' => 'Readability',
     'device_hint' => 'This display preference is saved on this device. Game settings remain available below.',
-    'text_size' => 'Text and controls',
+    'text_size' => 'Descriptions and controls',
     'standard' => 'Readable (100%)',
     'large' => 'Large (115%)',
     'larger' => 'Very large (130%)',
@@ -31,4 +31,10 @@ return [
     'reward_6_body' => 'Greetings, emperor :player! We need to strengthen our forces if we don`t want to end up being our enemy`s play toy. The DETROID robot can accelerate production in the shipyard. That way the fleet will be ready to go at all times! Good luck! The OGame Starter Aid',
     'reward_7_title' => 'Expansion of the empire',
     'reward_7_body' => 'Greetings, emperor :player! The foundations for a powerful empire are set. The Commanding Staff are now available to you for 3 days to support you in the consolidation of your empire. Drive research forward and soon new worlds will be open to you and available for your settlers! Good luck! The OGame Starter Aid',
+    'heading_size' => 'Headings',
+    'fine_steps' => 'Adjust both sizes independently in 1% steps (80–160%). Heading size at 100% is 20% smaller than before.',
+    'rename_world' => 'Rename planet / moon',
+    'world_name' => 'New name',
+    'rename_hint' => 'Use 2–20 letters A–Z, digits, spaces, hyphens or underscores. Original name validation applies.',
+    'rename_save' => 'Save name',
 ];

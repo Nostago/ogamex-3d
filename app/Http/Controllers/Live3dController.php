@@ -58,12 +58,18 @@ class Live3dController extends Controller
         abort_unless(is_string($token) && hash_equals($request->session()->token(), $token), 419);
         $input = $request->validate([
             'planet' => ['required', 'integer', 'min:1'],
-            'action' => ['required', Rule::in(['build', 'research', 'ship', 'defense', 'cancel-building', 'cancel-research'])],
-            'technologyId' => ['required', 'integer', Rule::in(array_map(fn (GameObject $object): int => $object->id, ObjectService::getObjects()))],
+            'action' => ['required', Rule::in(['build', 'research', 'ship', 'defense', 'cancel-building', 'cancel-research', 'rename-planet'])],
+            'technologyId' => ['required_unless:action,rename-planet', 'integer', Rule::in(array_map(fn (GameObject $object): int => $object->id, ObjectService::getObjects()))],
+            'newPlanetName' => ['required_if:action,rename-planet', 'string', 'max:20'],
             'amount' => ['required_if:action,ship,defense', 'integer', 'min:1'],
             'listId' => ['required_if:action,cancel-building,cancel-research', 'integer', 'min:1'],
         ]);
         $planet = $this->ownedPlanet($player, (int)$input['planet']);
+        if ($input['action'] === 'rename-planet') {
+            $player->setCurrentPlanetId($planet->getPlanetId());
+            $request->replace(['newPlanetName' => $input['newPlanetName']]);
+            return resolve(PlanetAbandonController::class)->rename($player);
+        }
         $object = ObjectService::getObjectById((int)$input['technologyId']);
         $expected = match ($input['action']) {
             'research', 'cancel-research' => [GameObjectType::Research],

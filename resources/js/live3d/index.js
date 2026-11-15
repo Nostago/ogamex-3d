@@ -9,6 +9,7 @@ import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
 import { createQuickFleet } from './quickFleet.js'
 import { initReadability } from './readability.js'
+import { initPlanetName } from './planetName.js'
 import { createSystemMap } from './systemMap.js'
 import { renderIcons } from './icons.js'
 import { createFleetPanel } from './fleetPanel.js'
@@ -108,6 +109,19 @@ const el = (tag, cls, text) => {
     if (text !== undefined) n.textContent = text
     return n
 }
+const planetName = initPlanetName({
+    client,
+    state: () => state,
+    t,
+    setBusy(value) {
+        busy = value
+        render()
+    },
+    async refresh() {
+        await refresh()
+        if (page === 'planet' && mode === 'map') systemMap.show(true)
+    },
+})
 function routePage() {
     const name = location.hash.slice(1)
     return pages.includes(name) ? name : 'planet'
@@ -131,6 +145,7 @@ function objects() {
 }
 function show(name, fromFrame = false, fleetTarget) {
     quickFleet.hide()
+    planetName.hide()
     systemMap.hide()
     page = pages.includes(name) ? name : 'planet'
     if (location.hash !== `#${page}`) location.hash = page
@@ -641,6 +656,7 @@ async function command(action, payload) {
 }
 async function switchPlanet(id) {
     if (busy || stopped) return
+    planetName.hide()
     const previous = String(state.planet.id),
         version = ++planetSwitch
     switching = true

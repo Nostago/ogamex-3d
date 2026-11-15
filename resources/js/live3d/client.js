@@ -76,6 +76,7 @@ export function createLiveClient({
                     throw Object.assign(
                         new Error(
                             result.message ||
+                                result.errorbox?.text ||
                                 result.errors?.[0]?.message ||
                                 'rejected',
                         ),

@@ -4,7 +4,7 @@
 return [
     'title' => 'Lesbarkeit',
     'device_hint' => 'Diese Anzeigeeinstellung wird auf diesem Gerät gespeichert. Deine Spieleinstellungen findest du darunter.',
-    'text_size' => 'Schrift und Bedienelemente',
+    'text_size' => 'Beschreibungen und Bedienelemente',
     'standard' => 'Gut lesbar (100 %)',
     'large' => 'Groß (115 %)',
     'larger' => 'Sehr groß (130 %)',
@@ -32,4 +32,10 @@ return [
     'reward_6_body' => 'Hallo :player! Der DETROID-Roboter beschleunigt die Schiffsproduktion. Eine starke Flotte eröffnet neue Möglichkeiten im Weltraum.',
     'reward_7_title' => 'Das Imperium erweitern',
     'reward_7_body' => 'Hallo :player! Der Führungsstab unterstützt den Ausbau deines Imperiums. Mit Astrophysik und Kolonieschiffen kannst du neue Welten besiedeln.',
+    'heading_size' => 'Überschriften',
+    'fine_steps' => 'Beide Größen sind unabhängig in 1-%-Schritten von 80–160 % einstellbar. Überschriften sind bei 100 % gegenüber bisher um 20 % kleiner.',
+    'rename_world' => 'Planet / Mond umbenennen',
+    'world_name' => 'Neuer Name',
+    'rename_hint' => '2–20 Zeichen: Buchstaben A–Z, Ziffern, Leerzeichen, Bindestriche oder Unterstriche. Es gelten die Namensregeln des Originals.',
+    'rename_save' => 'Namen speichern',
 ];

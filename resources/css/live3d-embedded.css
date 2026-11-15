@@ -31,7 +31,7 @@
     #inhalt a.continue,#inhalt a.start{background:#14556b!important;border:1px solid #57b9d2!important;border-radius:5px!important;padding:8px 16px!important;min-height:38px;box-sizing:border-box!important;color:#d2f6ff!important}
     #inhalt a.continue.off,#inhalt a.start.off{opacity:.45}
     .header,.footer,.new_footer,.new_header,.box_highlight{background-image:none!important;height:auto!important;color:#a6ecfa!important}
-    .header h2,h2,h3{font:600 20px/1.5 system-ui!important;color:#a6ecfa!important}
+    .header h2,h2,h3{font:600 calc(20px * var(--ui-heading-scale,.8))/1.5 system-ui!important;color:#a6ecfa!important}
     .content,.sectioncontent,.group,.contentbox,.contentBox{background-color:#0a2030!important;border:1px solid #294c60!important;border-radius:7px!important;padding:16px!important;box-sizing:border-box!important}
     input,select,textarea{background:#061724!important;color:#e1f3fc!important;border:1px solid #3b647b!important;border-radius:5px!important;box-shadow:none!important;font:inherit!important;box-sizing:border-box!important;max-width:100%!important}
     input[type=text],input[type=number],input[type=password],select,textarea{padding:9px!important;height:auto!important}
@@ -75,7 +75,7 @@
 #content #buttonz .tab_ctn,#content #buttonz .tab_inner{width:auto!important;min-width:0!important;height:auto!important;max-height:none!important;background:none!important;border:0!important;padding:0!important;margin:0!important;list-style:none!important}
 #content #buttonz .msg{background:#0a2030!important;background-image:none!important;border:1px solid #31566c!important;border-radius:6px!important;padding:16px!important;margin:10px 0!important;color:#d4e7f2!important;height:auto!important;max-height:none!important;overflow:visible!important}
 #content #buttonz .msg_head{background:none!important;color:#bce9f6!important;font:13px/1.6 system-ui!important;padding:0 0 10px!important}
-#content #buttonz .msg_title{color:#88e5ff!important;font-size:15px!important;font-weight:600!important}
+#content #buttonz .msg_title{color:#88e5ff!important;font-size:calc(15px * var(--ui-heading-scale,.8))!important;font-weight:600!important}
 #content #buttonz .msg_content{display:block!important;background:none!important;color:#d4e7f2!important;font:14px/1.7 system-ui!important;height:auto!important;max-height:none!important;overflow:visible!important}
 #content #buttonz .msg_content p,#content #buttonz .msg_content span{color:inherit!important;font:inherit!important}
 #content #buttonz .msg_date,#content #buttonz .msg_sender_label,#content #buttonz .msg_sender{color:#a8c5d6!important;font-size:12px!important}
@@ -86,9 +86,9 @@
 /* Readable game areas; the parent preference changes fonts without scaling the 3D canvas. */
 html,body { font:calc(18px * var(--ui-text-scale,1))/1.65 system-ui,sans-serif!important; }
 #inhalt :is(p,label,small,td,th,select,input,textarea,button),#live-technology p { font-size:calc(18px * var(--ui-text-scale,1))!important;line-height:1.65!important; }
-#inhalt :is(h2,h3),#live-technology h2 { font-size:calc(26px * var(--ui-text-scale,1))!important; }
+#inhalt :is(h2,h3),#live-technology h2 { font-size:calc(26px * var(--ui-heading-scale,.8))!important; }
 #content #buttonz .msg_content { font-size:calc(18px * var(--ui-text-scale,1))!important; }
-#content #buttonz .msg_title { font-size:calc(21px * var(--ui-text-scale,1))!important; }
+#content #buttonz .msg_title { font-size:calc(21px * var(--ui-heading-scale,.8))!important; }
 #content #buttonz .msg_head,#content #buttonz .msg_date,#content #buttonz .msg_sender { font-size:calc(16px * var(--ui-text-scale,1))!important; }
 #content #buttonz :is(.acceptRequest,.rejectRequest) { display:inline-flex!important;align-items:center;gap:8px;float:none!important;width:auto!important;min-width:160px!important;min-height:48px!important;height:auto!important;padding:10px 16px!important;font-size:calc(18px * var(--ui-text-scale,1))!important;text-indent:0!important;margin:8px 12px 8px 0!important; }
 #content #buttonz .acceptRequest { background:#164b3b!important;border:1px solid #8fe8b7!important;color:#c8ffe3!important; }#content #buttonz .rejectRequest { background:#522c34!important;border:1px solid #eea7a7!important;color:#ffe2e2!important; }
@@ -114,7 +114,7 @@ gradient-button[sq30] { display:inline-block!important;width:auto!important;heig
 #live-rewards { padding:20px; }.live-rewards-banner { background:linear-gradient(90deg,#031323ee,#081e2699),url('/img/headers/rewards/rewards.jpg') center/cover;padding:40px 24px;border:1px solid #3d8ba5;border-radius:8px; }
 #live-rewards .live-rewards-notice { padding:18px;background:#173345;border:1px solid #46778e;border-radius:6px; }
 .live-reward-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px; }.live-reward-card { background:#0b2535;border:1px solid #3c6d84;border-radius:9px;overflow:hidden; }
-.live-reward-card>img { display:block;width:100%;height:180px;object-fit:cover; }.live-reward-card>div { padding:22px; }.live-reward-card h3 { font-size:calc(23px * var(--ui-text-scale,1))!important; }.live-reward-card p { font-size:calc(18px * var(--ui-text-scale,1))!important;line-height:1.7; }
+.live-reward-card>img { display:block;width:100%;height:180px;object-fit:cover; }.live-reward-card>div { padding:22px; }.live-reward-card h3 { font-size:calc(23px * var(--ui-heading-scale,.8))!important; }.live-reward-card p { font-size:calc(18px * var(--ui-text-scale,1))!important;line-height:1.7; }
 .live-reward-status { display:inline-block;padding:8px 12px;border:1px solid #a4b1ba;border-radius:5px;font-size:calc(16px * var(--ui-text-scale,1));color:#dce7ed;background:#233641; }
 @media(max-width:700px) { #createNote :is(table,tbody,tr,th,td) {display:block!important;width:100%!important;}#live-technology {padding:10px!important;}#live-technology select{min-width:0;}#live-technology :is(td,th){padding:8px!important;overflow-wrap:anywhere;} }
 #live-tech-object { display:block!important;font-size:calc(18px * var(--ui-text-scale,1))!important; }
@@ -134,3 +134,7 @@ gradient-button[sq30] { display:inline-block!important;width:auto!important;heig
 #content #buttonz .pagination li { display:block!important;float:none!important;background:#102838!important;border:1px solid #31566c!important;padding:6px 12px!important; }
 
 #content #buttonz :is(.js_subtabs_fleets,.js_subtabs_communication,.subtabs) { width:100%!important;max-width:none!important;box-sizing:border-box!important; }
+
+:is(h1,h2,h3,h4,h5,h6),#content #buttonz .msg_title { max-width:100%!important;height:auto!important;overflow-wrap:anywhere!important;line-height:1.35!important; }
+h1 { font-size:calc(32px * var(--ui-heading-scale,.8))!important; }
+:is(h1,h2,h3,h4,h5,h6) strong { font:inherit!important; }

@@ -172,7 +172,7 @@ try {
         }, path)
     }
     await navigate('options', '/options')
-    await page.locator('#live-ui-text-scale').selectOption('1.3')
+    await page.locator('#live-ui-text-scale').fill('130')
     assert.equal(
         await frame
             .locator('html')
@@ -181,7 +181,7 @@ try {
     )
     await page.reload()
     await page.waitForSelector('#live-original[data-ready=true]')
-    assert.equal(await page.locator('#live-ui-text-scale').inputValue(), '1.3')
+    assert.equal(await page.locator('#live-ui-text-scale').inputValue(), '130')
     await navigate('production', '/resources/settings')
     const percentage = frame.locator(
         '#resourcesettingscomponent select[name=last1]',
@@ -344,7 +344,7 @@ try {
     })
     await page.evaluate(() => (location.hash = '#options'))
     await page.locator('#live-ui-text-reset').click()
-    assert.equal(await page.locator('#live-ui-text-scale').inputValue(), '1')
+    assert.equal(await page.locator('#live-ui-text-scale').inputValue(), '100')
     await page.setViewportSize({ width: 390, height: 844 })
     assert.equal(
         await page.evaluate(

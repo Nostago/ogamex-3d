@@ -27,6 +27,7 @@
 </head>
 <body class="prototype-3d live-interface orbital-command">
 @include('live3d.quick-fleet')
+@include('live3d.planet-name')
 <div id="prototype" data-mode="map" data-page="planet">
     <header class="command-header">
         <a class="brand" href="{{ route('live3d.index') }}"><span class="brand-orbit" aria-hidden="true">◈</span><span>OGameX <b>3D</b><small>ORBITAL COMMAND</small></span></a>
@@ -62,7 +63,7 @@
                     <div id="scene-labels" aria-hidden="true"></div>
                     <div class="orbital-reticle" aria-hidden="true"></div>
                 </section>
-                <header class="stage-heading"><span data-icon="planet" aria-hidden="true"></span><div><h1 id="live-world-name"></h1><p id="live-world-coordinates"></p></div></header>
+                <header class="stage-heading"><span data-icon="planet" aria-hidden="true"></span><div><h1 id="live-world-name"></h1><p id="live-world-coordinates"></p></div><button type="button" id="live-rename-open">{{ __('t_readability.rename_world') }}</button></header>
                 <aside class="hud-left"><section id="live-overview" class="card hud-panel"></section><section id="live-operations" class="card hud-panel"></section><a href="{{ route('resources.settings') }}" id="live-production-link">{{ $t['production_settings'] }} ↗</a></aside>
                 <aside class="hud-right"><section id="live-production" class="card hud-panel"></section><section id="live-dock" class="command-dock hud-panel"></section><section id="live-fleet-events" class="card hud-panel"></section></aside>
                 <div id="live-scene-recovery" class="scene-recovery" role="status"><p id="live-scene-hint">{{ $t['scene_loading'] }}</p><button id="live-scene-retry">{{ $t['scene_retry'] }}</button><details><summary>{{ $t['scene_diagnostics'] }}</summary><output id="live-scene-diagnostics"></output></details></div>
@@ -95,7 +96,9 @@
                 <section id="live-admin-advanced" hidden><div class="admin-frame-toolbar"><p id="live-admin-tab-hint"></p><a id="live-admin-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-admin-sections" class="admin-section-switch" hidden></div><iframe id="live-admin-frame" title="{{ $t['admin'] }}"></iframe></section>
             </section>
             <section id="live-page-original" hidden>
-                <section id="live-ui-settings" class="card" hidden aria-labelledby="live-ui-settings-title"><h2 id="live-ui-settings-title">{{ __('t_readability.title') }}</h2><p>{{ __('t_readability.device_hint') }}</p><label for="live-ui-text-scale">{{ __('t_readability.text_size') }}</label><select id="live-ui-text-scale">@foreach(['1' => 'standard', '1.15' => 'large', '1.3' => 'larger', '1.5' => 'largest'] as $value => $key)<option value="{{ $value }}">{{ __('t_readability.'.$key) }}</option>@endforeach</select><button id="live-ui-text-reset" type="button">{{ __('t_readability.reset') }}</button></section>
+                <section id="live-ui-settings" class="card" hidden aria-labelledby="live-ui-settings-title"><h2 id="live-ui-settings-title">{{ __('t_readability.title') }}</h2><p>{{ __('t_readability.device_hint') }}</p><div class="readability-controls">
+                <label for="live-ui-text-scale">{{ __('t_readability.text_size') }}<span><input id="live-ui-text-scale" type="number" min="80" max="160" step="1" value="100"> %</span></label>
+                <label for="live-ui-heading-scale">{{ __('t_readability.heading_size') }}<span><input id="live-ui-heading-scale" type="number" min="80" max="160" step="1" value="100"> %</span></label></div><p>{{ __('t_readability.fine_steps') }}</p><button id="live-ui-text-reset" type="button">{{ __('t_readability.reset') }}</button></section>
                 <p id="live-original-capability" class="card" hidden></p><div id="live-area-tabs" class="live-groups"></div><section id="live-fleet-stock" class="card" hidden></section>
                 <div class="card original-note"><p>{{ $t['embedded'] }}</p><a id="live-original-link" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-original-loader" class="card area-loader" role="status"><span id="live-original-loading-text">{{ $t['loading'] }}</span><button id="live-original-retry" type="button" hidden>{{ __('t_operations.area_retry') }}</button></div><iframe id="live-original" data-ready="false" title="{{ $t['original_area'] }}"></iframe>
             </section>
