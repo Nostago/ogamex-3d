@@ -48,6 +48,7 @@ export function createObjectArtwork(t) {
         loading,
         generation = 0,
         currentKey = '',
+        webglFailed = false,
         disposed = false
     function fallback(item) {
         const asset = shipPreviewAssets[item.key]
@@ -84,7 +85,7 @@ export function createObjectArtwork(t) {
             `${item.name} · ${element.dataset.caption}`,
         )
         const supported = modelAliases[item.key] || shipModelAliases[item.key]
-        if (!supported) return element
+        if (!supported || webglFailed) return element
         loading ||= import('./objectPreview3d.js')
         loading
             .then(async ({ createObjectPreview }) => {
@@ -110,8 +111,13 @@ export function createObjectArtwork(t) {
     }
     const lost = () => {
         if (!current) return
+        webglFailed = true
+        generation++
         engine?.dispose()
         engine = null
+        element.dataset.building = 'false'
+        delete element.dataset.progress
+        delete element.dataset.modelRevision
         element.replaceChildren(fallback(current))
         element.dataset.artwork = shipPreviewAssets[current?.key]
             ? 'image'

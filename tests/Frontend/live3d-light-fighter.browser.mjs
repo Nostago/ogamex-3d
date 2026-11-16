@@ -85,13 +85,13 @@ try {
     )
     await page.locator('[data-live-page=ships]').first().click()
     await firstModel
-    await page.locator('[data-object=heavy_fighter]').click()
+    await page.locator('[data-object=cruiser]').click()
     await page.waitForTimeout(1000)
     assert.equal(
         await page
             .locator('#live-detail .object-artwork')
             .getAttribute('data-preview-object'),
-        'heavy_fighter',
+        'cruiser',
     )
     await page.locator('[data-object=light_fighter]').click()
     const preview = page.locator('#live-detail .object-artwork')
@@ -130,7 +130,7 @@ try {
     // Late loading must not replace a different ship selection.
     const memory = []
     for (let i = 0; i < 5; i++) {
-        await page.locator('[data-object=heavy_fighter]').click()
+        await page.locator('[data-object=cruiser]').click()
         await page.waitForFunction(
             () =>
                 document.querySelector('#live-detail .object-artwork')?.dataset

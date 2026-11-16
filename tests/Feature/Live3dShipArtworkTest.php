@@ -16,16 +16,26 @@ class Live3dShipArtworkTest extends IsolatedAccountTestCase
         $state = $this->getJson('/play-3d/state?planet='.$this->currentPlanetId)->assertOk();
         $objects = collect((array)$state->json('objects'));
         $this->assertSame($expected, $objects->firstWhere('key', 'light_fighter')['image']);
-        $this->assertStringContainsString('heavy_fighter_small.jpg', $objects->firstWhere('key', 'heavy_fighter')['image']);
+        $this->assertStringContainsString('cruiser_small.jpg', $objects->firstWhere('key', 'cruiser')['image']);
         $fleet = $this->getJson('/play-3d/fleet?planet='.$this->currentPlanetId)->assertOk();
         $this->assertSame($expected, collect((array)$fleet->json('ships'))->firstWhere('key', 'light_fighter')['image']);
-        $this->planetSetObjectLevel('shipyard', 1);
+        $this->planetSetObjectLevel('shipyard', 6);
         $this->planetSetObjectLevel('robot_factory', 2);
-        $this->playerSetResearchLevel('combustion_drive', 1);
+        $this->playerSetResearchLevel('combustion_drive', 6);
+        $this->playerSetResearchLevel('impulse_drive', 3);
+        $this->playerSetResearchLevel('armor_technology', 2);
         $this->planetAddResources(new Resources(100000, 100000, 100000));
-        resolve(UnitQueueService::class)->add($this->planetService, 204, 3);
+        foreach ([204, 205, 203, 208] as $id) {
+            resolve(UnitQueueService::class)->add($this->planetService, $id, 1);
+        }
         $activity = $this->getJson('/play-3d/state?planet='.$this->currentPlanetId)->assertOk()->json('activity');
-        $this->assertSame($expected, collect((array)$activity)->firstWhere('objectId', 204)['image']);
+        foreach (Live3dArtworkService::SHIP_IMAGES as $key => $image) {
+            $expectedImage = asset(ltrim($image, '/'));
+            $this->assertSame($expectedImage, $objects->firstWhere('key', $key)['image']);
+            $this->assertSame($expectedImage, collect((array)$fleet->json('ships'))->firstWhere('key', $key)['image']);
+            $id = ObjectService::getShipObjectByMachineName($key)->id;
+            $this->assertSame($expectedImage, collect((array)$activity)->firstWhere('objectId', $id)['image']);
+        }
         $this->assertSame('light_fighter_small.jpg', ObjectService::getShipObjectByMachineName('light_fighter')->assets->imgSmall);
         $this->assertSame(3000.0, ObjectService::getObjectRawPrice('light_fighter')->metal->get());
         $state->assertDontSee('light-fighter-v1.glb');
