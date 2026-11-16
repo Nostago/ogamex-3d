@@ -34,16 +34,35 @@ class QueueAccelerationService
         $queue = $kind === 'building'
             ? BuildingQueue::where('planet_id', $planet->getPlanetId())
             : ResearchQueue::whereIn('planet_id', $player->planets->allIds());
-        $item = $queue->where('building', 1)->where('processed', 0)->where('canceled', 0)->lockForUpdate()->first();
-        if (!$item || $item->time_end <= $now) {
+        // Snapshot the existing queue. Waiting jobs have not been paid or timed yet;
+        // only the original processors may start them and calculate their durations.
+        $items = $queue->where('processed', 0)->where('canceled', 0)
+            ->orderByDesc('building')->orderBy('id')->lockForUpdate()->get();
+        $first = $items->first();
+        if (!$first || $first->building !== 1 || $first->time_end <= $now) {
             throw ValidationException::withMessages(['product' => __('t_commerce.no_active_order')]);
         }
-        $item->time_end = max($now, $item->time_end - $seconds);
-        $item->save();
-        if ($kind === 'building') {
-            $planet->updateBuildingQueue();
-        } else {
-            $player->updateResearchQueue();
+        $remaining = $seconds;
+        foreach ($items as $item) {
+            if ($remaining <= 0) {
+                break;
+            }
+            $item->refresh();
+            if ($item->processed || $item->canceled) {
+                continue;
+            }
+            if ($item->building !== 1) {
+                break;
+            }
+            $reduction = min($remaining, max(0, $item->time_end - $now));
+            $item->time_end -= $reduction;
+            $item->save();
+            $remaining -= $reduction;
+            if ($kind === 'building') {
+                $planet->updateBuildingQueue();
+            } else {
+                $player->updateResearchQueue();
+            }
         }
     }
 

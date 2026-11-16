@@ -466,7 +466,8 @@ After a battle, there is up to a 70 % chance that failed defensive facilities ca
 
     'kraken' => [
         'title'       => 'KRAKEN',
-        'description' => 'Reduces the building time of buildings currently under construction by <b>:duration</b>.',
+        // Custom queue-wide rule requested for this installation.
+        'description' => 'Reduces the building queue by <b>:duration</b>. Unused time carries over to follow-up orders already queued. Resources and requirements still apply.',
     ],
 
     'detroid' => [
@@ -476,6 +477,7 @@ After a battle, there is up to a 70 % chance that failed defensive facilities ca
 
     'newtron' => [
         'title'       => 'NEWTRON',
-        'description' => 'Reduces research time for all research that is currently in progress by <b>:duration</b>.',
+        // Custom queue-wide rule requested for this installation.
+        'description' => 'Reduces the research queue by <b>:duration</b>. Unused time carries over to follow-up orders already queued. Resources and requirements still apply.',
     ],
 ];

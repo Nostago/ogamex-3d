@@ -8,6 +8,7 @@ return [
     'matter' => 'Dunkle Materie',
     'balance' => 'Verfügbare Dunkle Materie',
     'shop_intro' => 'Zeitverkürzer mit Dunkler Materie kaufen. Gekaufte Gegenstände bleiben bis zur Aktivierung im Inventar.',
+    'queue_time_credit' => 'Alle Zeitverkürzer arbeiten die passende Warteschlange der Reihe nach ab. Restzeit geht auf bereits eingereihte Folgeaufträge über; ein nicht vollständig verkürzter Auftrag läuft mit seiner Restzeit weiter. Rohstoffe und Voraussetzungen gelten weiterhin. Nach dem Ende der Warteschlange verfällt ungenutzte Zeit; sie wird nicht für später gespeicherte Aufträge aufgehoben.',
     'inventory' => 'Inventar',
     'catalog' => 'Shop',
     'buy' => 'Kaufen',

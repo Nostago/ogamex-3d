@@ -4,6 +4,7 @@
 <div class="maincontent commerce" id="commerce-shop">
 @include('ingame.commerce.style')
 <h2>{{ __('t_commerce.catalog') }}</h2><p class="commerce-intro">{{ __('t_commerce.shop_intro') }}</p>
+<p class="commerce-intro">{{ __('t_commerce.queue_time_credit') }}</p>
 <div class="commerce-balance">{{ __('t_commerce.balance') }}: <strong>{{ number_format($darkMatter, 0, ',', '.') }}</strong></div>
 <nav class="commerce-tabs"><a href="{{ route('shop.index', ['ui'=>request('ui'), 'cp'=>request('cp')]) }}">{{ __('t_commerce.catalog') }}</a><a href="{{ route('shop.index', ['inventory'=>1, 'ui'=>request('ui'), 'cp'=>request('cp')]) }}">{{ __('t_commerce.inventory') }}</a></nav>
 @if(request()->boolean('inventory'))

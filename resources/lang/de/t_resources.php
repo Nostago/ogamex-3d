@@ -314,8 +314,8 @@ return [
     ],
     'kraken' => [
         'title' => 'Kraken',
-        'description' => 'Verkürzt einen Gebäudeauftrag um :duration. Wirkung und Bedingungen werden von der Verwaltung geprüft.',
-        'description_long' => 'Verkürzt einen Gebäudeauftrag um :duration. Wirkung und Bedingungen werden von der Verwaltung geprüft.',
+        'description' => 'Verkürzt die Gebäudewarteschlange um :duration. Restzeit wird der Reihe nach auf bereits eingereihte Folgeaufträge angerechnet.',
+        'description_long' => 'Verkürzt die Gebäudewarteschlange um :duration. Restzeit wird der Reihe nach auf bereits eingereihte Folgeaufträge angerechnet. Rohstoffe und Bauvoraussetzungen gelten weiterhin.',
     ],
     'detroid' => [
         'title' => 'Detroid',
@@ -324,7 +324,7 @@ return [
     ],
     'newtron' => [
         'title' => 'Newtron',
-        'description' => 'Verkürzt einen Forschungsauftrag um :duration.',
-        'description_long' => 'Verkürzt einen Forschungsauftrag um :duration.',
+        'description' => 'Verkürzt die Forschungswarteschlange um :duration. Restzeit wird der Reihe nach auf bereits eingereihte Folgeaufträge angerechnet.',
+        'description_long' => 'Verkürzt die Forschungswarteschlange um :duration. Restzeit wird der Reihe nach auf bereits eingereihte Folgeaufträge angerechnet. Rohstoffe und Forschungsvoraussetzungen gelten weiterhin.',
     ],
 ];

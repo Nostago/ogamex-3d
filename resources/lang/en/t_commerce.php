@@ -7,6 +7,7 @@ return [
     'matter' => 'Dark Matter',
     'balance' => 'Available Dark Matter',
     'shop_intro' => 'Buy time-reduction items with Dark Matter. Purchased items remain in your inventory until activated.',
+    'queue_time_credit' => 'All time-reduction items advance the matching queue in order. Unused time carries over to follow-up orders already in the queue; a partially accelerated order continues with its remaining time. Resources and requirements still apply. Time left after the queue ends expires and is not saved for orders added later.',
     'inventory' => 'Inventory',
     'catalog' => 'Shop',
     'buy' => 'Buy',
