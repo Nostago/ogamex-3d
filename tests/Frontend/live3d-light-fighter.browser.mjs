@@ -75,7 +75,7 @@ try {
     await page.screenshot({
         path: `artifacts/fleet-small-image.png`.replace('artifacts', artifacts),
     })
-    await page.route('**/models/live3d/light-fighter-v1.glb', async (route) => {
+    await page.route('**/models/live3d/light-fighter-v2.glb', async (route) => {
         const response = await route.fetch()
         await new Promise((resolve) => setTimeout(resolve, 600))
         await route.fulfill({ response })
@@ -98,7 +98,7 @@ try {
     await page.waitForFunction(
         () =>
             document.querySelector('#live-detail .object-artwork')?.dataset
-                .modelRevision === 'uploaded-light-fighter-v1',
+                .modelRevision === 'uploaded-light-fighter-v2',
     )
     assert.equal(await preview.getAttribute('data-artwork'), '3d')
     assert.equal(await preview.locator('canvas').count(), 1)
@@ -140,7 +140,7 @@ try {
         await page.waitForFunction(
             () =>
                 document.querySelector('#live-detail .object-artwork')?.dataset
-                    .modelRevision === 'uploaded-light-fighter-v1',
+                    .modelRevision === 'uploaded-light-fighter-v2',
         )
         memory.push({
             geometry: Number(
@@ -194,7 +194,7 @@ try {
     await page.waitForFunction(
         () =>
             document.querySelector('#live-detail .object-artwork')?.dataset
-                .modelRevision === 'uploaded-light-fighter-v1',
+                .modelRevision === 'uploaded-light-fighter-v2',
     )
     await page.setViewportSize({ width: 390, height: 844 })
     await preview.scrollIntoViewIfNeeded()

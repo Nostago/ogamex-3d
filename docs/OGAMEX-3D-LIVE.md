@@ -619,3 +619,5 @@ Weitere Etappe: [Planetenname, Schriftgrößen und Scrollposition](OGAMEX-3D-UI-
 Weitere Etappe: [Leichter Jäger als optimierte GLB](OGAMEX-3D-LIGHT-FIGHTER.md).
 
 Weitere Schiffsmodelle: [Großer Transporter, Kolonieschiff und Schwerer Jäger](OGAMEX-3D-THREE-SHIPS.md).
+
+Ladezeitoptimierung: [Alle vier Schiffe unter 0,8 MB](OGAMEX-3D-SHIP-LOADING.md).

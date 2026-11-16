@@ -1,0 +1,20 @@
+{
+  "sourceBytes": 29843976,
+  "sourceTriangles": 985148,
+  "modelBytes": 579696,
+  "triangles": 49257,
+  "textureSize": 1024,
+  "frontAzimuth": 35,
+  "elevation": 22,
+  "sourceYaw": 90.0,
+  "sourceSha256": "32e2aaba83e29407c37dd34d4b576e6a5cc8c6c962102317e8375eefbbb3c9d1",
+  "blender": "4.3.2",
+  "thumbnailBytes": 19556,
+  "previousModelBytes": 1894440,
+  "previousTriangles": 49257,
+  "compression": "EXT_meshopt_compression",
+  "textureFormat": "webp",
+  "textureQuality": 85,
+  "compressionTool": "@gltf-transform/cli 4.5.1",
+  "decoder": "meshoptimizer 1.2.0"
+}

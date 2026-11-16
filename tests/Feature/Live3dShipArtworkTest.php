@@ -38,7 +38,7 @@ class Live3dShipArtworkTest extends IsolatedAccountTestCase
         }
         $this->assertSame('light_fighter_small.jpg', ObjectService::getShipObjectByMachineName('light_fighter')->assets->imgSmall);
         $this->assertSame(3000.0, ObjectService::getObjectRawPrice('light_fighter')->metal->get());
-        $state->assertDontSee('light-fighter-v1.glb');
-        $this->get('/shipyard')->assertOk()->assertDontSee('light-fighter-35-v1.webp')->assertDontSee('light-fighter-v1.glb');
+        $state->assertDontSee('.glb');
+        $this->get('/shipyard')->assertOk()->assertDontSee('light-fighter-35-v1.webp')->assertDontSee('/models/live3d/');
     }
 }

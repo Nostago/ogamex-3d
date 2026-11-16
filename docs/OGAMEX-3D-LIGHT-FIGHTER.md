@@ -1,5 +1,7 @@
 # Leichter Jäger: GLB-Testintegration
 
+Stand der ersten Integration. Aktuelle, deutlich kleinere Modelle und Ladezeitmessungen: [Optimierung aller vier Schiffe](OGAMEX-3D-SHIP-LOADING.md).
+
 Branch: `codex/ogamex-3d-light-fighter-glb`.
 
 Der vom Nutzer gelieferte „Leichte Jäger“ ersetzt im Baufenster der Seite **Schiffe** das bisherige Vorschau-Modell. Das Modell lässt sich per Ziehen und Pfeiltasten drehen. Perspektive: 35° schräg von vorn, 22° Höhenwinkel. Die Kamera passt den tatsächlichen Rumpf ins Vorschaufenster ein, auch beim Drehen und auf schmalen Bildschirmen.

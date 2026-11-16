@@ -2,22 +2,38 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { shipPreviewAssets } from '../../resources/js/live3d/shipAssets.js'
+import { MeshoptDecoder } from '../../resources/js/prototype3d/vendor/meshopt/meshopt_decoder.mjs'
 const root = new URL('../../public/', import.meta.url)
 for (const [key, asset] of Object.entries(shipPreviewAssets)) {
-    test(`${key}: bounded self-contained GLB with a small image fallback`, async () => {
+    test(`${key}: compressed self-contained GLB decodes to valid detailed geometry`, async () => {
         const data = await readFile(new URL(asset.model.slice(1), root))
         assert.equal(data.toString('ascii', 0, 4), 'glTF')
         assert.equal(data.readUInt32LE(4), 2)
         assert.equal(data.readUInt32LE(8), data.length)
-        assert.ok(data.length < 2 * 1024 * 1024)
+        assert.ok(data.length < 1_000_000, `${key}: preview download budget`)
         const gltf = JSON.parse(
             data.toString('utf8', 20, 20 + data.readUInt32LE(12)),
         )
         assert.equal(gltf.meshes.length, 1)
         const primitive = gltf.meshes[0].primitives[0],
             indices = gltf.accessors[primitive.indices],
-            positions = gltf.accessors[primitive.attributes.POSITION]
-        assert.ok(indices.count / 3 > 20000 && indices.count / 3 <= 60000)
+            positions = gltf.accessors[primitive.attributes.POSITION],
+            report = JSON.parse(
+                await readFile(
+                    new URL(
+                        asset.model.slice(1).replace('.glb', '.json'),
+                        root,
+                    ),
+                ),
+            )
+        assert.ok(indices.count / 3 > 40000 && indices.count / 3 <= 60000)
+        assert.equal(indices.count / 3, report.triangles)
+        assert.equal(
+            report.triangles,
+            report.previousTriangles,
+            'Compression must retain the triangle count',
+        )
+        assert.equal(data.length, report.modelBytes)
         assert.ok(
             positions.min.every(Number.isFinite) &&
                 positions.max.every(Number.isFinite),
@@ -25,23 +41,64 @@ for (const [key, asset] of Object.entries(shipPreviewAssets)) {
         assert.ok(gltf.buffers.every((buffer) => !buffer.uri))
         assert.ok(
             gltf.images.every(
-                (image) => image.bufferView !== undefined && !image.uri,
+                (image) =>
+                    image.bufferView !== undefined &&
+                    !image.uri &&
+                    image.mimeType === 'image/webp',
             ),
         )
-        assert.deepEqual(gltf.extensionsRequired || [], [])
-        const indexView = gltf.bufferViews[indices.bufferView],
-            binaryStart = 28 + data.readUInt32LE(12),
-            offset =
-                binaryStart +
-                (indexView.byteOffset || 0) +
-                (indices.byteOffset || 0)
-        const stride = indices.componentType === 5125 ? 4 : 2
+        assert.deepEqual([...gltf.extensionsRequired].sort(), [
+            'EXT_meshopt_compression',
+            'EXT_texture_webp',
+            'KHR_mesh_quantization',
+        ])
+        const binaryStart = 28 + data.readUInt32LE(12),
+            binary = data.subarray(binaryStart)
+        await MeshoptDecoder.ready
+        const decoded = gltf.bufferViews.map((view) => {
+            const compression = view.extensions?.EXT_meshopt_compression
+            if (!compression) {
+                assert.equal(view.buffer, 0)
+                return binary.subarray(
+                    view.byteOffset || 0,
+                    (view.byteOffset || 0) + view.byteLength,
+                )
+            }
+            assert.equal(compression.buffer, 0)
+            const offset = compression.byteOffset || 0
+            assert.ok(offset + compression.byteLength <= binary.length)
+            assert.equal(
+                view.byteLength,
+                compression.count * compression.byteStride,
+            )
+            const output = new Uint8Array(view.byteLength)
+            MeshoptDecoder.decodeGltfBuffer(
+                output,
+                compression.count,
+                compression.byteStride,
+                binary.subarray(offset, offset + compression.byteLength),
+                compression.mode,
+                compression.filter,
+            )
+            return output
+        })
+        const indexBytes = decoded[indices.bufferView],
+            view = new DataView(
+                indexBytes.buffer,
+                indexBytes.byteOffset,
+                indexBytes.byteLength,
+            )
+        const stride = indices.componentType === 5125 ? 4 : 2,
+            offset = indices.byteOffset || 0
         for (let i = 0; i < indices.count; i++)
             assert.ok(
                 (stride === 4
-                    ? data.readUInt32LE(offset + i * 4)
-                    : data.readUInt16LE(offset + i * 2)) < positions.count,
+                    ? view.getUint32(offset + i * 4, true)
+                    : view.getUint16(offset + i * 2, true)) < positions.count,
             )
+        const texture = decoded[gltf.images[0].bufferView]
+        assert.equal(Buffer.from(texture.subarray(0, 4)).toString(), 'RIFF')
+        assert.equal(Buffer.from(texture.subarray(8, 12)).toString(), 'WEBP')
         const image = await readFile(new URL(asset.image.slice(1), root))
         assert.equal(image.toString('ascii', 0, 4), 'RIFF')
         assert.equal(image.toString('ascii', 8, 12), 'WEBP')

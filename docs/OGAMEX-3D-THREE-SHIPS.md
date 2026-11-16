@@ -1,5 +1,7 @@
 # Drei weitere Schiffe als GLB
 
+Stand der ersten Integration. Aktuelle, deutlich kleinere Modelle und Ladezeitmessungen: [Optimierung aller vier Schiffe](OGAMEX-3D-SHIP-LOADING.md).
+
 Branch: `codex/ogamex-3d-three-ship-models`.
 
 Großer Transporter, Kolonieschiff und Schwerer Jäger verwenden die vom Nutzer gelieferten Modelle. Wie beim [Leichten Jäger](OGAMEX-3D-LIGHT-FIGHTER.md) lädt nur die drehbare Bauvorschau die GLB. Listen, Flottenauswahl, Schnellplanung, Auftragskarten und entsprechende Originalansichten innerhalb der neuen Oberfläche verwenden ein kleines transparentes WebP. Die Classic-Oberfläche behält ihre bisherigen Bilder.

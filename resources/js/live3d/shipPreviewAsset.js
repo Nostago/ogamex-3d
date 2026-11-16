@@ -1,5 +1,6 @@
 import * as THREE from '../prototype3d/vendor/three.module.min.js'
 import { GLTFLoader } from '../prototype3d/vendor/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from '../prototype3d/vendor/meshopt/meshopt_decoder.mjs'
 import { shipPreviewAssets } from './shipAssets.js'
 
 const pending = new Map()
@@ -9,6 +10,7 @@ export async function loadShipPreview(key) {
     if (!asset) return null
     if (!pending.has(key)) {
         const request = new GLTFLoader()
+            .setMeshoptDecoder(MeshoptDecoder)
             .loadAsync(asset.model)
             .catch((error) => {
                 pending.delete(key)

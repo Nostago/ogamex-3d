@@ -1,0 +1,36 @@
+{
+  "connection": "10 Mbit/s, 80 ms latency; Chromium software WebGL",
+  "importMs": 785.9,
+  "createMs": 53.4,
+  "warmMs": 38.8,
+  "models": [
+    {
+      "key": "light_fighter",
+      "showMs": 1389.8,
+      "firstPaintMs": 1390.9,
+      "downloadMs": 662.1,
+      "bytes": 672036
+    },
+    {
+      "key": "large_cargo",
+      "showMs": 728.6,
+      "firstPaintMs": 734.2,
+      "downloadMs": 582.1,
+      "bytes": 579696
+    },
+    {
+      "key": "colony_ship",
+      "showMs": 980.7,
+      "firstPaintMs": 988.3,
+      "downloadMs": 755.1,
+      "bytes": 775056
+    },
+    {
+      "key": "heavy_fighter",
+      "showMs": 1026.9,
+      "firstPaintMs": 1032.5,
+      "downloadMs": 711.9,
+      "bytes": 644704
+    }
+  ]
+}
