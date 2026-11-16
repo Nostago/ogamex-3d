@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Vite;
+use OGame\Services\Live3dArtworkService;
 
 /** Presentation context only; never changes a player's language preference or game rules. */
 class Live3dContext
@@ -28,6 +29,10 @@ class Live3dContext
         // document. Preserve original templates, scripts, routes and forms.
         if ($live && $response instanceof Response && !$request->is('play-3d')) {
             $html = $response->getContent();
+            if (is_string($html)) {
+                $html = Live3dArtworkService::replaceLegacyImages($html);
+                $response->setContent($html);
+            }
             if (is_string($html) && str_contains($html, '</head>') && str_contains($html, '<body')) {
                 $asset = htmlspecialchars(Vite::asset('resources/css/live3d-embedded.css'), ENT_QUOTES, 'UTF-8');
                 $style = '<link rel="stylesheet" data-live3d-embedded-style href="'.$asset.'">';

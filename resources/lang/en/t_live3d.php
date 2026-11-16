@@ -215,4 +215,5 @@ return [
     'admin_finish_confirm' => 'Complete all own construction, research and unit orders now? Follow-up orders still require their original resources.',
     'current_order' => 'Active order',
     'following_order' => 'Following order',
+    'object_image' => 'Ship preview',
 ];

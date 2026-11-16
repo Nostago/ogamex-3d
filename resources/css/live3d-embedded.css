@@ -138,3 +138,5 @@ gradient-button[sq30] { display:inline-block!important;width:auto!important;heig
 :is(h1,h2,h3,h4,h5,h6),#content #buttonz .msg_title { max-width:100%!important;height:auto!important;overflow-wrap:anywhere!important;line-height:1.35!important; }
 h1 { font-size:calc(32px * var(--ui-heading-scale,.8))!important; }
 :is(h1,h2,h3,h4,h5,h6) strong { font:inherit!important; }
+/* Sprite-based original controls use the same small uploaded-model portrait. */
+.sprite.ship.ship204,.ship_list_28 .military204,.ship_list_80 .military204,#shipyard .military204 .buildingimg,#div_traderScrap #button204 .buildingimg,#fleet1 #button204 .buildingimg,#technologies li[data-technology="204"] .technologyicon { background-image:url('/img/live3d/ships/light-fighter-35-v1.webp')!important;background-position:center!important;background-size:contain!important;background-repeat:no-repeat!important; }

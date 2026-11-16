@@ -14,6 +14,7 @@ use OGame\Models\Planet\Coordinate;
 use OGame\Services\CharacterClassService;
 use OGame\Services\FleetMissionService;
 use OGame\Services\FleetUnionService;
+use OGame\Services\Live3dArtworkService;
 use OGame\Services\Live3dShipInventory;
 use OGame\Services\ObjectService;
 use OGame\Services\PlayerService;
@@ -31,7 +32,7 @@ class Live3dFleetController extends Controller
         $inventory = resolve(Live3dShipInventory::class)->forPlanet($player, $player->planets->current());
         foreach ($data['units'] as $group) {
             foreach ($group as $unit) {
-                $ships[] = ['id' => $unit->object->id, 'key' => $unit->object->machine_name, 'name' => $unit->object->title, ...$inventory[$unit->object->machine_name], 'image' => asset('img/objects/units/'.$unit->object->assets->imgSmall)];
+                $ships[] = ['id' => $unit->object->id, 'key' => $unit->object->machine_name, 'name' => $unit->object->title, ...$inventory[$unit->object->machine_name], 'image' => Live3dArtworkService::image($unit->object, asset('img/objects/units/'.$unit->object->assets->imgSmall))];
             }
         }
         $movement = resolve(FleetController::class)->movement($player, $missions, $planets);

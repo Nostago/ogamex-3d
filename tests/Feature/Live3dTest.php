@@ -41,7 +41,7 @@ class Live3dTest extends IsolatedAccountTestCase
         $objectData = $response->json('objects');
         $objects = collect($objectData);
         $this->assertStringContainsString('/img/objects/buildings/', (string)($objects->firstWhere('key', 'metal_mine')['image'] ?? ''));
-        $this->assertStringContainsString('/img/objects/units/', (string)($objects->firstWhere('key', 'light_fighter')['image'] ?? ''));
+        $this->assertStringContainsString('/img/live3d/ships/light-fighter-35-v1.webp', (string)($objects->firstWhere('key', 'light_fighter')['image'] ?? ''));
     }
 
     public function testGalaxyReadModelUsesOriginalVisibilityAndRejectsForeignPlanetAndInvalidCoordinates(): void

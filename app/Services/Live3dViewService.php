@@ -38,7 +38,7 @@ class Live3dViewService
                 'key' => $object->machine_name,
                 'name' => $object->title,
                 'description' => strip_tags($object->description),
-                'image' => isset($object->assets->imgSmall) ? asset('img/objects/'.($unit ? 'units' : ($object->type === GameObjectType::Research ? 'research' : 'buildings')).'/'.$object->assets->imgSmall) : null,
+                'image' => isset($object->assets->imgSmall) ? Live3dArtworkService::image($object, asset('img/objects/'.($unit ? 'units' : ($object->type === GameObjectType::Research ? 'research' : 'buildings')).'/'.$object->assets->imgSmall)) : null,
                 'type' => $object->type->value,
                 'amount' => (string)$level,
                 ...($inventory[$object->machine_name] ?? []),

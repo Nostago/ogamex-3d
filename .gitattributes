@@ -4,3 +4,6 @@
 *.js linguist-vendored
 CHANGELOG.md export-ignore
 *.sh text eol=lf
+
+# Preserve multiline GLSL strings in the generated third-party Three.js chunk.
+public/build/assets/three.module.min-*.js -whitespace

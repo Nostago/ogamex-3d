@@ -47,7 +47,7 @@ class Live3dActivityService
         };
         return [
             'objectId' => $object->id, 'name' => $object->title, 'objectType' => $object->type->value,
-            'image' => asset('img/objects/'.$folder.'/'.$object->assets->imgSmall),
+            'image' => Live3dArtworkService::image($object, asset('img/objects/'.$folder.'/'.$object->assets->imgSmall)),
             'planet' => $planet->getPlanetId(), 'planetName' => $planet->getPlanetName(),
             'coordinates' => $planet->getPlanetCoordinates()->asString(),
         ];

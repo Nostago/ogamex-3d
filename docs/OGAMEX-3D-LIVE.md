@@ -615,3 +615,5 @@ interaktive Kompatibilitätsansicht erhalten.
 Weitere Etappe: [Flottenprüfung, Nachrichten und autonome NPCs](OGAMEX-3D-BOT-OPERATIONS.md).
 
 Weitere Etappe: [Planetenname, Schriftgrößen und Scrollposition](OGAMEX-3D-UI-CONTROLS.md).
+
+Weitere Etappe: [Leichter Jäger als optimierte GLB](OGAMEX-3D-LIGHT-FIGHTER.md).

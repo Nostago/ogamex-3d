@@ -216,4 +216,5 @@ return [
     'admin_finish_confirm' => 'Alle eigenen Gebäude-, Forschungs- und Einheitenaufträge sofort fertigstellen? Folgeaufträge benötigen weiterhin ihre ursprünglichen Rohstoffe.',
     'current_order' => 'Laufender Auftrag',
     'following_order' => 'Folgeauftrag',
+    'object_image' => 'Schiffsvorschau',
 ];

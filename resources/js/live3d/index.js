@@ -10,6 +10,7 @@ import { createGalaxy } from './galaxy.js'
 import { createQuickFleet } from './quickFleet.js'
 import { initReadability } from './readability.js'
 import { initPlanetName } from './planetName.js'
+import { shipPreviewAssets } from './shipAssets.js'
 import { createSystemMap } from './systemMap.js'
 import { renderIcons } from './icons.js'
 import { createFleetPanel } from './fleetPanel.js'
@@ -334,7 +335,7 @@ function renderCatalog() {
         if (item.image) {
             const image = el(
                 'img',
-                modelAliases[item.key]
+                modelAliases[item.key] || shipPreviewAssets[item.key]
                     ? 'object-thumbnail model-thumbnail'
                     : 'object-thumbnail',
             )

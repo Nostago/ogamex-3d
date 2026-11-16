@@ -1,4 +1,5 @@
 import { modelAliases, shipModelAliases } from './visualState.js'
+import { shipPreviewAssets } from './shipAssets.js'
 
 const namespace = 'http://www.w3.org/2000/svg'
 // Resolution-independent technical artwork for types without a dedicated 3D model.
@@ -48,29 +49,50 @@ export function createObjectArtwork(t) {
         generation = 0,
         currentKey = '',
         disposed = false
+    function fallback(item) {
+        const asset = shipPreviewAssets[item.key]
+        if (!asset) return blueprint(item)
+        const image = document.createElement('img')
+        image.src = asset.image
+        image.alt = item.name
+        image.className = 'ship-preview-fallback'
+        return image
+    }
     function set(item, job = null) {
-        const key = `${item.key}:${item.type === 'ship' ? 'ship' : Math.min(8, Number(item.amount))}:${job?.id || "idle"}`
-        if (key === currentKey) { engine?.setJob(job); return element }
+        const key = `${item.key}:${item.type === 'ship' ? 'ship' : Math.min(8, Number(item.amount))}:${job?.id || 'idle'}`
+        if (key === currentKey) {
+            engine?.setJob(job)
+            return element
+        }
         engine?.setJob(null)
         element.dataset.building = 'false'
         delete element.dataset.progress
         current = item
         currentKey = key
         const version = ++generation
+        delete element.dataset.modelRevision
         element.dataset.previewObject = item.key
-        element.dataset.artwork = 'vector'
-        element.dataset.caption = t.object_diagram
-        element.replaceChildren(blueprint(item))
-        element.setAttribute('aria-label', `${item.name} · ${t.object_diagram}`)
+        element.dataset.artwork = shipPreviewAssets[current?.key]
+            ? 'image'
+            : 'vector'
+        element.dataset.caption = shipPreviewAssets[current?.key]
+            ? t.object_image
+            : t.object_diagram
+        element.replaceChildren(fallback(item))
+        element.setAttribute(
+            'aria-label',
+            `${item.name} · ${element.dataset.caption}`,
+        )
         const supported = modelAliases[item.key] || shipModelAliases[item.key]
         if (!supported) return element
         loading ||= import('./objectPreview3d.js')
         loading
-            .then(({ createObjectPreview }) => {
+            .then(async ({ createObjectPreview }) => {
                 if (disposed || version !== generation) return
                 try {
                     engine ||= createObjectPreview(element)
-                    if (engine.show(item, job)) {
+                    if (await engine.show(item, job)) {
+                        if (disposed || version !== generation) return
                         element.replaceChildren(engine.canvas)
                         element.dataset.artwork = '3d'
                         element.dataset.caption = t.object_preview
@@ -90,12 +112,16 @@ export function createObjectArtwork(t) {
         if (!current) return
         engine?.dispose()
         engine = null
-        element.replaceChildren(blueprint(current))
-        element.dataset.artwork = 'vector'
-        element.dataset.caption = t.object_diagram
+        element.replaceChildren(fallback(current))
+        element.dataset.artwork = shipPreviewAssets[current?.key]
+            ? 'image'
+            : 'vector'
+        element.dataset.caption = shipPreviewAssets[current?.key]
+            ? t.object_image
+            : t.object_diagram
         element.setAttribute(
             'aria-label',
-            `${current.name} · ${t.object_diagram}`,
+            `${current.name} · ${element.dataset.caption}`,
         )
         currentKey = ''
     }
