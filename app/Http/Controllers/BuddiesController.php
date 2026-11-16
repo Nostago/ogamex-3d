@@ -38,12 +38,17 @@ class BuddiesController extends OGameController
         // Mark requests as viewed when the page is loaded
         $buddyService->markRequestsAsViewed($userId);
 
-        return view('ingame.buddies.index')->with([
+        $live = request()->attributes->get('live3d');
+        $search = mb_substr(trim((string) request('q', '')), 0, 100);
+
+        return view($live ? 'live3d.social.buddies' : 'ingame.buddies.index')->with([
             'buddies' => $buddies,
             'received_requests' => $receivedRequests,
             'sent_requests' => $sentRequests,
             'ignored_players' => $ignoredPlayers,
             'unread_requests_count' => $unreadRequestsCount,
+            'search' => $search,
+            'search_results' => $live && $search !== '' ? $buddyService->searchUsers($search, $userId) : collect(),
         ]);
     }
 
@@ -83,7 +88,7 @@ class BuddiesController extends OGameController
 
                 case 10: // Delete buddy
                     $buddyService->deleteBuddy($targetId, $userId);
-                    if ($request->input('ajax') == 1) {
+                    if ($request->input('ajax') == 1 && !$request->attributes->get('live3d')) {
                         return $this->getBuddyListPartial($buddyService, $userId);
                     }
                     $message = __('t_buddies.success.buddy_deleted');

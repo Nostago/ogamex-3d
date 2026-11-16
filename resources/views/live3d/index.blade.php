@@ -5,6 +5,7 @@
         'galaxyActionUrl' => route('live3d.galaxy.action'), 'galaxyMissilesUrl' => route('live3d.galaxy.missiles'),
         'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de'), __('t_systemmap', [], 'de'), __('t_fleetquick', [], 'de'), __('t_readability', [], 'de')),
         'messageT' => __('t_messageui', [], 'de'),
+        'socialT' => __('t_socialui', [], 'de'),
         'botsUrl' => route('live3d.bots'),
         'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),

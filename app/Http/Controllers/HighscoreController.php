@@ -4,6 +4,7 @@ namespace OGame\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use OGame\Models\User;
 use OGame\Services\HighscoreService;
 use OGame\Services\PlayerService;
 
@@ -21,6 +22,10 @@ class HighscoreController extends OGameController
     {
         $this->setBodyId('highscore');
 
+        if ($request->attributes->get('live3d')) {
+            return $this->livePlayerPoints($request, $player, $highscoreService);
+        }
+
         return view('ingame.highscore.index')->with([
             'initialContent' => $this->ajax($request, $player, $highscoreService),
         ]);
@@ -36,6 +41,9 @@ class HighscoreController extends OGameController
      */
     public function ajax(Request $request, PlayerService $player, HighscoreService $highscoreService): View
     {
+        if ($request->attributes->get('live3d')) {
+            return $this->livePlayerPoints($request, $player, $highscoreService);
+        }
         // Check if we received category parameter, if so, use it to determine which highscore category to show.
         // 1 = players
         // 2 = alliances
@@ -62,6 +70,9 @@ class HighscoreController extends OGameController
      */
     public function ajaxPlayer(Request $request, PlayerService $player, HighscoreService $highscoreService): View
     {
+        if ($request->attributes->get('live3d')) {
+            return $this->livePlayerPoints($request, $player, $highscoreService);
+        }
         // Check if we received type parameter, if so, use it to determine which highscore type to show.
         // 0 = points
         // 1 = economy
@@ -113,6 +124,33 @@ class HighscoreController extends OGameController
             'player' => $player,
             'highscoreAdminVisible' => $highscoreService->isAdminVisibleInHighscore(),
             'currentPlayerIsAdmin' => $player->isAdmin(),
+        ]);
+    }
+
+    /**
+     * The new interface deliberately has one ranking: total points per player.
+     */
+    private function livePlayerPoints(Request $request, PlayerService $player, HighscoreService $highscoreService): View
+    {
+        $highscoreService->setHighscoreType(0);
+        $amount = $highscoreService->getHighscorePlayerAmount();
+        $pages = max(1, (int) ceil($amount / 100));
+        $selectedPlayer = $player;
+        $searchId = $request->integer('searchRelId');
+        if ($searchId > 0 && User::whereKey($searchId)->exists()) {
+            $selectedPlayer = resolve(PlayerService::class, ['player_id' => $searchId]);
+        }
+        $selectedRank = $highscoreService->getHighscorePlayerRank($selectedPlayer);
+        $ownPage = max(1, (int) ceil($selectedRank / 100));
+        $page = min($pages, max(1, $request->integer('page', $ownPage)));
+
+        return view('live3d.social.highscore', [
+            'players' => $highscoreService->getHighscorePlayers(pageOn: $page),
+            'amount' => $amount,
+            'pages' => $pages,
+            'page' => $page,
+            'playerId' => $player->getId(),
+            'selectedId' => $searchId ?: $player->getId(),
         ]);
     }
 

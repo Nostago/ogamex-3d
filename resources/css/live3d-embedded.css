@@ -1,3 +1,5 @@
+@import './live3d-social.css';
+
 /* Applied in the HTML head before the first paint of an embedded original view. */
 
     html,body{min-width:0!important;margin:0!important;background:#071521!important;color:#d3e7f0!important;font:14px/1.6 system-ui,sans-serif!important}

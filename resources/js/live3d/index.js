@@ -3,6 +3,7 @@ import '../../css/live3d.css'
 import '../../css/orbital-command.css'
 import '../../css/live3d-messages.css'
 import { createMessageDialogs } from './messageDialogs.js'
+import { createSocialUi } from './socialUi.js'
 import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
@@ -148,6 +149,7 @@ function objects() {
 }
 function show(name, fromFrame = false, fleetTarget) {
     messageDialogs.hide()
+    socialUi.hide()
     quickFleet.hide()
     planetName.hide()
     systemMap.hide()
@@ -743,6 +745,7 @@ frame.addEventListener('load', () => {
             openFleet,
             onLoading: originalLoading,
             messages: messageDialogs,
+            social: socialUi,
         })
         clearTimeout(originalTimer)
         frame.dataset.ready = 'true'
@@ -763,7 +766,11 @@ frame.addEventListener('load', () => {
                 ? 'messages'
                 : url.pathname.startsWith('/alliance')
                   ? 'alliance'
-                  : null
+                  : url.pathname.startsWith('/highscore')
+                    ? 'highscore'
+                    : url.pathname.startsWith('/buddies')
+                      ? 'buddies'
+                      : null
         if (area === 'fleets') {
             openFleet(url.href)
             return
@@ -938,6 +945,18 @@ const messageDialogs = createMessageDialogs({
     openFleet: (value) =>
         quickFleet.open(value, { advanced: () => openFleet(value) }),
 })
+const socialUi = createSocialUi({
+    t: config.socialT,
+    planet: () => planet,
+    refresh,
+    openGalaxy: (url) => {
+        show('galaxy')
+        galaxy.goTo(
+            url.searchParams.get('galaxy'),
+            url.searchParams.get('system'),
+        )
+    },
+})
 const systemMap = createSystemMap({
     config,
     t,
@@ -1021,6 +1040,7 @@ window.addEventListener('pagehide', (event) => {
     clearTimeout(originalTimer)
     quickFleet.dispose()
     messageDialogs.dispose()
+    socialUi.dispose()
     systemMap.dispose()
     galaxy.dispose()
     fleetMonitor.dispose()
