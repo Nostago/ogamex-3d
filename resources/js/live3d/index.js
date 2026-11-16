@@ -1,6 +1,8 @@
 import '../../css/prototype3d.css'
 import '../../css/live3d.css'
 import '../../css/orbital-command.css'
+import '../../css/live3d-messages.css'
+import { createMessageDialogs } from './messageDialogs.js'
 import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
@@ -145,6 +147,7 @@ function objects() {
     )
 }
 function show(name, fromFrame = false, fleetTarget) {
+    messageDialogs.hide()
     quickFleet.hide()
     planetName.hide()
     systemMap.hide()
@@ -739,6 +742,7 @@ frame.addEventListener('load', () => {
             refresh,
             openFleet,
             onLoading: originalLoading,
+            messages: messageDialogs,
         })
         clearTimeout(originalTimer)
         frame.dataset.ready = 'true'
@@ -919,6 +923,21 @@ const quickFleet = createQuickFleet({
         systemMap.refreshRadar()
     },
 })
+const messageDialogs = createMessageDialogs({
+    t: config.messageT,
+    refresh,
+    planet: () => planet,
+    objects: () => state.objects,
+    openGalaxy: (url) => {
+        show('galaxy')
+        galaxy.goTo(
+            url.searchParams.get('galaxy'),
+            url.searchParams.get('system'),
+        )
+    },
+    openFleet: (value) =>
+        quickFleet.open(value, { advanced: () => openFleet(value) }),
+})
 const systemMap = createSystemMap({
     config,
     t,
@@ -1001,6 +1020,7 @@ window.addEventListener('pagehide', (event) => {
     clearInterval(clock)
     clearTimeout(originalTimer)
     quickFleet.dispose()
+    messageDialogs.dispose()
     systemMap.dispose()
     galaxy.dispose()
     fleetMonitor.dispose()

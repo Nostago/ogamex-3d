@@ -27,8 +27,15 @@ class CommerceController extends OGameController
         $this->checkToken($request);
         $data = $request->validate(['product' => ['required', 'string', 'max:50'], 'planet' => ['required', 'integer', 'min:1'], 'request_id' => ['required', 'uuid']]);
         abort_unless($player->planets->planetExistsAndOwnedByPlayer((int)$data['planet']), 404);
-        $premium->activate($player, $player->planets->getById((int)$data['planet']), $data['product'], $data['request_id']);
-        return $this->result($request, $player, 't_commerce.activated');
+        $planet = $player->planets->getById((int)$data['planet']);
+        $effect = $premium->activate($player, $planet, $data['product'], $data['request_id']);
+        $seconds = $effect['seconds'] ?? 0;
+        $message = $effect === null ? __('t_commerce.activation_replayed') : __('t_commerce.activation_effect', [
+            'target' => str_starts_with($data['product'], 'newtron_') ? __('t_commerce.queue_research') : $planet->getPlanetName().' ['.$planet->getPlanetCoordinates()->asString().']',
+            'days' => intdiv($seconds, 86400), 'hours' => intdiv($seconds % 86400, 3600), 'minutes' => intdiv($seconds % 3600, 60), 'seconds' => $seconds % 60,
+            'orders' => $effect['orders'] ?? 0, 'units' => $effect['units'] ?? 0,
+        ]);
+        return $this->result($request, $player, $message, $effect);
     }
 
     public function prices(PlayerService $player, PremiumCatalog $catalog): View
@@ -64,12 +71,13 @@ class CommerceController extends OGameController
         abort_unless(is_string($token) && hash_equals($request->session()->token(), $token), 419);
     }
 
-    private function result(Request $request, PlayerService $player, string $message): JsonResponse|RedirectResponse
+    /** @param array{seconds: int, orders: int, units: int}|null $effect */
+    private function result(Request $request, PlayerService $player, string $message, array|null $effect = null): JsonResponse|RedirectResponse
     {
         $route = str_starts_with((string)$request->input('product'), 'commander_') || preg_match('/^(admiral|engineer|geologist|technocrat)_/', (string)$request->input('product')) ? 'premium.index' : 'shop.index';
         $url = route($route, ['ui' => $request->input('ui'), 'cp' => $request->input('cp'), 'inventory' => $request->boolean('inventory') ? 1 : null]);
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => __($message), 'darkMatter' => $player->getDarkMatter(), 'redirectUrl' => $url]);
+            return response()->json(['success' => true, 'message' => __($message), 'effect' => $effect, 'darkMatter' => $player->getDarkMatter(), 'redirectUrl' => $url]);
         }
         return redirect($url)->with('status', __($message));
     }

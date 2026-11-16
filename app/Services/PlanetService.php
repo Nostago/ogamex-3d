@@ -1853,12 +1853,11 @@ class PlanetService
             // This handles cases where time was reduced (e.g. via DM halving/complete).
             if ($now >= $item->time_end) {
                 $remaining = $item->object_amount - $item->object_amount_progress;
+                $item->time_progress = $item->time_end;
+                $item->object_amount_progress = $item->object_amount;
+                $item->processed = 1;
+                $item->save();
                 if ($remaining > 0) {
-                    $item->time_progress = $item->time_end;
-                    $item->object_amount_progress = $item->object_amount;
-                    $item->processed = 1;
-                    $item->save();
-
                     $this->addUnit($object->machine_name, $remaining, $save_planet);
                 }
                 continue;

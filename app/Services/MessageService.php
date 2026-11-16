@@ -3,6 +3,7 @@
 namespace OGame\Services;
 
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
 use OGame\Factories\GameMessageFactory;
 use OGame\GameMessages\Abstracts\GameMessage;
@@ -235,7 +236,7 @@ class MessageService
             ->first();
 
         if ($message === null) {
-            throw new RuntimeException('Message not found.');
+            throw (new ModelNotFoundException())->setModel(Message::class, [$messageId]);
         }
 
         return GameMessageFactory::createGameMessage($message);
@@ -301,6 +302,12 @@ class MessageService
             ->delete();
     }
 
+    /** @param array<int, int> $messageIds */
+    public function deleteReadMessages(array $messageIds): int
+    {
+        return Message::where('user_id', $this->player->getId())->where('viewed', 1)->whereIn('id', $messageIds)->delete();
+    }
+
     /**
      * Get an individual message with pagination context for navigation in full screen overlay.
      *
@@ -317,7 +324,7 @@ class MessageService
             ->first();
 
         if ($currentMessage === null) {
-            throw new RuntimeException('Message not found.');
+            throw (new ModelNotFoundException())->setModel(Message::class, [$messageId]);
         }
 
         // If tab/subtab not provided, determine from the message key

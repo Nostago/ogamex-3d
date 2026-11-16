@@ -611,6 +611,10 @@ export function createGalaxy({
                 load(g, s)
             }
         },
+        goTo(galaxy, system) {
+            selectedPlanet = String(context().id)
+            load(Number(galaxy), Number(system))
+        },
         dispose() {
             clearTimeout(debounce)
             controller?.abort()

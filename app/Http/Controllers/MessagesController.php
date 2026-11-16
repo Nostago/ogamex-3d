@@ -166,7 +166,7 @@ class MessagesController extends OGameController
         // Get full message with pagination context
         $paginationData = $messageService->getMessagePaginationContext($messageId, $tab, $subtab);
 
-        return view('ingame.messages.message')->with([
+        return view($request->attributes->get('live3d') ? 'live3d.messages.detail' : 'ingame.messages.message')->with([
             'messageId' => $messageId,
             'messageBody' => $paginationData['message']->getBodyFull(),
             'pagination' => $paginationData['pagination'],
@@ -182,6 +182,12 @@ class MessagesController extends OGameController
      */
     public function post(Request $request, MessageService $messageService): JsonResponse
     {
+        $token = $request->input('_token', $request->header('X-CSRF-TOKEN'));
+        abort_unless(is_string($token) && hash_equals($request->session()->token(), $token), 419);
+        if ($request->input('action') === 'delete-read') {
+            $data = $request->validate(['messageIds' => ['required', 'array', 'min:1', 'max:100'], 'messageIds.*' => ['required', 'integer', 'min:1', 'distinct']]);
+            return response()->json(['deleted' => $messageService->deleteReadMessages($data['messageIds'])]);
+        }
         $messageId = $request->input('messageId');
 
         // If action is 103, we delete the message.

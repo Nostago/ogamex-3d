@@ -22,6 +22,8 @@ return [
     'queue_unit' => 'Schiffswerft und Verteidigung',
     'purchased' => 'Kauf abgeschlossen.',
     'activated' => 'Gegenstand aktiviert.',
+    'activation_effect' => 'Gegenstand aktiviert. Ziel: :target. Tatsächlich verkürzt: :days Tage | :hours Stunden | :minutes Minuten | :seconds Sekunden. Abgeschlossene Aufträge: :orders. Fertiggestellte Schiffe und Verteidigungseinheiten: :units.',
+    'activation_replayed' => 'Diese Aktivierung wurde bereits ausgeführt. Es wurde kein weiterer Gegenstand verbraucht.',
     'invalid_product' => 'Dieses Produkt ist nicht verfügbar.',
     'price_changed' => 'Der Preis wurde geändert. Bitte die Seite neu laden und den aktuellen Preis prüfen.',
     'officer_quantity' => 'Bitte jeweils einen Offiziersvertrag abschließen.',

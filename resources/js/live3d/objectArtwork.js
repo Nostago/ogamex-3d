@@ -94,7 +94,7 @@ export function createObjectArtwork(t) {
                     engine ||= createObjectPreview(element)
                     if (await engine.show(item, job)) {
                         if (disposed || version !== generation) return
-                        element.replaceChildren(engine.canvas)
+                        element.replaceChildren(engine.canvas, engine.progress)
                         element.dataset.artwork = '3d'
                         element.dataset.caption = t.object_preview
                         element.setAttribute(

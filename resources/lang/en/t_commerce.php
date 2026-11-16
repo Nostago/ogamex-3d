@@ -21,6 +21,8 @@ return [
     'queue_unit' => 'Shipyard and defense',
     'purchased' => 'Purchase completed.',
     'activated' => 'Item activated.',
+    'activation_effect' => 'Item activated. Target: :target. Time applied: :days days | :hours hours | :minutes minutes | :seconds seconds. Completed orders: :orders. Completed ships and defense units: :units.',
+    'activation_replayed' => 'This activation was already completed. No additional item was consumed.',
     'invalid_product' => 'This product is not available.',
     'price_changed' => 'The price has changed. Reload this page and check the new price.',
     'officer_quantity' => 'Recruit one officer contract at a time.',

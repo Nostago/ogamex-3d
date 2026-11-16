@@ -102,7 +102,7 @@ class EspionageReport extends GameMessage
         }
 
         $params = $this->getEspionageReportParams();
-        return view('ingame.messages.templates.espionage_report_full', $params)->render();
+        return view(request()->attributes->get('live3d') ? 'live3d.messages.espionage' : 'ingame.messages.templates.espionage_report_full', $params)->render();
     }
 
     /**
@@ -231,6 +231,7 @@ class EspionageReport extends GameMessage
             'system' => $espionageReportModel->planet_system,
             'position' => $espionageReportModel->planet_position,
             'planet_type' => $espionageReportModel->planet_type,
+            'known_sections' => ['ships' => $espionageReportModel->ships !== null, 'defense' => $espionageReportModel->defense !== null, 'buildings' => $espionageReportModel->buildings !== null, 'research' => $espionageReportModel->research !== null],
         ];
     }
 }

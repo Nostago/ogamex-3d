@@ -1,4 +1,4 @@
-import { formatDuration } from './duration.js'
+import { formatDuration, renderDuration } from './duration.js'
 import * as THREE from '../prototype3d/vendor/three.module.min.js'
 import { createColonyMaterials } from '../prototype3d/materials.js'
 import { createBuilding } from '../prototype3d/buildings.js'
@@ -12,6 +12,14 @@ import { shipPreviewAssets } from './shipAssets.js'
 
 // One reusable renderer, not a new context for each selection or background poll.
 export function createObjectPreview(host) {
+    const progressPanel = document.createElement('div'),
+        percent = document.createElement('span'),
+        countdown = document.createElement('div')
+    progressPanel.className = 'object-preview-progress'
+    percent.className = 'object-preview-percent'
+    progressPanel.hidden = true
+    progressPanel.append(percent, countdown)
+    let progressKey = ''
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2))
     renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -114,6 +122,8 @@ export function createObjectPreview(host) {
         }
         clipped = []
         host.dataset.building = 'false'
+        progressPanel.hidden = true
+        progressKey = ''
     }
     function setJob(job) {
         jobState = job
@@ -181,6 +191,7 @@ export function createObjectPreview(host) {
             scene.add(scanner)
         }
         host.dataset.building = 'true'
+        progressPanel.hidden = false
         cancelAnimationFrame(animation)
         function tick(time) {
             if (disposed || !jobState) return
@@ -204,6 +215,12 @@ export function createObjectPreview(host) {
                 host.dataset.progress = String(progress)
                 // Server snapshots alone decide completion and inventory changes.
                 host.dataset.jobLabel = `${Math.floor(progress * 100)} % · ${formatDuration(remaining)}`
+                const nextKey = `${Math.floor(progress * 100)}:${Math.ceil(remaining)}`
+                if (nextKey !== progressKey) {
+                    progressKey = nextKey
+                    percent.textContent = `${Math.floor(progress * 100)} %`
+                    renderDuration(countdown, remaining)
+                }
                 model.position.y =
                     baseY +
                     (model.userData.modelRevision
@@ -310,6 +327,7 @@ export function createObjectPreview(host) {
     host.addEventListener('keydown', keyboard)
     return {
         canvas: renderer.domElement,
+        progress: progressPanel,
         show,
         setJob,
         dispose() {

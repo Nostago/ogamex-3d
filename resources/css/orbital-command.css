@@ -1476,3 +1476,11 @@
 .orbital-command #live-rename-name { display:block;width:100%;box-sizing:border-box;font-size:calc(20px * var(--ui-text-scale,1));padding:12px; }
 .orbital-command #live-ui-settings input { margin:0; }.readability-controls label>span { display:flex;align-items:center;gap:8px; }
 .ship-preview-fallback { width:100%;height:100%;object-fit:contain; }
+/* Compact segmented countdown in the construction model preview. */
+.object-artwork[data-building=true]::before{display:none!important}
+.object-preview-progress{position:absolute;top:10px;left:12px;z-index:2;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);pointer-events:none;color:#c9f5ff;background:#061925d9;padding:6px;border-radius:6px}
+.object-preview-progress[hidden]{display:none!important}.object-preview-percent{font:600 12px/1.2 system-ui,sans-serif;white-space:nowrap}
+.object-preview-progress .duration-parts{gap:5px;flex-wrap:nowrap}.object-preview-progress .duration-part{min-width:34px;padding:4px 7px;border-left-width:2px;border-radius:4px}
+.orbital-command .workspace .object-preview-progress .duration-part>span{font-size:clamp(9px,calc(10px * var(--ui-text-scale,1)),12px)!important;line-height:1.25}
+.orbital-command .workspace .object-preview-progress .duration-part>strong{font-size:clamp(13px,calc(15px * var(--ui-text-scale,1)),20px)!important;line-height:1.3}
+@media(max-width:500px){.object-preview-progress{top:6px;left:6px;gap:5px;padding:4px;max-width:calc(100% - 12px)}.object-preview-progress .duration-part{min-width:29px;padding:3px 5px}.object-preview-progress .duration-parts{gap:3px}}

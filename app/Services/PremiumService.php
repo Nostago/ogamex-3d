@@ -65,9 +65,10 @@ class PremiumService
         }, 3);
     }
 
-    public function activate(PlayerService $player, PlanetService $planet, string $key, string $requestId): void
+    /** @return array{seconds: int, orders: int, units: int}|null */
+    public function activate(PlayerService $player, PlanetService $planet, string $key, string $requestId): array|null
     {
-        DB::transaction(function () use ($player, $planet, $key, $requestId) {
+        return DB::transaction(function () use ($player, $planet, $key, $requestId) {
             User::whereKey($player->getId())->lockForUpdate()->firstOrFail();
             if ($this->replayed($player, $requestId, 'activate', $key, 1, $planet->getPlanetId())) {
                 $player->refreshUser();
@@ -89,9 +90,10 @@ class PremiumService
                 $planet->update();
             }
             $player->updateResearchQueue();
-            $this->queues->useItem($player, $planet, $product['queue'], $product['seconds']);
+            $effect = $this->queues->useItem($player, $planet, $product['queue'], $product['seconds']);
             DB::table('player_items')->where('user_id', $player->getId())->where('item_key', $key)->decrement('quantity', 1, ['updated_at' => Date::now()]);
             $this->record($player, $requestId, 'activate', $key, 1, 0, $planet->getPlanetId());
+            return $effect;
         }, 3);
     }
 

@@ -104,9 +104,14 @@ class UnitQueueService
         // Fetch queue items from model
         return $this->model->where([
             ['planet_id', $planet_id],
-            ['time_start', '<=', Date::now()->timestamp],
             ['processed', 0],
         ])
+            ->where(function ($query): void {
+                // A completed deadline also covers orders finished by an admin
+                // while their original start was still in the future.
+                $query->where('time_start', '<=', Date::now()->timestamp)
+                    ->orWhere('time_end', '<=', Date::now()->timestamp);
+            })
             ->orderBy('time_start', 'asc')
             ->get();
     }

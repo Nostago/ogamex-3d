@@ -16,6 +16,71 @@ use Tests\IsolatedAccountTestCase;
 
 class QueueTimeCreditTest extends IsolatedAccountTestCase
 {
+    public static function defenseProducts(): array
+    {
+        return [['detroid_bronze'], ['detroid_silver'], ['detroid_gold']];
+    }
+
+    #[DataProvider('defenseProducts')]
+    public function testDetroidCompletesAQueueContainingOnlyRocketLaunchers(string $product): void
+    {
+        $this->prepareWorld();
+        for ($i = 0; $i < 3; $i++) {
+            $this->order('defense', 401);
+        }
+        $this->postJson('/shop/activate', $this->buy($product))->assertOk();
+        $this->assertDatabaseHas('planets', ['id' => $this->currentPlanetId, 'rocket_launcher' => 3]);
+        $this->assertSame(3, UnitQueue::where('planet_id', $this->currentPlanetId)->where('object_id', 401)->where('processed', 1)->count());
+        $this->getJson('/play-3d/state?planet='.$this->currentPlanetId)->assertOk()->assertJsonPath('defenseTotal', '3');
+    }
+
+    public function testDetroidShortensALargeRocketLauncherOrderAndGrantsCompletedUnitsExactlyOnce(): void
+    {
+        $this->prepareWorld();
+        $this->order('defense', 401, 1000);
+        $item = UnitQueue::where('planet_id', $this->currentPlanetId)->firstOrFail();
+        $perUnit = $item->time_duration / 1000;
+        $activation = $this->buy('detroid_bronze', 2);
+        $this->postJson('/shop/activate', $activation)->assertOk()->assertJsonPath('effect.seconds', 1800);
+        $this->assertSame($item->time_end - 1800, $item->fresh()?->time_end);
+        $expected = (int)floor(1800 / $perUnit);
+        $this->assertGreaterThan(0, $expected);
+        $this->assertDatabaseHas('planets', ['id' => $this->currentPlanetId, 'rocket_launcher' => $expected]);
+        $this->postJson('/shop/activate', $activation)->assertOk();
+        $this->assertDatabaseHas('planets', ['id' => $this->currentPlanetId, 'rocket_launcher' => $expected]);
+        $this->getJson('/play-3d/state?planet='.$this->currentPlanetId)->assertOk()->assertJsonPath('defenseTotal', (string)$expected);
+    }
+
+    public function testAnExpiredFutureStartOrderIsSettledBeforeDetroidAndDoesNotConsumeInventory(): void
+    {
+        $this->prepareWorld();
+        $this->order('defense', 401, 10);
+        $this->order('defense', 401, 20);
+        $this->order('ship', 204, 3);
+        $activation = $this->buy('detroid_bronze');
+        // Reproduce records left by the former admin finish action: the end
+        // is already due while later orders still have a future start.
+        UnitQueue::where('planet_id', $this->currentPlanetId)->update(['time_end' => (int)Date::now()->timestamp]);
+        $this->postJson('/shop/activate', $activation)->assertUnprocessable();
+        $this->assertDatabaseHas('planets', ['id' => $this->currentPlanetId, 'rocket_launcher' => 30, 'light_fighter' => 3]);
+        $this->assertDatabaseHas('player_items', ['user_id' => $this->currentUserId, 'item_key' => 'detroid_bronze', 'quantity' => 1]);
+        $this->assertSame(0, UnitQueue::where('planet_id', $this->currentPlanetId)->where('processed', 0)->count());
+    }
+
+    public function testAlreadyGrantedUnitsInAnExpiredRecordAreNotGrantedTwice(): void
+    {
+        $this->prepareWorld();
+        $this->order('defense', 401, 10);
+        $item = UnitQueue::where('planet_id', $this->currentPlanetId)->firstOrFail();
+        $item->time_end = (int)Date::now()->timestamp;
+        $item->object_amount_progress = 10;
+        $item->save();
+        DB::table('planets')->where('id', $this->currentPlanetId)->update(['rocket_launcher' => 10]);
+        $this->getJson('/play-3d/state?planet='.$this->currentPlanetId)->assertOk()->assertJsonPath('defenseTotal', '10');
+        $this->assertSame(1, $item->refresh()->processed);
+        $this->getJson('/play-3d/state?planet='.$this->currentPlanetId)->assertOk()->assertJsonPath('defenseTotal', '10');
+    }
+
     public static function products(): array
     {
         $cases = [];

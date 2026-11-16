@@ -623,3 +623,5 @@ Weitere Schiffsmodelle: [Großer Transporter, Kolonieschiff und Schwerer Jäger]
 Ladezeitoptimierung: [Alle vier Schiffe unter 0,8 MB](OGAMEX-3D-SHIP-LOADING.md).
 
 Shop-Regel: [Zeitverkürzer auf Folgeaufträge anrechnen](OGAMEX-3D-QUEUE-TIME-CREDIT.md).
+
+Oberfläche und Diagnose: [Nachrichtendetails als Layer, kompakter Countdown und DETROID-Bestätigung](OGAMEX-3D-MESSAGE-DIALOGS.md).

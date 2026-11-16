@@ -12,7 +12,8 @@ use OGame\Models\UnitQueue;
 /** Change deadlines only; original queue processors grant levels/units and start paid follow-up jobs. */
 class QueueAccelerationService
 {
-    public function useItem(PlayerService $player, PlanetService $planet, string $kind, int $seconds): void
+    /** @return array{seconds: int, orders: int, units: int} */
+    public function useItem(PlayerService $player, PlanetService $planet, string $kind, int $seconds): array
     {
         $now = (int)Date::now()->timestamp;
         if ($kind === 'unit') {
@@ -21,6 +22,10 @@ class QueueAccelerationService
                 throw ValidationException::withMessages(['product' => __('t_commerce.no_active_order')]);
             }
             $reduction = min($seconds, max(0, (int)$items->last()->time_end - $now));
+            if ($reduction <= 0) {
+                throw ValidationException::withMessages(['product' => __('t_commerce.no_active_order')]);
+            }
+            $beforeUnits = (int)$items->sum('object_amount_progress');
             foreach ($items as $item) {
                 // Advancing all three timestamps preserves per-unit production and completed-unit accounting.
                 $item->time_start -= $reduction;
@@ -29,7 +34,8 @@ class QueueAccelerationService
                 $item->save();
             }
             $planet->updateUnitQueue();
-            return;
+            $updated = UnitQueue::whereIn('id', $items->modelKeys())->get();
+            return ['seconds' => $reduction, 'orders' => $updated->where('processed', 1)->count(), 'units' => (int)$updated->sum('object_amount_progress') - $beforeUnits];
         }
         $queue = $kind === 'building'
             ? BuildingQueue::where('planet_id', $planet->getPlanetId())
@@ -64,6 +70,13 @@ class QueueAccelerationService
                 $player->updateResearchQueue();
             }
         }
+        $completed = 0;
+        foreach ($items as $item) {
+            if ($item->refresh()->processed) {
+                $completed++;
+            }
+        }
+        return ['seconds' => $seconds - $remaining, 'orders' => $completed, 'units' => 0];
     }
 
     public function completeOwnOrders(PlayerService $player): void

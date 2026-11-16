@@ -4,6 +4,7 @@
         'shipNames' => collect(\OGame\Services\ObjectService::getShipObjects())->mapWithKeys(fn ($ship) => [$ship->machine_name => $ship->title])->all(),
         'galaxyActionUrl' => route('live3d.galaxy.action'), 'galaxyMissilesUrl' => route('live3d.galaxy.missiles'),
         'operationsT' => array_merge(__('t_operations', [], 'de'), __('t_bots', [], 'de'), __('t_systemmap', [], 'de'), __('t_fleetquick', [], 'de'), __('t_readability', [], 'de')),
+        'messageT' => __('t_messageui', [], 'de'),
         'botsUrl' => route('live3d.bots'),
         'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
