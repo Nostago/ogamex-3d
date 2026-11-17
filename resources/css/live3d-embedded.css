@@ -151,3 +151,14 @@ h1 { font-size:calc(32px * var(--ui-heading-scale,.8))!important; }
 #messages .live-message-delete{display:inline-flex!important;align-items:center;justify-content:center;position:static!important;width:auto!important;height:auto!important;min-height:32px!important;margin:0!important;padding:6px 12px!important;border:1px solid #b86f7b!important;border-radius:5px;background:#402832!important;color:#ffe5e9!important;font-size:calc(16px * var(--ui-text-scale,1))!important;text-indent:0!important;opacity:1!important}
 #messages .msg_action_link[href*="/ajax/messages/"]{display:inline-flex!important;float:none!important;padding:8px 14px!important;background:#123f52!important;border:1px solid #4599b3!important;border-radius:5px!important;color:#c7f4ff!important;font-size:calc(17px * var(--ui-text-scale,1))!important}
 #messages :is(.msg_content,.msg_sender,.msg_date,.msg_title){font-size:calc(17px * var(--ui-text-scale,1))!important;line-height:1.6!important}
+
+/* Selection stays readable and uses native, keyboard-accessible checkboxes. */
+#messages .live-message-toolbar { align-items:center; }
+#messages .live-message-select { display:inline-flex!important;align-items:center;gap:10px;float:none!important;width:auto!important;font-size:calc(16px * var(--ui-text-scale,1))!important;color:#d8f2ff!important;cursor:pointer; }
+#messages .live-message-select input[type=checkbox] { appearance:auto!important;position:static!important;opacity:1!important;display:inline-block!important;width:22px!important;height:22px!important;margin:0!important;accent-color:#54d8ee;cursor:pointer; }
+#messages .live-message-row-select { margin:0 0 14px!important;padding:7px 10px;border:1px solid #3d718a;border-radius:5px;background:#103044; }
+#messages li.msg:has([data-live-message-select]:checked) { outline:2px solid #66dff3!important;outline-offset:-2px;background-color:#123b4c!important; }
+#messages .live-message-selection-scope,#messages [data-live-selection-status] { flex:1 0 100%;margin:0!important;font-size:calc(15px * var(--ui-text-scale,1))!important;color:#b9d7e7!important; }
+#messages [data-live-selection-status]:empty { display:none; }
+#messages [data-live-selection-count] { color:#a1efff;font-size:calc(16px * var(--ui-text-scale,1)); }
+#messages [data-live-delete-selected] { background:#492a35!important;border-color:#d18b9d!important;color:#ffe5eb!important; }

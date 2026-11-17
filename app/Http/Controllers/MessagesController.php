@@ -20,16 +20,7 @@ class MessagesController extends OGameController
     {
         $this->setBodyId('messages');
 
-        // Get unread message count for each tab.
-        // TODO: optimize this to get all unread messages count for all tabs in one query.
-        $unread_messages_count = [
-            'fleets' => $messageService->getUnreadMessagesCountForTab('fleets'),
-            'communication' => $messageService->getUnreadMessagesCountForTab('communication'),
-            'economy' => $messageService->getUnreadMessagesCountForTab('economy'),
-            'universe' => $messageService->getUnreadMessagesCountForTab('universe'),
-            'system' => $messageService->getUnreadMessagesCountForTab('system'),
-            'favorites' => $messageService->getUnreadMessagesCountForTab('favorites'),
-        ];
+        $unread_messages_count = $messageService->getUnreadMessageCounts();
 
         // By default open the "Fleets/Espionage" tab.
         $tabKey = $request->input('tab', 'fleets');
@@ -55,41 +46,25 @@ class MessagesController extends OGameController
      */
     protected function tabContent(MessageService $messageService, string $tab, string $subtab = '', int $page = 1): View
     {
-        $subtab_content = $this->subTabContent($messageService, $tab, $subtab, $page);
-
         switch ($tab) {
             case 'fleets':
-                // TODO: optimize this to get all unread messages count for all tabs in one query.
-                $unread_messages_count = [
-                    'espionage' => $messageService->getUnreadMessagesCountForSubTab('fleets', 'espionage'),
-                    'combat_reports' => $messageService->getUnreadMessagesCountForSubTab('fleets', 'combat_reports'),
-                    'expeditions' => $messageService->getUnreadMessagesCountForSubTab('fleets', 'expeditions'),
-                    'transport' => $messageService->getUnreadMessagesCountForSubTab('fleets', 'transport'),
-                    'other' => $messageService->getUnreadMessagesCountForSubTab('fleets', 'other'),
-                ];
-
                 return view('ingame.messages.tabs.fleets.tab')->with([
-                    'unread_messages_count' => $unread_messages_count,
+                    'unread_messages_count' => $messageService->getUnreadMessageCounts('fleets'),
                 ]);
             case 'communication':
-                $unread_messages_count = [
-                    'messages' => $messageService->getUnreadMessagesCountForSubTab('communication', 'messages'),
-                    'information' => $messageService->getUnreadMessagesCountForSubTab('communication', 'information'),
-                ];
-
                 return view('ingame.messages.tabs.communication.tab')->with([
-                    'unread_messages_count' => $unread_messages_count,
+                    'unread_messages_count' => $messageService->getUnreadMessageCounts('communication'),
                 ]);
             case 'economy':
             case 'universe':
             case 'system':
             case 'favorites':
                 return view('ingame.messages.tabs.default.tab')->with([
-                    'subtab_content' => $subtab_content,
+                    'subtab_content' => $this->subTabContent($messageService, $tab, $subtab, $page),
                 ]);
             default:
                 return view('ingame.messages.tabs.fleets.tab')->with([
-                    'subtab_content' => $subtab_content,
+                    'subtab_content' => $this->subTabContent($messageService, $tab, $subtab, $page),
                 ]);
         }
     }
@@ -184,9 +159,9 @@ class MessagesController extends OGameController
     {
         $token = $request->input('_token', $request->header('X-CSRF-TOKEN'));
         abort_unless(is_string($token) && hash_equals($request->session()->token(), $token), 419);
-        if ($request->input('action') === 'delete-read') {
+        if (in_array($request->input('action'), ['delete-read', 'delete-selected'], true)) {
             $data = $request->validate(['messageIds' => ['required', 'array', 'min:1', 'max:100'], 'messageIds.*' => ['required', 'integer', 'min:1', 'distinct']]);
-            return response()->json(['deleted' => $messageService->deleteReadMessages($data['messageIds'])]);
+            return response()->json(['deleted' => $messageService->deleteMessages($data['messageIds'], $request->input('action') === 'delete-read')]);
         }
         $messageId = $request->input('messageId');
 

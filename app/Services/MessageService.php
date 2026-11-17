@@ -206,10 +206,13 @@ class MessageService
             $gameMessages[] = GameMessageFactory::createGameMessage($message);
         }
 
-        // When the messages are loaded, mark them as viewed.
-        foreach ($paginator->items() as $message) {
-            $message->viewed = 1;
-            $message->save();
+        // Update only this page in one query; retain the unread state of the
+        // cloned GameMessage objects so the original "new" styling still works.
+        $unreadIds = $paginator->getCollection()->where('viewed', 0)->modelKeys();
+        if ($unreadIds !== []) {
+            Message::where('user_id', $this->player->getId())
+                ->whereIn('id', $unreadIds)
+                ->where('viewed', 0)->update(['viewed' => 1]);
         }
 
         return [
@@ -252,6 +255,24 @@ class MessageService
         return Message::where('user_id', $this->player->getId())
             ->where('viewed', 0)
             ->count();
+    }
+
+    /** @return array<string, int> */
+    public function getUnreadMessageCounts(string|null $tab = null): array
+    {
+        $counts = Message::where('user_id', $this->player->getId())->where('viewed', 0)
+            ->select('key')->selectRaw('COUNT(*) as total')->groupBy('key')->pluck('total', 'key');
+        $result = array_fill_keys($tab === null ? array_keys($this->tabs) : ($this->tabs[$tab] ?? []), 0);
+        foreach (GameMessageFactory::getAllGameMessages() as $key => $message) {
+            if ($tab !== null && $message->getTab() !== $tab) {
+                continue;
+            }
+            $group = $tab === null ? $message->getTab() : $message->getSubtab();
+            if (array_key_exists($group, $result)) {
+                $result[$group] += (int)($counts[$key] ?? 0);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -305,7 +326,17 @@ class MessageService
     /** @param array<int, int> $messageIds */
     public function deleteReadMessages(array $messageIds): int
     {
-        return Message::where('user_id', $this->player->getId())->where('viewed', 1)->whereIn('id', $messageIds)->delete();
+        return $this->deleteMessages($messageIds, true);
+    }
+
+    /** @param array<int, int> $messageIds */
+    public function deleteMessages(array $messageIds, bool $readOnly = false): int
+    {
+        $query = Message::where('user_id', $this->player->getId())->whereIn('id', $messageIds);
+        if ($readOnly) {
+            $query->where('viewed', 1);
+        }
+        return $query->delete();
     }
 
     /**

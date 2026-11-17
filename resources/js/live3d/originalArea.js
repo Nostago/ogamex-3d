@@ -133,11 +133,25 @@ export function skinOriginalArea(
         }
     }
     bind()
-    const observer = new MutationObserver(() => {
-        observer.disconnect()
-        bind()
-        resizeFrame()
-        observer.observe(doc.body, { childList: true, subtree: true })
+    let binding
+    const observer = new MutationObserver((records) => {
+        // Countdown/status text changes need no complete DOM scan. ResizeObserver
+        // still handles any resulting size changes. Batch actual content insertions.
+        if (
+            !records.some((record) =>
+                [...record.addedNodes, ...record.removedNodes].some(
+                    (node) => node.nodeType === 1,
+                ),
+            )
+        )
+            return
+        cancelAnimationFrame(binding)
+        binding = requestAnimationFrame(() => {
+            observer.disconnect()
+            bind()
+            resizeFrame()
+            observer.observe(doc.body, { childList: true, subtree: true })
+        })
     })
     observer.observe(doc.body, { childList: true, subtree: true })
     frame.contentWindow.addEventListener(
@@ -147,6 +161,7 @@ export function skinOriginalArea(
             observer.disconnect()
             sizeObserver.disconnect()
             cancelAnimationFrame(sizing)
+            cancelAnimationFrame(binding)
         },
         { once: true },
     )
