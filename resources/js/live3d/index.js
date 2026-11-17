@@ -8,7 +8,7 @@ import { createWorkbench } from './workbench.js'
 import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
-import { formatDuration } from './duration.js'
+import { formatDuration, renderDuration } from './duration.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
 import { createQuickFleet } from './quickFleet.js'
@@ -613,12 +613,29 @@ function updateCountdowns() {
             Number(node.dataset.remaining) -
                 Math.floor((Date.now() - received) / 1000),
         )
-        node.textContent =
-            node.dataset.active === 'true'
+        let clock = node.querySelector('.order-countdown-clock')
+        if (!clock) {
+            const caption = el('span', 'order-countdown-status')
+            clock = el('span', 'order-countdown-clock')
+            node.classList.add('order-countdown')
+            node.replaceChildren(caption, clock)
+        }
+        const active = node.dataset.active === 'true',
+            remaining = active
                 ? left
-                    ? formatDuration(left, t)
+                : Math.max(0, Number(node.dataset.remaining)),
+            caption = node.querySelector('.order-countdown-status'),
+            label = active
+                ? remaining > 0
+                    ? ''
                     : t.processing
-                : `${t.queued} · ${Number(node.dataset.remaining) > 0 ? formatDuration(node.dataset.remaining, t) : t.op_duration_on_start}`
+                : remaining > 0
+                  ? t.queued
+                  : `${t.queued} · ${t.op_duration_on_start}`
+        if (caption.textContent !== label) caption.textContent = label
+        caption.hidden = !label
+        clock.hidden = remaining <= 0
+        if (remaining > 0) renderDuration(clock, remaining, t)
     }
 }
 function failure(error) {

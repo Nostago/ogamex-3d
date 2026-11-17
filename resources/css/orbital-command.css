@@ -1484,3 +1484,15 @@
 .orbital-command .workspace .object-preview-progress .duration-part>span{font-size:clamp(9px,calc(10px * var(--ui-text-scale,1)),12px)!important;line-height:1.25}
 .orbital-command .workspace .object-preview-progress .duration-part>strong{font-size:clamp(13px,calc(15px * var(--ui-text-scale,1)),20px)!important;line-height:1.3}
 @media(max-width:500px){.object-preview-progress{top:6px;left:6px;gap:5px;padding:4px;max-width:calc(100% - 12px)}.object-preview-progress .duration-part{min-width:29px;padding:3px 5px}.object-preview-progress .duration-parts{gap:3px}}
+
+/* Orders use the same labelled time fields as fleet movements. */
+.order-countdown { display:inline-flex; flex-direction:column; align-items:flex-start; gap:6px; min-width:0; max-width:100%; }
+.order-countdown-status { color:#b9dce9; font-size:calc(16px * var(--ui-text-scale,1)); }
+.order-countdown [hidden] { display:none!important; }
+.live-queue .order-countdown-clock { max-width:100%; }
+.orbital-command .dock-order .order-countdown-clock { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
+.orbital-command .dock-order .duration-part>strong { font-size:calc(22px * var(--ui-text-scale,1)); }
+@media(max-width:700px) {
+    .live-queue .order-countdown { flex-basis:100%; margin-left:0; }
+    .live-queue .order-countdown-clock { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
