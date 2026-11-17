@@ -7,7 +7,7 @@
     <title>@yield('title') · OGameX</title>
 </head>
 <body>
-<main id="live-social" class="live-social">
+<main id="@yield('root_id', 'live-social')" class="live-social">
     @if(session('status'))<p class="social-notice" role="status">{{ session('status') }}</p>@endif
     @if(session('error'))<p class="social-error" role="alert">{{ session('error') }}</p>@endif
     @yield('content')

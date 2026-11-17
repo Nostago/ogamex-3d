@@ -4,6 +4,7 @@ import '../../css/orbital-command.css'
 import '../../css/live3d-messages.css'
 import { createMessageDialogs } from './messageDialogs.js'
 import { createSocialUi } from './socialUi.js'
+import { createWorkbench } from './workbench.js'
 import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
@@ -150,6 +151,7 @@ function objects() {
 function show(name, fromFrame = false, fleetTarget) {
     messageDialogs.hide()
     socialUi.hide()
+    workbench.hide()
     quickFleet.hide()
     planetName.hide()
     systemMap.hide()
@@ -746,6 +748,7 @@ frame.addEventListener('load', () => {
             onLoading: originalLoading,
             messages: messageDialogs,
             social: socialUi,
+            workbench,
         })
         clearTimeout(originalTimer)
         frame.dataset.ready = 'true'
@@ -770,7 +773,11 @@ frame.addEventListener('load', () => {
                     ? 'highscore'
                     : url.pathname.startsWith('/buddies')
                       ? 'buddies'
-                      : null
+                      : url.pathname.startsWith('/merchant')
+                        ? 'merchant'
+                        : url.pathname.includes('/notes')
+                          ? 'notes'
+                          : null
         if (area === 'fleets') {
             openFleet(url.href)
             return
@@ -957,6 +964,12 @@ const socialUi = createSocialUi({
         )
     },
 })
+const workbench = createWorkbench({
+    t: config.workT,
+    resourceNames: config.t,
+    planet: () => planet,
+    refresh,
+})
 const systemMap = createSystemMap({
     config,
     t,
@@ -1041,6 +1054,7 @@ window.addEventListener('pagehide', (event) => {
     quickFleet.dispose()
     messageDialogs.dispose()
     socialUi.dispose()
+    workbench.dispose()
     systemMap.dispose()
     galaxy.dispose()
     fleetMonitor.dispose()
@@ -1085,12 +1099,7 @@ function renderAreaTabs(area) {
                     [t.fleet_dispatch, '/fleet'],
                     [t.fleet_movements, '/fleet/movement'],
                 ]
-              : area === 'merchant'
-                ? [
-                      [t.merchant, '/merchant'],
-                      [t.resource_market, '/merchant/resource-market'],
-                  ]
-                : []
+              : []
     for (const [label, url] of links) {
         const button = el('button', '', label)
         button.addEventListener('click', () => {

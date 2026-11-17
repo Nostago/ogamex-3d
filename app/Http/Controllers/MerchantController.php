@@ -27,7 +27,7 @@ class MerchantController extends OGameController
         $darkMatter = $player->getUser()->dark_matter;
         $merchantCost = MerchantService::DARK_MATTER_COST;
 
-        return view('ingame.merchant.index', [
+        return view(request()->attributes->get('live3d') ? 'live3d.merchant.index' : 'ingame.merchant.index', [
             'darkMatter' => $darkMatter,
             'merchantCost' => $merchantCost,
         ]);
@@ -50,7 +50,7 @@ class MerchantController extends OGameController
         // Check if a merchant is already active for this user (check cache for persistence)
         $activeMerchant = cache()->get('active_merchant_' . $player->getId());
 
-        return view('ingame.merchant.resource-market', [
+        return view($request->attributes->get('live3d') ? 'live3d.merchant.market' : 'ingame.merchant.resource-market', [
             'darkMatter' => $darkMatter,
             'merchantCost' => $merchantCost,
             'activeMerchant' => $activeMerchant,
@@ -71,6 +71,10 @@ class MerchantController extends OGameController
         // Validate merchant type
         if (!in_array($type, ['metal', 'crystal', 'deuterium'])) {
             abort(404);
+        }
+
+        if ($request->attributes->get('live3d')) {
+            return $this->resourceMarket($request, $player);
         }
 
         $planet = $player->planets->current();
@@ -323,7 +327,7 @@ class MerchantController extends OGameController
             'deuterium' => (int)floor($planet->deuterium()->get()),
         ];
 
-        return view('ingame.merchant.scrap', [
+        return view($request->attributes->get('live3d') ? 'live3d.merchant.scrap' : 'ingame.merchant.scrap', [
             'offerPercentage' => $scrapSession['offer_percentage'],
             'bargainCount' => $scrapSession['bargain_count'],
             'bargainCost' => $bargainCost,
