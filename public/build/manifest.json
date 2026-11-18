@@ -92,7 +92,7 @@
     "isEntry": true
   },
   "resources/css/live3d-embedded.css": {
-    "file": "assets/live3d-embedded-chNRoEQi.css",
+    "file": "assets/live3d-embedded-B-32hBdI.css",
     "name": "live3d-embedded",
     "names": [
       "live3d-embedded.css"
@@ -138,7 +138,7 @@
     ]
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-Bot-XcBo.js",
+    "file": "assets/index-TyqLF9jL.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
@@ -156,7 +156,7 @@
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
-      "assets/index-BxYV6i6y.css",
+      "assets/index-FR5-jSFE.css",
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },

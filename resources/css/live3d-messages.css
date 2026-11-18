@@ -19,3 +19,19 @@
 .live-report-body #messagedetails :is(.section_title,h3){display:block;margin:22px 0 12px;padding:12px;background:#13384a;border:1px solid #36748f;color:#a4ecff;font-weight:700}
 .live-report-body a{color:#8fe5ff}.live-report-body img{max-width:100%;height:auto}.live-report-body #messagedetails .combat_round{display:block!important}.live-report-body #messagedetails :is(.fleft,.fright){float:none!important}.live-report-body #messagedetails :is(.c-left,.c-right,.icon_nf,.icon_apikey,.planetIcon){display:none!important}
 @media(max-width:650px){#live-message-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px)}#live-message-dialog>header{padding:12px}.live-message-content{padding:12px}.live-report-facts,.live-report-objects{grid-template-columns:minmax(0,1fr)}.live-report-section{padding:14px}.live-message-pagination{gap:6px}.live-message-pagination button{padding:8px!important;font-size:.75em!important}.live-message-pagination span{padding:4px;font-size:.8em}}
+
+/* Native combat details contain only stored report data, without the legacy editor. */
+.live-battle-report .battle-outcome{font-size:1.2em;color:#baf6dd}
+.live-battle-report .battle-side{min-width:0;margin:22px 0}
+.live-battle-report h4{font-size:1.1em;color:#b4efff;margin:14px 0}
+.battle-technologies{display:flex;flex-wrap:wrap;gap:12px 24px;margin:12px 0 20px}
+.battle-technologies>div{min-width:100px}.battle-technologies dt{color:#adccda;font-size:.85em}.battle-technologies dd{margin:4px 0;font-weight:700}
+.live-battle-units{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.9em}
+.live-battle-units th,.live-battle-units td{padding:12px 8px;border-bottom:1px solid #33596d;text-align:right;overflow-wrap:anywhere}
+.live-battle-units th:first-child{width:42%;text-align:left}.live-battle-units thead{background:#123447;color:#b8edff}
+.live-battle-units tbody th img{width:64px;height:48px;object-fit:contain;vertical-align:middle;margin-right:10px}
+.live-battle-units td{font-variant-numeric:tabular-nums}.live-battle-units .battle-loss{color:#ffb9b0;font-weight:700}
+.battle-round{border:1px solid #3f7186;border-radius:6px;margin:12px 0;padding:12px}
+.battle-round summary{cursor:pointer;color:#a4eaff;font-weight:700;padding:6px;min-height:36px}
+.battle-round summary:focus-visible{outline:2px solid #a5efff;outline-offset:3px}
+@media(max-width:650px){.live-battle-units{font-size:.8em}.live-battle-units th,.live-battle-units td{padding:8px 4px}.live-battle-units th:first-child{width:37%}.live-battle-units tbody th img{display:block;width:56px;height:42px}.battle-round{padding:6px}.battle-technologies{gap:8px 16px}}

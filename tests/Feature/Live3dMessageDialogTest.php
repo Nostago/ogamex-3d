@@ -24,7 +24,8 @@ class Live3dMessageDialogTest extends IsolatedAccountTestCase
         $message->key = 'battle_report';
         $message->battle_report_id = $report->id;
         $message->save();
-        $this->get('/ajax/messages/'.$message->id.'?ui=live3d')->assertOk()->assertSee('data-live-message-id', false)->assertSee('messagedetails')->assertSee('1,000')->assertSee('500');
+        $this->get('/ajax/messages/'.$message->id.'?ui=live3d')->assertOk()->assertSee('data-live-message-id', false)->assertSee('live-battle-report')->assertSee('1.000')->assertSee('500')
+            ->assertDontSee('rawMessageData')->assertDontSee('sceditor')->assertDontSee('Font colour')->assertDontSee('8196210');
     }
 
     public function testNativeEspionageDetailsHaveNamedActionsAndPreserveUnknownInformation(): void

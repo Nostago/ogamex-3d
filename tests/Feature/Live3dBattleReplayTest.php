@@ -79,6 +79,40 @@ class Live3dBattleReplayTest extends IsolatedAccountTestCase
         $this->get('/ajax/messages/'.$message->id)->assertOk()->assertDontSee('data-battle-replay-url', false);
     }
 
+    public function testNativeBattleDetailsShowActualCountsAndGermanClassWithoutLegacyEditorOrExampleData(): void
+    {
+        $report = $this->report();
+        $report->attacker = [...($report->attacker ?? []), 'character_class' => 'Collector', 'weapon_technology' => 10];
+        $report->save();
+        $before = $report->fresh()?->getRawOriginal();
+        $message = $this->message($report);
+        $response = $this->get('/ajax/messages/'.$message->id.'?ui=live3d')->assertOk()
+            ->assertSee('live-battle-report')->assertSee('Kollektor')->assertSee('100 %')->assertSee('Im Kampf verloren')
+            ->assertSee('data-battle-round="1"', false)->assertSee('data-battle-round="2"', false)
+            ->assertDontSee('sceditor')->assertDontSee('rawMessageData')->assertDontSee('Font colour')
+            ->assertDontSee('DETROID')->assertDontSee('gameforge.com')->assertDontSee('Ehrenpunkte')
+            ->assertDontSee('data-battle-unit="heavy_fighter"', false);
+        // First fleet table is the attacker's whole-battle summary: 13 -> 8, five lost.
+        $html = $response->getContent();
+        $this->assertIsString($html);
+        $this->assertMatchesRegularExpression('/data-battle-unit="light_fighter"[^>]*>.*?data-count="before">13<.*?data-count="after">8<.*?data-count="lost"[^>]*>5</s', $html);
+        $this->assertSame($before, $report->fresh()?->getRawOriginal());
+        $this->assertDatabaseHas('messages', ['id' => $message->id, 'viewed' => 1]);
+    }
+
+    public function testNativeDetailsReadIncompleteHistoricalReportsWithoutInventingEndCounts(): void
+    {
+        $report = $this->report();
+        $report->rounds = null;
+        $report->save();
+        $message = $this->message($report);
+        $this->get('/ajax/messages/'.$message->id.'?ui=live3d')->assertOk()->assertSee('keine Rundendaten gespeichert')->assertSee('Nicht aufgezeichnet')
+            ->assertSee('data-count="after">Nicht aufgezeichnet', false);
+        $report->rounds = [['attacker_ships' => ['light_fighter' => 8], 'defender_ships' => []]];
+        $report->save();
+        $this->get('/ajax/messages/'.$message->id.'?ui=live3d')->assertOk()->assertSee('Runde 1')->assertSee('Nicht aufgezeichnet')->assertDontSee('Font colour');
+    }
+
     public function testOnlyTheHeadOfTheShipQueueIsActiveAndTheNextOrderTakesOver(): void
     {
         $this->planetAddResources(new Resources(1000000, 1000000, 1000000));

@@ -10,6 +10,7 @@ use OGame\Models\Enums\PlanetType;
 use OGame\Models\Planet\Coordinate;
 use OGame\Models\Resources;
 use OGame\Services\DebrisFieldService;
+use OGame\Services\Live3dBattleReplayService;
 use OGame\Services\ObjectService;
 use Throwable;
 
@@ -87,7 +88,18 @@ class BattleReport extends GameMessage
      */
     public function getBodyFull(): string
     {
-        $this->loadBattleReportModel();
+        $report = $this->loadBattleReportModel();
+
+        if (request()->attributes->get('live3d')) {
+            return view('live3d.messages.battle', [
+                'subject' => $this->getSubject(),
+                'from' => $this->getFrom(),
+                'date' => $this->getDateFormatted(),
+                'battle' => resolve(Live3dBattleReplayService::class)->project($report),
+                'report' => $report,
+                'viewerIsAttacker' => (int)$this->message->user_id === (int)($report->attacker['player_id'] ?? 0),
+            ])->render();
+        }
 
         $params = $this->getBattleReportParams();
         return view('ingame.messages.templates.battle_report_full', $params)->render();

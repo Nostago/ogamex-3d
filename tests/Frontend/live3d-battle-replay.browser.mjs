@@ -137,7 +137,12 @@ try {
     )
     assert.equal(await stage.getAttribute('data-replay-shield-sides'), '2')
     await stage.screenshot({ path: `${artifacts}/battle-effects.png` })
-    await panel.locator('[data-replay-play]').click()
+    // Software-rendered screenshots may outlast the animation. Avoid restarting
+    // an already completed replay when checking the paused state.
+    await panel.evaluate((node) => {
+        if (node.dataset.replayPlaying === 'true')
+            node.querySelector('[data-replay-play]').click()
+    })
     assert.equal(await panel.getAttribute('data-replay-playing'), 'false')
     await panel.getByRole('button', { name: 'Zum Anfang', exact: true }).click()
     await panel.locator('.replay-controls select').selectOption('4')

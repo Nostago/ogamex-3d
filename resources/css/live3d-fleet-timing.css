@@ -1,0 +1,24 @@
+#fleet-timing{font-size:calc(18px * var(--ui-text-scale,1));min-width:0}
+#fleet-timing :is(h2,h3,h4){color:#b4efff;line-height:1.4;overflow-wrap:anywhere}
+#fleet-timing h4{font-size:1.1em;margin:0}
+#fleet-timing label{display:grid;gap:8px;min-width:0}
+#fleet-timing .timing-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:18px}
+#fleet-timing .timing-panel{margin:16px 0;padding:20px;border:1px solid #3e7086;border-radius:8px;background:#0c2534;min-width:0}
+#fleet-timing .timing-filter{display:flex;flex-wrap:wrap;align-items:end;gap:14px}
+#fleet-timing #player-search{width:360px;max-width:100%}
+#fleet-timing .timing-global summary{color:#b4efff;cursor:pointer;font-weight:700}
+#fleet-timing .timing-success{color:#b6ffda;border-left:3px solid #6fdbac;padding:14px;background:#10362e}
+#fleet-timing .timing-error{color:#ffb9ad}
+#fleet-timing .timing-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:18px 0}
+#fleet-timing dt{color:#aecddc;font-size:.9em}#fleet-timing dd{margin:4px 0;font-weight:600;overflow-wrap:anywhere}
+#fleet-timing .timing-duration{display:flex;flex-wrap:wrap;gap:8px}
+#fleet-timing .timing-duration>span{display:grid;min-width:76px;gap:4px;padding:8px 12px;border:1px solid #3e7993;border-left:3px solid #77dced;border-radius:5px;background:#102f42;text-align:center}
+#fleet-timing .timing-duration>span:nth-child(2){border-left-color:#9ab6ff}#fleet-timing .timing-duration>span:nth-child(3){border-left-color:#8bdfc2}#fleet-timing .timing-duration>span:nth-child(4){border-left-color:#f0cc90}
+#fleet-timing .timing-duration>span>span{font-size:.8em;color:#c6dfeb}#fleet-timing .timing-duration strong{font-size:1.2em;font-variant-numeric:tabular-nums}
+#fleet-timing .timing-actions,#fleet-timing .timing-reduce{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+#fleet-timing .timing-actions{margin-top:20px}
+#fleet-timing input[name=minutes]{width:calc(8ch + 44px)!important;min-width:128px!important;flex:0 0 auto;padding:9px 12px!important;color:#f0fbff!important;background:#061724!important;text-align:left;font-variant-numeric:tabular-nums}
+#fleet-timing .timing-pagination{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:18px 0}
+#fleet-timing .timing-pagination a{padding:8px 12px;border:1px solid #4b7d95;border-radius:5px}#fleet-timing .timing-pagination [aria-current]{background:#174b60;color:#fff!important}
+#fleet-timing [hidden]{display:none!important}
+@media(max-width:650px){#fleet-timing .timing-panel{padding:14px}#fleet-timing .timing-facts{grid-template-columns:repeat(2,minmax(0,1fr))}#fleet-timing #player-search{width:100%}#fleet-timing .timing-filter label:first-of-type{width:100%}}

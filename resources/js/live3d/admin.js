@@ -1,6 +1,7 @@
 import { createAdminShipGrants } from './adminShipGrants.js'
 import { createBotsPanel } from './botsPanel.js'
 import { organizeAdminSections } from './adminSections.js'
+import { applyFrameReadability } from './readability.js'
 // Native test controls delegate to the existing admin controller. Advanced forms
 // stay intact: the original action, CSRF token and all settings fields are preserved.
 export function createAdmin({
@@ -213,6 +214,7 @@ export function createAdmin({
             sectionCleanup?.()
             const doc = frame.contentDocument
             if (!doc?.body) return
+            applyFrameReadability(doc)
             const path = frame.contentWindow.location.pathname
             if (!path.startsWith('/admin/')) {
                 status.textContent = t.admin_denied
@@ -233,7 +235,7 @@ export function createAdmin({
                 .live-admin-toc{display:flex;gap:7px;flex-wrap:wrap;position:sticky;top:0;background:#061421f5;padding:12px 6px;z-index:100}.live-admin-toc button{font-size:10px!important}.group{background:#0a2130!important;border:1px solid #24485d!important;border-radius:4px!important;margin-bottom:10px!important;padding:6px!important}
                 @media(max-width:650px){.fieldwrapper{flex-wrap:wrap;gap:8px}.thefield{width:100%}label.styled{flex-basis:100%}td,th{font-size:10px!important;padding:6px!important}}
             `
-            doc.head.append(css)
+            if (!doc.querySelector('#fleet-timing')) doc.head.append(css)
             for (const form of doc.forms) {
                 let cp = form.querySelector('[name="cp"]')
                 if (!cp) {

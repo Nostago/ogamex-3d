@@ -54,7 +54,7 @@ class FleetTimingController extends OGameController
             'users'             => $users,
             'allUsers'          => $allUsers,
             'missionTypeLabels' => collect(GameMissionFactory::getAllMissions())
-                ->mapWithKeys(fn ($mission, $id) => [$id => $mission::getName()]),
+                ->mapWithKeys(fn ($mission, $id) => [$id => __('t_fleettiming.mission_'.$id)]),
             'filterUserId'      => $request->input('user_id'),
             'perPage'           => $perPage,
             'perPageOptions'    => self::PER_PAGE_OPTIONS,
@@ -81,7 +81,7 @@ class FleetTimingController extends OGameController
         $mission->time_holding = 0;
         $mission->save();
 
-        return redirect()->back()->with('success', "Mission #{$mission->id} → arrival set to now.");
+        return redirect()->back()->with('success', __('t_fleettiming.success_now', ['id' => $mission->id]));
     }
 
     /**
@@ -102,9 +102,7 @@ class FleetTimingController extends OGameController
         $now   = (int) Date::now()->timestamp - 1;
         $count = $query->update(['time_arrival' => $now, 'time_holding' => 0]);
 
-        $scope = $request->filled('user_id') ? "for user #{$request->input('user_id')}" : 'globally';
-
-        return redirect()->back()->with('success', "{$count} mission(s) fast-forwarded {$scope}.");
+        return redirect()->back()->with('success', __('t_fleettiming.'.($request->filled('user_id') ? 'success_player' : 'success_all'), ['count' => $count, 'id' => $request->input('user_id')]));
     }
 
     /**
@@ -133,6 +131,6 @@ class FleetTimingController extends OGameController
         }
         $mission->save();
 
-        return redirect()->back()->with('success', "Mission #{$mission->id} → arrival reduced by {$validated['minutes']} min.");
+        return redirect()->back()->with('success', __('t_fleettiming.success_reduce', ['id' => $mission->id, 'minutes' => $validated['minutes']]));
     }
 }

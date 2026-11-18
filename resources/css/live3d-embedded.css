@@ -1,5 +1,6 @@
 @import './live3d-social.css';
 @import './live3d-workbench.css';
+@import './live3d-fleet-timing.css';
 
 /* Applied in the HTML head before the first paint of an embedded original view. */
 
