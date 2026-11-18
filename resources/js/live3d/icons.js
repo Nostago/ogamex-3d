@@ -1,4 +1,5 @@
 const paths = {
+    empire: 'M3 4h7v7H3V4Zm11 0h7v7h-7V4ZM3 15h7v7H3v-7Zm11 0h7v7h-7v-7Z',
     rewards: 'm12 2 3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1 3-7Z',
     production: 'M4 5h16M4 12h16M4 19h16M8 2v6m8 1v6m-6 1v6',
     technology: 'M12 2v5m-7 5v-5h14v5M5 16v4m14-4v4M2 12h6v4H2v-4Zm14 0h6v4h-6v-4Z',

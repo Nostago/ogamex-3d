@@ -1,3 +1,4 @@
+import { createFormationPanel } from './fleetFormation.js'
 import { formatDuration, renderDuration } from './duration.js'
 
 export function createFleetPanel({
@@ -13,6 +14,8 @@ export function createFleetPanel({
         form = document.querySelector('#fleet-form'),
         status = document.querySelector('#fleet-status'),
         send = document.querySelector('#fleet-send')
+    const formation = createFormationPanel({ t, el, number })
+    let templateId = 0
     let data = null,
         planet = '',
         quote = null,
@@ -96,6 +99,15 @@ export function createFleetPanel({
             : t.quick_ready
     }
     function changed(force = false) {
+        const selectedShips = selection()
+        formation.update(
+            (data?.ships || [])
+                .filter((ship) => selectedShips['am' + ship.id])
+                .map((ship) => ({
+                    ...ship,
+                    count: selectedShips['am' + ship.id],
+                })),
+        )
         field('holdingtime').closest('label').hidden = ![5, 15].includes(
             Number(field('mission').value),
         )
@@ -194,6 +206,7 @@ export function createFleetPanel({
         }
     }
     function tab(name) {
+        if (name !== 'plan') formation.hide()
         view = name
         document.querySelector('#fleet-plan').hidden = name !== 'plan'
         document.querySelector('#fleet-movement').hidden = name !== 'movement'
@@ -250,6 +263,14 @@ export function createFleetPanel({
         for (const template of data.templates || []) {
             const row = el('div', 'fleet-template')
             row.append(el('strong', '', template.name))
+            if (template.settings)
+                row.append(
+                    el(
+                        'small',
+                        '',
+                        `${t['mission_' + template.settings.mission]} · ${Number(template.settings.speed) * 10} %`,
+                    ),
+                )
             const load = el('button', '', t.op_load)
             load.type = 'button'
             load.onclick = () => {
@@ -263,8 +284,27 @@ export function createFleetPanel({
                         wanted > BigInt(input.max) ? BigInt(input.max) : wanted,
                     )
                 }
+                templateId = template.id
+                for (const key of ['mission', 'speed', 'type', 'holdingtime']) {
+                    if (
+                        template.settings?.[key] !== undefined &&
+                        [...(field(key).options || [])].some(
+                            (option) =>
+                                option.value === String(template.settings[key]),
+                        )
+                    )
+                        field(key).value = String(template.settings[key])
+                    else if (
+                        key === 'holdingtime' &&
+                        template.settings?.[key] !== undefined
+                    )
+                        field(key).value = String(template.settings[key])
+                }
                 document.querySelector('#fleet-template-name').value =
                     template.name
+                status.textContent = t.template_loaded
+                document.querySelector('#fleet-template-save').textContent =
+                    t.template_update
                 changed()
             }
             const remove = el('button', '', t.op_delete)
@@ -277,6 +317,7 @@ export function createFleetPanel({
                         {},
                         'DELETE',
                     )
+                    if (templateId === template.id) resetTemplate()
                     await loadState()
                 } catch (error) {
                     status.textContent = error.message
@@ -445,6 +486,8 @@ export function createFleetPanel({
             renderMovements()
             field('galaxy').max = next.maxGalaxies
             if (reset) {
+                formation.hide()
+                resetTemplate()
                 const [g, s, p] = state().planet.coordinates.split(':')
                 field('galaxy').value = g
                 field('system').value = s
@@ -563,20 +606,41 @@ export function createFleetPanel({
             pending = false
         }
     }
+    function resetTemplate() {
+        templateId = 0
+        document.querySelector('#fleet-template-name').value = ''
+        document.querySelector('#fleet-template-save').textContent =
+            t.op_save_template
+    }
+    document.querySelector('#fleet-template-new').onclick = resetTemplate
     document.querySelector('#fleet-template-form').onsubmit = async (event) => {
         event.preventDefault()
+        if (pending) return
+        pending = true
         const ships = {}
         for (const [key, value] of Object.entries(selection()))
             ships[key.slice(2)] = value
         try {
-            await api('/ajax/fleet/templates', {
+            await api(config.fleetTemplateUrl, {
+                template_id: templateId,
+                settings: Object.fromEntries(
+                    ['mission', 'speed', 'type', 'holdingtime'].map((key) => [
+                        key,
+                        field(key).value,
+                    ]),
+                ),
                 template_name: document.querySelector('#fleet-template-name')
                     .value,
                 ship: ships,
             })
+            resetTemplate()
+            status.textContent = t.template_saved
             await loadState()
         } catch (error) {
             status.textContent = error.message
+        } finally {
+            pending = false
+            changed()
         }
     }
     const interval = setInterval(() => {
@@ -629,6 +693,7 @@ export function createFleetPanel({
             }
         },
         hide() {
+            formation.hide()
             active = false
             showId++
             loadId++
@@ -639,6 +704,7 @@ export function createFleetPanel({
             clearTimeout(timer)
         },
         dispose() {
+            formation.dispose()
             clearInterval(interval)
             controller?.abort()
             clearTimeout(timer)

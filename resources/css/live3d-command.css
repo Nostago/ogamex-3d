@@ -1,0 +1,47 @@
+.player-menu { position:relative; }
+.player-menu summary { cursor:pointer; padding:5px; color:#bcefff; }
+.player-menu>div { position:absolute; z-index:80; top:100%; left:0; min-width:220px; padding:12px; display:grid; gap:8px; border:1px solid #4d94a9; border-radius:8px; background:#0b2231; box-shadow:0 8px 25px #0009; }
+.player-menu:not([open])>div { display:none; }
+.player-menu :is(button,a) { display:block; width:100%; text-align:left; padding:10px; }
+.player-menu form { margin:0; }
+.empire-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr)); gap:20px; align-items:start; }
+.empire-world { min-width:0; }
+.empire-world>header { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+.empire-world>header img { width:72px; height:72px; object-fit:contain; }
+.empire-world>header h2 { margin:0; overflow-wrap:anywhere; }
+.empire-resources { display:grid; gap:14px; }
+.empire-resource { display:grid; grid-template-columns:1fr auto; gap:4px 12px; padding:10px 0; border-bottom:1px solid #315363; }
+.empire-resource>span { font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.empire-resource progress { width:100%; height:10px; grid-column:1 / -1; accent-color:#6de5ee; }
+.empire-resource[data-storage-state='warning'] progress { accent-color:#ffd178; }
+.empire-resource[data-storage-state='full'] progress { accent-color:#ff9b9b; }
+.empire-alert { color:#ffe3a1; grid-column:1 / -1; }
+.empire-resource[data-storage-state='full'] .empire-alert,.empire-energy[data-shortage='true'] { color:#ffb4b4; }
+.empire-orders { display:grid; gap:8px; margin:16px 0; }
+.empire-order { display:grid; gap:4px; text-align:left; min-width:0; }
+.empire-order .duration-clock { flex-wrap:wrap; }
+.fleet-formation-view { width:100%; height:clamp(320px,35vw,480px); background:radial-gradient(ellipse at center,#173e51,#06131f); border:1px solid #3c7b92; border-radius:8px; overflow:hidden; }
+.fleet-formation-view:empty { display:none; }
+.fleet-formation-view canvas { display:block; width:100%; height:100%; touch-action:pan-y; cursor:grab; }
+.formation-legend { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:16px 0; }
+.formation-legend-item { display:grid; grid-template-columns:72px 1fr; gap:5px 12px; align-items:center; min-width:0; }
+.formation-legend-item img { width:72px; height:54px; object-fit:contain; grid-row:span 2; }
+.formation-legend-item strong { color:#a4edff; }
+#fleet-formation-toggle { margin-bottom:14px; }
+.map-events-panel { padding:18px; border-top:1px solid #3d6d80; }
+.map-events-panel>header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+.map-events-panel label { display:flex; align-items:center; gap:10px; }
+#map-event-animations { width:20px; height:20px; min-height:0; }
+#map-recent-events { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:10px; }
+.map-event-entry { text-align:left; padding:12px; }
+.system-map-node .map-event-badge { position:absolute; top:-10px; right:-12px; padding:4px 8px; background:#143a4b; color:#d5faff; border:1px solid #7eefff; border-radius:5px; font-size:14px; line-height:1.4; max-width:180px; white-space:normal; z-index:3; }
+[data-event-animations='true'] .map-event-new { animation:map-event-arrive 1s ease-out 2; }
+@keyframes map-event-arrive { from { box-shadow:0 0 0 0 #71ecffbb; } to { box-shadow:0 0 0 16px #71ecff00; } }
+@media(prefers-reduced-motion:reduce) { .map-event-new { animation:none!important; } }
+@media(max-width:650px) { .fleet-formation-view { height:250px; }.empire-resource { grid-template-columns:1fr; }.system-map-node .map-event-badge { position:static; max-width:100%; }.formation-legend { grid-template-columns:1fr; } }
+.player-menu summary { display:flex; align-items:center; gap:6px; list-style:none; white-space:nowrap; }
+.player-menu summary::-webkit-details-marker { display:none; }
+.empire-resource[data-storage-state='warning'] progress::-webkit-progress-value { background:#ffd178; }
+.empire-resource[data-storage-state='full'] progress::-webkit-progress-value { background:#ff9b9b; }
+.empire-resource[data-storage-state='warning'] progress::-moz-progress-bar { background:#ffd178; }
+.empire-resource[data-storage-state='full'] progress::-moz-progress-bar { background:#ff9b9b; }

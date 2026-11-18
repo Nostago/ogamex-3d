@@ -12,6 +12,7 @@ use OGame\Models\EspionageReport;
 use OGame\Models\Message;
 use OGame\Models\Planet\Coordinate;
 use OGame\Services\FleetMissionService;
+use OGame\Services\Live3dMapEventService;
 use OGame\Services\ObjectService;
 use OGame\Services\PlayerService;
 use OGame\ViewModels\FleetEventRowViewModel;
@@ -79,6 +80,7 @@ class Live3dSystemMapController extends Controller
         return response()->json([
             'planet' => (int)$input['planet'], 'galaxy' => $galaxy, 'system' => $system,
             'serverTime' => Date::now()->timestamp, 'fleets' => $fleets, 'reports' => $reports,
+            'events' => resolve(Live3dMapEventService::class)->recent($player, $galaxy, $system),
         ])->header('Cache-Control', 'private, no-store');
     }
 

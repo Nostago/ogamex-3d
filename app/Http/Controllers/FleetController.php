@@ -1307,6 +1307,7 @@ class FleetController extends OGameController
                     'id' => $template->id,
                     'name' => $template->name,
                     'ships' => $template->ships,
+                    'settings' => $template->settings,
                 ];
             }),
         ]);
@@ -1391,6 +1392,7 @@ class FleetController extends OGameController
                 'id' => $template->id,
                 'name' => $template->name,
                 'ships' => $template->ships,
+                'settings' => $template->settings,
             ],
         ]);
     }

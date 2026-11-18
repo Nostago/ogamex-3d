@@ -1,6 +1,6 @@
 {
-  "_buildings-C9gdmBdt.js": {
-    "file": "assets/buildings-C9gdmBdt.js",
+  "_buildings-D5awy10x.js": {
+    "file": "assets/buildings-D5awy10x.js",
     "name": "buildings",
     "imports": [
       "_three.module.min-BMGZatoA.js"
@@ -22,22 +22,45 @@
     "file": "assets/layout-SWFQj27H.js",
     "name": "layout"
   },
+  "_materials-C1ud4vMJ.js": {
+    "file": "assets/materials-C1ud4vMJ.js",
+    "name": "materials",
+    "imports": [
+      "_three.module.min-BMGZatoA.js"
+    ]
+  },
+  "_modelCamera-VG8Ef8AM.js": {
+    "file": "assets/modelCamera-VG8Ef8AM.js",
+    "name": "modelCamera",
+    "imports": [
+      "_three.module.min-BMGZatoA.js"
+    ]
+  },
   "_prototype3d-BC_hx_BB.css": {
     "file": "assets/prototype3d-BC_hx_BB.css",
     "src": "_prototype3d-BC_hx_BB.css"
   },
-  "_scene-DauLTXa-.js": {
-    "file": "assets/scene-DauLTXa-.js",
+  "_scene-BzWJBtBY.js": {
+    "file": "assets/scene-BzWJBtBY.js",
     "name": "scene",
     "imports": [
       "_three.module.min-BMGZatoA.js",
-      "_buildings-C9gdmBdt.js",
+      "_materials-C1ud4vMJ.js",
+      "_buildings-D5awy10x.js",
       "_layout-SWFQj27H.js"
     ]
   },
   "_shipAssets-DLVbWHH-.js": {
     "file": "assets/shipAssets-DLVbWHH-.js",
     "name": "shipAssets"
+  },
+  "_shipPreviewAsset-Bx8_IaOG.js": {
+    "file": "assets/shipPreviewAsset-Bx8_IaOG.js",
+    "name": "shipPreviewAsset",
+    "imports": [
+      "_three.module.min-BMGZatoA.js",
+      "_shipAssets-DLVbWHH-.js"
+    ]
   },
   "_three.module.min-BMGZatoA.js": {
     "file": "assets/three.module.min-BMGZatoA.js",
@@ -70,8 +93,20 @@
     "src": "resources/css/outgame.css",
     "isEntry": true
   },
+  "resources/js/live3d/fleetFormation3d.js": {
+    "file": "assets/fleetFormation3d-93dKLT-q.js",
+    "name": "fleetFormation3d",
+    "src": "resources/js/live3d/fleetFormation3d.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_three.module.min-BMGZatoA.js",
+      "_materials-C1ud4vMJ.js",
+      "_shipPreviewAsset-Bx8_IaOG.js",
+      "_modelCamera-VG8Ef8AM.js"
+    ]
+  },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-CpW9oupj.js",
+    "file": "assets/index-B6_P9i-y.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
@@ -81,23 +116,26 @@
     ],
     "dynamicImports": [
       "resources/js/prototype3d/scene.js",
+      "resources/js/live3d/fleetFormation3d.js",
       "resources/js/live3d/shipPreviewAsset.js",
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
-      "assets/index-BJkT_75U.css",
+      "assets/index-C6EXHv5X.css",
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },
   "resources/js/live3d/objectPreview3d.js": {
-    "file": "assets/objectPreview3d-C05F8s7q.js",
+    "file": "assets/objectPreview3d-B0n1dRF1.js",
     "name": "objectPreview3d",
     "src": "resources/js/live3d/objectPreview3d.js",
     "isDynamicEntry": true,
     "imports": [
       "_duration-BAa2BJgA.js",
       "_three.module.min-BMGZatoA.js",
-      "_buildings-C9gdmBdt.js",
+      "_materials-C1ud4vMJ.js",
+      "_buildings-D5awy10x.js",
+      "_modelCamera-VG8Ef8AM.js",
       "_shipAssets-DLVbWHH-.js"
     ],
     "dynamicImports": [
@@ -105,37 +143,36 @@
     ]
   },
   "resources/js/live3d/shipPreviewAsset.js": {
-    "file": "assets/shipPreviewAsset-ClVafV8N.js",
+    "file": "assets/shipPreviewAsset-C2dGBcf7.js",
     "name": "shipPreviewAsset",
     "src": "resources/js/live3d/shipPreviewAsset.js",
     "isDynamicEntry": true,
     "imports": [
-      "_three.module.min-BMGZatoA.js",
-      "_shipAssets-DLVbWHH-.js"
+      "_shipPreviewAsset-Bx8_IaOG.js"
     ]
   },
   "resources/js/prototype3d/index.js": {
-    "file": "assets/index-B-qucsKD.js",
+    "file": "assets/index-C_LLaHk8.js",
     "name": "index",
     "src": "resources/js/prototype3d/index.js",
     "isEntry": true,
     "imports": [
       "_catalog-CT4oIouG.js",
       "_layout-SWFQj27H.js",
-      "_buildings-C9gdmBdt.js",
-      "_scene-DauLTXa-.js"
+      "_buildings-D5awy10x.js",
+      "_scene-BzWJBtBY.js"
     ],
     "css": [
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },
   "resources/js/prototype3d/scene.js": {
-    "file": "assets/scene-DxgJrESU.js",
+    "file": "assets/scene-BlE-cmwc.js",
     "name": "scene",
     "src": "resources/js/prototype3d/scene.js",
     "isDynamicEntry": true,
     "imports": [
-      "_scene-DauLTXa-.js"
+      "_scene-BzWJBtBY.js"
     ]
   },
   "resources/js/ingame.js": {

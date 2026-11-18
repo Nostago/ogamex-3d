@@ -27,6 +27,7 @@ use OGame\Http\Controllers\Live3dAdminController;
 use OGame\Http\Controllers\Live3dBotsController;
 use OGame\Http\Controllers\Live3dController;
 use OGame\Http\Controllers\Live3dFleetController;
+use OGame\Http\Controllers\Live3dFleetTemplateController;
 use OGame\Http\Controllers\Live3dGalaxyController;
 use OGame\Http\Controllers\Live3dSystemMapController;
 use OGame\Http\Controllers\MerchantController;
@@ -89,6 +90,7 @@ Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::clas
     Route::post('/play-3d/galaxy/action', [Live3dGalaxyController::class, 'action'])->name('live3d.galaxy.action');
     Route::get('/play-3d/bots', [Live3dBotsController::class, 'state'])->name('live3d.bots');
     Route::post('/play-3d/bots', [Live3dBotsController::class, 'command'])->name('live3d.bots.command');
+    Route::post('/play-3d/fleet/templates', [Live3dFleetTemplateController::class, 'store'])->name('live3d.fleet.templates');
     Route::get('/play-3d/fleet', [Live3dFleetController::class, 'state'])->name('live3d.fleet');
     Route::post('/play-3d/fleet/preview', [Live3dFleetController::class, 'preview'])->name('live3d.fleet.preview');
     Route::post('/play-3d/fleet/send', [Live3dFleetController::class, 'send'])->name('live3d.fleet.send');

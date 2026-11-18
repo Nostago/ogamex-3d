@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Apply an already fetched, pinned release to the existing native test installation.
-# Does not install dependencies, change main or restart services. Adds only the named premium/NPC tables.
+# Does not install dependencies, change main or restart services. Adds only the named premium/NPC tables and fleet planning metadata.
 set -euo pipefail
 umask 022
 cd /home/ogamedev/OGameX
@@ -44,6 +44,8 @@ composer dump-autoload --optimize --no-scripts --no-plugins --no-interaction
 php artisan migrate --force --path=database/migrations/2026_11_14_100000_create_premium_commerce_tables.php
 php artisan migrate --force --path=database/migrations/2026_11_14_160000_create_autonomous_bots_table.php
 php artisan migrate --force --path=database/migrations/2026_11_15_120000_add_autonomous_bot_operations.php
+# Add optional planning preferences without changing saved ship quantities.
+php artisan migrate --force --path=database/migrations/2026_11_18_200000_add_settings_to_fleet_templates.php
 # Requested initial population; idempotent and leaves existing human accounts untouched.
 php artisan ogamex:bots:populate --count=50
 # Enable bounded NPC decisions even when no browser is open.

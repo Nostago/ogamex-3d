@@ -84,6 +84,7 @@ class Live3dViewService
             'shipOnMission' => (string)array_sum(array_column($inventory, 'onMission')),
             'objects' => $objects,
             'activity' => $activity,
+            'empire' => resolve(Live3dEmpireService::class)->forPlayer($player, $activity),
             'queues' => [
                 'building' => array_map(fn (BuildingQueueViewModel $item): array => [
                     'id' => $item->id, 'objectId' => $item->object->id, 'name' => $item->object->title, 'remaining' => $item->time_countdown, 'seconds' => $item->time_total, 'active' => $item->building, 'target' => $item->level_target,

@@ -2,6 +2,7 @@ import '../../css/prototype3d.css'
 import '../../css/live3d.css'
 import '../../css/orbital-command.css'
 import '../../css/live3d-messages.css'
+import '../../css/live3d-command.css'
 import { createMessageDialogs } from './messageDialogs.js'
 import { createSocialUi } from './socialUi.js'
 import { createWorkbench } from './workbench.js'
@@ -9,6 +10,7 @@ import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
 import { formatDuration, renderDuration } from './duration.js'
+import { renderEmpire } from './empire.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
 import { createQuickFleet } from './quickFleet.js'
@@ -29,6 +31,16 @@ const config = JSON.parse(
     ),
     t = { ...config.t, ...config.operationsT }
 initReadability()
+const playerMenu = document.querySelector('#live-player-menu')
+document.addEventListener('click', (event) => {
+    if (!playerMenu.contains(event.target)) playerMenu.open = false
+})
+playerMenu.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        playerMenu.open = false
+        playerMenu.querySelector('summary').focus()
+    }
+})
 const objectArtwork = createObjectArtwork(t)
 const client = createLiveClient({
     ...config,
@@ -58,6 +70,7 @@ const originalPages = [
 ]
 const pages = [
     'planet',
+    'empire',
     'buildings',
     'research',
     'ships',
@@ -172,6 +185,14 @@ function show(name, fromFrame = false, fleetTarget) {
     if (['fleets', 'movement'].includes(page))
         fleetPanel.show(page === 'movement' ? 'movement' : 'plan', fleetTarget)
     else fleetPanel.hide()
+    document.querySelector('#live-player-menu').open = false
+    document.querySelector('#live-page-empire').hidden = page !== 'empire'
+    if (page === 'empire')
+        renderEmpire(
+            document.querySelector('#live-empire-worlds'),
+            state.empire || [],
+            { t, el, number, navigate },
+        )
     document.querySelector('#live-page-planet').hidden = page !== 'planet'
     document.querySelector('#live-page-catalog').hidden = ![
         'buildings',
@@ -204,6 +225,12 @@ function show(name, fromFrame = false, fleetTarget) {
     if (!fromFrame) window.scrollTo({ top: 0, behavior: 'instant' })
 }
 function render() {
+    if (page === 'empire')
+        renderEmpire(
+            document.querySelector('#live-empire-worlds'),
+            state.empire || [],
+            { t, el, number, navigate },
+        )
     const selector = document.querySelector('#live-planet')
     selector.replaceChildren()
     for (const item of state.planets) {

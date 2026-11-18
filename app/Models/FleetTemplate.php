@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $user_id
  * @property string $name
+ * @property array|null $settings
  * @property array $ships
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -38,6 +39,7 @@ class FleetTemplate extends Model
     {
         return [
             'ships' => 'array',
+            'settings' => 'array',
         ];
     }
 

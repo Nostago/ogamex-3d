@@ -1,3 +1,4 @@
+import { createMapEvents } from './mapEvents.js'
 import { planetTint } from './planetAppearance.js'
 import { createFleetTooltip, appendComposition } from './fleetTooltip.js'
 
@@ -38,6 +39,7 @@ export function createSystemMap({
         fleetRoot = document.querySelector('#live-page-fleets'),
         fleetHome = document.createComment('fleet-workspace-home')
     fleetRoot.before(fleetHome)
+    const mapEvents = createMapEvents({ host, nodes, t, el })
     let controller,
         key = '',
         data,
@@ -124,6 +126,7 @@ export function createSystemMap({
         dialog.showModal()
     }
     function paint() {
+        mapEvents.reset()
         nodes.replaceChildren()
         const world = state().planet,
             own = state().planets,
@@ -211,6 +214,7 @@ export function createSystemMap({
         radarContacts = []
         document.querySelector('#system-map-radar').replaceChildren()
         document.querySelector('#system-map-flight-lines').replaceChildren()
+        mapEvents.clear()
         document.querySelector('#system-map-fleet-list').replaceChildren()
         nodes.inert = true
         nodes.replaceChildren()
@@ -455,6 +459,7 @@ export function createSystemMap({
         tickRadar()
     }
     function tickRadar() {
+        mapEvents.render(tactical, data?.rows, now())
         if (!active || !data || !tactical || document.hidden) return
         tooltip.tick()
         const home = Number(state().planet.coordinates.split(':')[2])
@@ -533,6 +538,8 @@ export function createSystemMap({
             )
                 return
             tactical = result
+            mapEvents.reset()
+            mapEvents.render(tactical, data?.rows, result.serverTime)
             tacticalReceived = Date.now()
             updateIntel()
             // Avoid replacing a focused radar contact while its action dialog is open.

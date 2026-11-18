@@ -1,5 +1,5 @@
 @php
-    $t = __('t_live3d', [], 'de');
+    $t = array_merge(__('t_live3d', [], 'de'), __('t_command', [], 'de'));
     $bootstrap = [
         'shipNames' => collect(\OGame\Services\ObjectService::getShipObjects())->mapWithKeys(fn ($ship) => [$ship->machine_name => $ship->title])->all(),
         'galaxyActionUrl' => route('live3d.galaxy.action'), 'galaxyMissilesUrl' => route('live3d.galaxy.missiles'),
@@ -7,6 +7,7 @@
         'messageT' => __('t_messageui', [], 'de'),
         'socialT' => __('t_socialui', [], 'de'),
         'workT' => __('t_workui', [], 'de'),
+        'fleetTemplateUrl' => route('live3d.fleet.templates'),
         'botsUrl' => route('live3d.bots'),
         'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
@@ -34,20 +35,19 @@
 <div id="prototype" data-mode="map" data-page="planet">
     <header class="command-header">
         <a class="brand" href="{{ route('live3d.index') }}"><span class="brand-orbit" aria-hidden="true">◈</span><span>OGameX <b>3D</b><small>ORBITAL COMMAND</small></span></a>
-        <div class="command-empire"><span id="live-player"></span><label for="live-planet" class="sr-only">{{ $t['planet'] }}</label><select id="live-planet"></select></div>
+        <div class="command-empire"><details id="live-player-menu" class="player-menu"><summary aria-label="{{ $t['player_menu'] }}"><span id="live-player"></span> ▾</summary><div><button type="button" data-live-page="options">{{ $t['settings'] }}</button><a href="{{ route('overview.index') }}">{{ $t['original'] }}</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">{{ __('t_ingame.layout.log_out') }}</button></form></div></details><label for="live-planet" class="sr-only">{{ $t['planet'] }}</label><select id="live-planet"></select></div>
         <div id="live-resources" class="resource-balances"></div>
         <div class="header-actions">
             <button data-live-page="messages" data-icon="messages" aria-label="{{ $t['messages'] }}"></button>
             <button data-live-page="options" data-icon="settings" aria-label="{{ $t['settings'] }}"></button>
             <button id="live-refresh" data-icon="refresh" aria-label="{{ $t['refresh'] }}"></button>
-            <a href="{{ route('overview.index') }}" data-icon="external" aria-label="{{ $t['original'] }}"></a>
         </div>
     </header>
     <div class="activity-bar"><p id="live-status" role="status">{{ $t['connected'] }}</p><a id="live-login" href="{{ route('login') }}" hidden>{{ $t['login'] }}</a></div>
     <div class="app-shell">
         <nav class="main-nav" aria-label="{{ $t['navigation'] }}">
             @php($extras = ['planet'=>['rewards','rewards'],'buildings'=>['production','production_settings'],'research'=>['technology','technology'],'fleets'=>['movement','fleet_movements'],'shop'=>['inventory','inventory'],'merchant'=>['market','resource_market']])
-            @foreach(['planet', 'buildings', 'research', 'ships', 'defense', 'fleets', 'galaxy', 'alliance', 'messages', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore'] as $page)
+            @foreach(['planet', 'empire', 'buildings', 'research', 'ships', 'defense', 'fleets', 'galaxy', 'alliance', 'messages', 'officers', 'shop', 'merchant', 'notes', 'buddies', 'options', 'highscore'] as $page)
                 <div class="nav-entry"><a href="#{{ $page }}" data-live-page="{{ $page }}"><span data-icon="{{ $page }}" aria-hidden="true"></span><span>{{ $t[$page] }}</span></a>
                 @if(isset($extras[$page]))<a class="nav-extra" href="#{{ $extras[$page][0] }}" data-nav-action="{{ $extras[$page][0] }}" title="{{ __('t_commerce.'.$extras[$page][1]) }}" aria-label="{{ __('t_commerce.'.$extras[$page][1]) }}"><span data-icon="{{ $extras[$page][0] }}" aria-hidden="true"></span></a>@endif
                 @if($page==='buildings')<a class="nav-extra" data-nav-action="jumpgate" href="#jumpgate" title="{{ __('t_ingame.layout.menu_jump_gate') }}" aria-label="{{ __('t_ingame.layout.menu_jump_gate') }}" hidden><span data-icon="planet" aria-hidden="true"></span></a>@endif
@@ -76,6 +76,7 @@
                     <p class="geometry-note">{{ $t['representative'] }}</p>
                 </div>
             </section>
+            <section id="live-page-empire" hidden><p>{{ $t['empire_intro'] }}</p><p class="muted">{{ $t['resource_help'] }}</p><div id="live-empire-worlds" class="empire-grid"></div></section>
             <section id="live-page-catalog" hidden><div id="live-groups" class="live-groups"></div><div id="live-queues"></div><div class="split-layout"><section id="live-catalog" class="card"></section><aside id="live-detail" class="card"></aside></div></section>
             <section id="live-page-fleets" hidden>@include('live3d.fleet')</section>
             <section id="live-page-galaxy" hidden>
