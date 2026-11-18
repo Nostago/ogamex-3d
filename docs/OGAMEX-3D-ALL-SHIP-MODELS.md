@@ -1,35 +1,40 @@
 # Alle 13 neuen GLB-Schiffsmodelle – Integration mit Sofortladen
 
-## Abschlussprüfung vom 18.11.2026: unvollständig – Asset-ZIP noch zu importieren
+## Stand vom 18.11.2026
 
-Die unten beschriebene ZIP ist in dieser Codex-Sitzung nicht angehängt und liegt weder im Repository noch in den verfügbaren Upload-Verzeichnissen. Es fehlen weiterhin **39 Dateien: 13 GLBs, 13 JSON-Berichte und 13 WebP-Vorschaubilder**. Die früher genannten Optimierungsergebnisse beschreiben die vorherige Verarbeitung; sie konnten für die fehlenden Dateien hier nicht erneut geprüft werden. PR #3 bleibt daher unvollständig.
+Die ZIP `OGameX-3D-13-Schiffsmodelle-Web.zip` wurde importiert. Alle **39 benötigten Dateien** sind im Branch enthalten: 13 GLBs, 13 JSON-Bearbeitungsberichte und 13 WebP-Vorschaubilder. Die zusätzliche Testgrafik aus der ZIP und enthaltene Hilfsskripte gehören nicht zu den Spielassets und wurden nicht übernommen.
 
-Bereits im Branch ergänzt und geprüft:
+ZIP-SHA-256: `d4fb7916a75615c184acabe92dfafc1a0bd44e51c3f7b7c9e5c4ef5f72fb732a`.
 
-- Alle 17 Thumbnail-Zuordnungen sind auch im PHP-Artwork-Resolver registriert. Die ursprünglichen vier GLBs, vier Berichte und vier WebPs sind per SHA-256 unverändert.
-- Ein `ReferenceError` im Modelllader ist behoben: `loadShipPreview()` liest die Asset-Metadaten nun selbst. Die Auswahl öffnet die echte GLB-Vorschau automatisch und behält das Bild während des Ladens als Fallback.
-- Veraltete asynchrone Auswahlen starten nach einem Schiffswechsel keinen verspäteten Download. Der gemeinsame Cache hält höchstens vier fertig dekodierte Modelle. Ein fehlendes Modell deaktiviert nicht die Vorschau anderer Schiffe.
-- Der Browsercheck `tests/Frontend/all-ship-models.browser.mjs` prüft standardmäßig alle 17 Modelle. Mit expliziter Auswahl der vier vorhandenen Modelle bestanden Sofortladen ohne Bildklick, Refresh, Tastaturdrehung, schnelle Wechsel, stabile GPU-Ressourcenzahlen, mobile Breite, WebGL-Ausfall und Downloads ausschließlich ausgewählter Schiffe. Dies ist ein Test der echten Vorschau-Komponente in Chromium; die vollständige Spieloberfläche mit allen 17 Modellen bleibt nach dem ZIP-Import zu prüfen.
-- Frontend-Build, Rector, Pint und PHPStan erfolgreich. Vollständige PHP-Suite: **1.201 bestanden, 42 Hinweise, 27.181 Assertions**. Eine veraltete Händler-UI-Erwartung im Expeditionstest wurde an die bereits vorhandene Oberfläche angepasst; keine Spielmechanik geändert.
-- JavaScript-Suite: **90 bestanden, 13 fehlgeschlagen**. Die 13 Fehler sind fehlende neue GLB-Dateien (`ENOENT`); diese Tests werden bewusst nicht übersprungen. GLB-Struktur, Indizes, Berichte und WebP-Dateien werden nach dem Import geprüft.
-- PHP-Tests liefen ausschließlich in separaten Datenbanken mit dem Präfix `ogamex_ship_model_checks_20261118`. Keine bestehenden Spielstände verändert, keine neuen Migrationen oder Abhängigkeitsänderungen, kein produktives Deployment.
+Die 13 GLBs belegen zusammen **34.837.244 Bytes (33,22 MiB)** statt ursprünglich 463.857.308 Bytes. Einzeldateien liegen zwischen 612.936 und 4.230.876 Bytes, haben maximal 65.000 Dreiecke und eingebettete JPEG-/PNG-Texturen bis 1024 px. Struktur, Dreiecksindizes, tatsächliche Texturgrößen und Übereinstimmung mit den Bearbeitungsberichten wurden geprüft. Keine verpflichtenden externen Kompressionsdecoder für die neuen Modelle.
 
-Nach Bereitstellung von `OGameX-3D-13-Schiffsmodelle-Web.zip` die 39 Dateien wie unten beschrieben importieren und die vollständigen Asset- und Browserchecks erneut ausführen. Der GitHub-API-Zugriff auf PR #3 wird in dieser Umgebung mit HTTP 403 abgewiesen; der Git-Zugriff auf den Branch funktioniert.
+Die ursprünglichen vier Modelle (`light_fighter`, `heavy_fighter`, `large_cargo`, `colony_ship`) behalten ihre bisherigen Pfade. Ihre vier GLBs, vier JSON-Berichte und vier WebP-Bilder wurden per SHA-256 als unverändert bestätigt. Der Branch basiert weiterhin wie beauftragt auf `codex/ogamex-3d-message-selection`.
 
-## Ziel und Herkunft
+## Verhalten der Oberfläche
 
-Nutzer hat am 18.11.2026 das ZIP `Archiv(2).zip` mit 13 weiteren GLB-Schiffsmodellen hochgeladen und **ausdrücklich festgelegt**: Das 3D-Modell soll automatisch beim Öffnen der Detailansicht des jeweiligen Schiffes geladen werden, nicht erst nach einem Klick auf das Bild.
+- **17 von 17 Schiffstypen** verwenden das zugeordnete Upload-Modell. Das Öffnen der Schiffsseite bzw. Auswählen eines Schiffes startet die 3D-Vorschau automatisch, ohne Bildklick. Während des Ladens bleibt das passende Vorschaubild sichtbar.
+- Der Modelllader liest seine Asset-Metadaten selbst; der zuvor vorhandene `ReferenceError` ist behoben. Veraltete asynchrone Auswahlen können die neue Auswahl nicht überschreiben oder nach einem Wechsel verspätet einen neuen Download starten.
+- Der gemeinsame Cache hält höchstens vier fertig dekodierte Modelle. Sichtbare Vorschauen besitzen getrennte GPU-Ressourcen und geben diese beim Wechsel frei. Fehler eines einzelnen Modells sperren andere Modelle nicht. Bei WebGL-Ausfall bleibt das Bild nutzbar.
+- Modelle sind frei drehbar; die Kamera orientiert sich an ihren tatsächlichen Abmessungen. Todesstern, Solarsatellit und Spionagesonde wurden zusätzlich anhand der Browseraufnahmen visuell geprüft.
+- JS- und PHP-Artwork-Resolver verwenden alle 17 Thumbnail-Zuordnungen. Schiffskatalog, Flottenauswahl und bereits angebundene Auftragslisten bleiben Bildansichten; diese Listen laden keine GLBs. Auch Crawler und Solarsatellit sind registriert.
+- Keine Änderungen an Kosten, Flotten, Produktionsregeln oder Spielerdaten. Keine neuen Migrationen oder Abhängigkeitsänderungen. **Kein produktives Deployment.**
 
-Basierend auf `codex/ogamex-3d-message-selection` (mit den bisherigen vier optimierten Modellen). Dieses Feature ersetzt **nur die Darstellung**, niemals OGameX-Kosten, Flotten, Spielerdaten oder Produktionsregeln.
+## Validierung
 
-## Übergabestand vor dieser Abschlussprüfung
+- `node --test tests/Frontend/*.test.mjs`: **103 bestanden, 0 fehlgeschlagen, 0 übersprungen**. Die Assettests prüfen alle 17 Zuordnungen, bestehende Meshopt-Modelle sowie neue GLBs, Indizes, WebP-Bilder, Ursprungs-Hashes und passende Dateigrößen/Dreieckszahlen der JSON-Berichte.
+- `npm run build`: erfolgreich. Kompilierte Dateien und Manifest sind im Branch enthalten.
+- `composer run rector`, `composer run cs`, `composer run stan`: erfolgreich.
+- Vollständiges `composer run tests`: **1.201 bestanden, 42 Hinweise, 27.134 Assertions**. Eine veraltete Händler-UI-Erwartung im Expeditionstest wurde bereits im vorbereitenden Commit an die vorhandene Oberfläche angepasst; keine Spielmechanik geändert.
+- `tests/Frontend/all-ship-models.browser.mjs`: **17/17 erfolgreich** mit echtem GLB-Decoding in Chromium. Geprüft: Sofortladen ohne Bildklick, Refresh, Drehen, schnelle Wechsel, stabile GPU-Ressourcenzahlen, mobile Breite, WebGL-Ausfall und Downloads ausschließlich ausgewählter Schiffe.
+- `tests/Frontend/all-ship-models.ingame.browser.mjs`: zusätzlicher Check derselben 17 Modelle in der vollständigen gebauten Spieloberfläche mit Login, passenden Katalog-/Flottenbildern und automatischem Erstaufruf/Refresh. Benötigt `LIVE_BASE_URL`, `LIVE_ACCOUNT_FILE` und Playwright; ausschließlich mit einem separaten Entwicklungskonto ausführen. Es werden keine Bau- oder Flottenaufträge ausgelöst.
 
-- 13 Modelle wurden aus dem Upload lokal gelesen, auf jeweils maximal ungefähr 65.000 Dreiecke reduziert (falls zuvor größer), und eingebettete Texturen auf maximal 1024 px begrenzt. Ihre zusammengefasste GLB-Größe sank von **463.857.308 Bytes auf 34.837.244 Bytes** (ca. 92,5 % Reduktion).
-- Pro Modell wurde ein JPEG/PNG-texturiertes Standard-GLB ohne verpflichtende externe Kompressions-Extensions erstellt. Zusätzlich entstanden jeweils ein transparentfreies WebP-Vorschaubild im OGameX-Weltraum-Stil und ein JSON-Bearbeitungsbericht mit ursprünglichem SHA-256.
-- **Die 13 binären Webdateien und Vorschaubilder liegen noch NICHT auf GitHub.** Der erzeugte Upload als ZIP wurde dem Benutzer im Chat angeboten: `OGameX-3D-13-Schiffsmodelle-Web.zip` (etwa 25 MB). Dieses ZIP muss **zuerst in die Codex-Arbeitsumgebung übertragen und seine `public/`-Dateien müssen dem Branch hinzugefügt werden**, bevor deployt wird.
-- Die GitHub-Codeänderungen dieses Branchs registrieren die neuen Dateipfade in `shipAssets.js`, verwenden zusätzlich `preloadShipPreview` (gemeinsamer Lade-Cache) und starten den Download direkt beim Aufrufen der Schiffsdetailseite über `objectArtwork.js`. Die GLB-Vorschau besitzt weiterhin Fallback-Bild und wird nach dem Import vom bereits vorhandenen Three.js-Renderer übernommen.
-- Zwei vorher nicht als 3D-fähig registrierte Schiffstypen (`crawler`, `solar_satellite`) werden nun explizit als vorhandene Upload-Modelle akzeptiert. Die vier bisherigen Modelle bleiben unverändert.
-- Bisher nur lokale GLB-2.0-Struktur, Material-/Texturparsing, Dreiecksindizes, WebP-Format und Einzel-Renderings geprüft. **Noch keine echte Browserprobe, kein npm-Build, kein GitHub-CI-Erfolg und kein Server-Deployment**. Diese Tests durch Codex vor Merge ergänzen.
+PHP-Tests verwendeten ausschließlich Datenbanken mit Präfix `ogamex_ship_model_checks_20261118`; der Spieloberflächencheck verwendete `ogamex_ship_models_ui_20261118`. Bestehende Accounts und Spielstände wurden nicht verändert.
+
+## Pull Request #3
+
+Die vollständigen Assets, Implementierung und Testergebnisse gehören zum bestehenden Branch `codex/ogamex-3d-all-ship-models` und damit zu PR #3. Die frühere Markierung „Asset-ZIP fehlt“ ist fachlich erledigt.
+
+Das Bearbeiten von PR-Beschreibung und Draft-Status ist in dieser Umgebung weiterhin blockiert: Verbindungen zu `api.github.com` scheitern bereits am Cloud-Proxy mit HTTP 403 (auch außerhalb des normalen Command-Sandboxes). Git-Zugriff auf den Branch funktioniert. Eine gewünschte fertige PR-Beschreibung liegt in `docs/OGAMEX-3D-ALL-SHIP-MODELS-PR.md`; eine Aktualisierung des Draft-Status kann daher nicht bestätigt werden.
 
 ## Zuordnung neuer Assets
 

@@ -1,0 +1,12 @@
+{
+  "name": "Zersto╠êrer.glb",
+  "model_id": "destroyer",
+  "source_sha256": "1439c3bf14bd8e5e7606a55a9c1529192e0f5f4e99943c07a6868c328313e8c4",
+  "source_bytes": 5529440,
+  "source_triangles": 4630,
+  "output_bytes": 612936,
+  "output_triangles": 4630,
+  "vertex_count": 7652,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 0.0
+}

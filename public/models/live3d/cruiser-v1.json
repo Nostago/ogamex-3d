@@ -1,0 +1,12 @@
+{
+  "name": "Kreuzer.glb",
+  "model_id": "cruiser",
+  "source_sha256": "b12d3431d43ffa9ff380f14b1efbc22fe24ea9c928e49c5fb2b62b48cd8e3d35",
+  "source_bytes": 28383932,
+  "source_triangles": 952740,
+  "output_bytes": 2314112,
+  "output_triangles": 65000,
+  "vertex_count": 53214,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 9.94
+}

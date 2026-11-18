@@ -1,0 +1,12 @@
+{
+  "name": "Schlachtkreuzer.glb",
+  "model_id": "battlecruiser",
+  "source_sha256": "bd5332e4be3e5dfeb0d947638b95475f818c4db6c884f9a6d1f7031df6e0a8bb",
+  "source_bytes": 38278052,
+  "source_triangles": 978747,
+  "output_bytes": 3289656,
+  "output_triangles": 65000,
+  "vertex_count": 59847,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 10.01
+}

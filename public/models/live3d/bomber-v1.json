@@ -1,0 +1,12 @@
+{
+  "name": "Bomber.glb",
+  "model_id": "bomber",
+  "source_sha256": "0afdd5d3835dd08d6390754e630e3baf74642eb6b00688bfa08934cefb59d04f",
+  "source_bytes": 29466548,
+  "source_triangles": 962528,
+  "output_bytes": 2646688,
+  "output_triangles": 64999,
+  "vertex_count": 64271,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 10.69
+}

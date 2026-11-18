@@ -1,0 +1,12 @@
+{
+  "name": "Recycler.glb",
+  "model_id": "recycler",
+  "source_sha256": "ec9ba5f4613ae302215ff453fc476414bf387161dc582c6044ae88c173c3f86d",
+  "source_bytes": 19864780,
+  "source_triangles": 9525,
+  "output_bytes": 1400068,
+  "output_triangles": 9525,
+  "vertex_count": 7046,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 0.0
+}

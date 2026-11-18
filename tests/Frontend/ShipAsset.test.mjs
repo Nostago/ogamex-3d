@@ -242,12 +242,12 @@ for (const key of addedShips) {
                 new URL(asset.model.slice(1).replace('.glb', '.json'), root),
             ),
         )
-        assert.ok(
-            report && typeof report === 'object' && !Array.isArray(report),
-        )
+        assert.equal(report.model_id, key)
+        assert.equal(report.output_bytes, data.length)
+        assert.equal(report.output_triangles, triangles)
         assert.match(
-            JSON.stringify(report),
-            /[a-f0-9]{64}/i,
+            report.source_sha256,
+            /^[a-f0-9]{64}$/i,
             'Processing report must retain the original SHA-256',
         )
     })
