@@ -28,4 +28,95 @@ export const shipPreviewAssets = Object.freeze({
         azimuth: 35,
         elevation: 22,
     }),
+    small_cargo: Object.freeze({
+        model: '/models/live3d/small_cargo-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-small-cargo-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    cruiser: Object.freeze({
+        model: '/models/live3d/cruiser-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-cruiser-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    battle_ship: Object.freeze({
+        model: '/models/live3d/battle_ship-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-battle-ship-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    battlecruiser: Object.freeze({
+        model: '/models/live3d/battlecruiser-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-battlecruiser-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    bomber: Object.freeze({
+        model: '/models/live3d/bomber-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-bomber-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    destroyer: Object.freeze({
+        model: '/models/live3d/destroyer-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-destroyer-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    deathstar: Object.freeze({
+        model: '/models/live3d/deathstar-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-deathstar-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    reaper: Object.freeze({
+        model: '/models/live3d/reaper-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-reaper-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    recycler: Object.freeze({
+        model: '/models/live3d/recycler-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-recycler-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    pathfinder: Object.freeze({
+        model: '/models/live3d/pathfinder-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-pathfinder-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    crawler: Object.freeze({
+        model: '/models/live3d/crawler-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-crawler-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    solar_satellite: Object.freeze({
+        model: '/models/live3d/solar_satellite-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-solar-satellite-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
+    espionage_probe: Object.freeze({
+        model: '/models/live3d/espionage_probe-v1.glb',
+        image: null, // Fall back to the existing OGameX image until a dedicated thumbnail exists.
+        revision: 'uploaded-espionage-probe-v1',
+        azimuth: 35,
+        elevation: 22,
+    }),
 })
