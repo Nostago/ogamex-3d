@@ -255,6 +255,7 @@ export function createObjectPreview(host) {
             const { loadShipPreview, disposeShipPreview } = await import(
                 './shipPreviewAsset.js'
             )
+            if (disposed || ticket !== showVersion) return false
             const loaded = await loadShipPreview(item.key)
             if (disposed || ticket !== showVersion) {
                 if (loaded) disposeShipPreview(loaded)

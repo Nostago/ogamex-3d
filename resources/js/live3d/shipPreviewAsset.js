@@ -4,25 +4,48 @@ import { MeshoptDecoder } from '../prototype3d/vendor/meshopt/meshopt_decoder.mj
 import { shipPreviewAssets } from './shipAssets.js'
 
 const pending = new Map()
-// Keep one CPU master. Each visible preview owns/disposes its GPU resources.
+const cacheLimit = 4
+// Retain at most four decoded CPU masters, rather than all seventeen models.
+// Each visible preview owns/disposes its GPU resources independently. Cloned
+// textures retain their shared image until their last owner is collected.
 // Start downloading and decoding the selected ship as soon as its detail view opens.
 // This shares the request with the WebGL renderer, so rapid re-renders never redownload it.
 export function preloadShipPreview(key) {
     const asset = shipPreviewAssets[key]
     if (!asset) return Promise.resolve(null)
+    const cached = pending.get(key)
+    if (cached) {
+        pending.delete(key)
+        pending.set(key, cached)
+        return cached.promise
+    }
     if (!pending.has(key)) {
+        const entry = { promise: null, model: null }
         const request = new GLTFLoader()
             .setMeshoptDecoder(MeshoptDecoder)
             .loadAsync(asset.model)
+            .then((gltf) => {
+                entry.model = gltf.scene
+                // In-flight loads still have consumers; only evict decoded masters.
+                const decoded = [...pending].filter(([, value]) => value.model)
+                while (decoded.length > cacheLimit) {
+                    const [oldKey, oldEntry] = decoded.shift()
+                    pending.delete(oldKey)
+                    disposeShipPreview(oldEntry.model)
+                }
+                return gltf
+            })
             .catch((error) => {
                 pending.delete(key)
                 throw error
             })
-        pending.set(key, request)
+        entry.promise = request
+        pending.set(key, entry)
     }
-    return pending.get(key)
+    return pending.get(key).promise
 }
 export async function loadShipPreview(key) {
+    const asset = shipPreviewAssets[key]
     const gltf = await preloadShipPreview(key)
     if (!gltf) return null
     const instance = gltf.scene.clone(true)
@@ -47,7 +70,12 @@ export async function loadShipPreview(key) {
     })
     const bounds = new THREE.Box3().setFromObject(instance),
         size = bounds.getSize(new THREE.Vector3())
-    instance.scale.setScalar(5 / Math.max(size.x, size.y, size.z))
+    const extent = Math.max(size.x, size.y, size.z)
+    if (!Number.isFinite(extent) || extent <= 0) {
+        disposeShipPreview(instance)
+        throw new Error('Invalid ship model bounds')
+    }
+    instance.scale.setScalar(5 / extent)
     instance.userData.modelRevision = asset.revision
     instance.userData.importedPreview = true
     return instance

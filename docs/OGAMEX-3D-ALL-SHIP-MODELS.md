@@ -1,12 +1,28 @@
 # Alle 13 neuen GLB-Schiffsmodelle – Integration mit Sofortladen
 
+## Abschlussprüfung vom 18.11.2026: unvollständig – Asset-ZIP noch zu importieren
+
+Die unten beschriebene ZIP ist in dieser Codex-Sitzung nicht angehängt und liegt weder im Repository noch in den verfügbaren Upload-Verzeichnissen. Es fehlen weiterhin **39 Dateien: 13 GLBs, 13 JSON-Berichte und 13 WebP-Vorschaubilder**. Die früher genannten Optimierungsergebnisse beschreiben die vorherige Verarbeitung; sie konnten für die fehlenden Dateien hier nicht erneut geprüft werden. PR #3 bleibt daher unvollständig.
+
+Bereits im Branch ergänzt und geprüft:
+
+- Alle 17 Thumbnail-Zuordnungen sind auch im PHP-Artwork-Resolver registriert. Die ursprünglichen vier GLBs, vier Berichte und vier WebPs sind per SHA-256 unverändert.
+- Ein `ReferenceError` im Modelllader ist behoben: `loadShipPreview()` liest die Asset-Metadaten nun selbst. Die Auswahl öffnet die echte GLB-Vorschau automatisch und behält das Bild während des Ladens als Fallback.
+- Veraltete asynchrone Auswahlen starten nach einem Schiffswechsel keinen verspäteten Download. Der gemeinsame Cache hält höchstens vier fertig dekodierte Modelle. Ein fehlendes Modell deaktiviert nicht die Vorschau anderer Schiffe.
+- Der Browsercheck `tests/Frontend/all-ship-models.browser.mjs` prüft standardmäßig alle 17 Modelle. Mit expliziter Auswahl der vier vorhandenen Modelle bestanden Sofortladen ohne Bildklick, Refresh, Tastaturdrehung, schnelle Wechsel, stabile GPU-Ressourcenzahlen, mobile Breite, WebGL-Ausfall und Downloads ausschließlich ausgewählter Schiffe. Dies ist ein Test der echten Vorschau-Komponente in Chromium; die vollständige Spieloberfläche mit allen 17 Modellen bleibt nach dem ZIP-Import zu prüfen.
+- Frontend-Build, Rector, Pint und PHPStan erfolgreich. Vollständige PHP-Suite: **1.201 bestanden, 42 Hinweise, 27.181 Assertions**. Eine veraltete Händler-UI-Erwartung im Expeditionstest wurde an die bereits vorhandene Oberfläche angepasst; keine Spielmechanik geändert.
+- JavaScript-Suite: **90 bestanden, 13 fehlgeschlagen**. Die 13 Fehler sind fehlende neue GLB-Dateien (`ENOENT`); diese Tests werden bewusst nicht übersprungen. GLB-Struktur, Indizes, Berichte und WebP-Dateien werden nach dem Import geprüft.
+- PHP-Tests liefen ausschließlich in separaten Datenbanken mit dem Präfix `ogamex_ship_model_checks_20261118`. Keine bestehenden Spielstände verändert, keine neuen Migrationen oder Abhängigkeitsänderungen, kein produktives Deployment.
+
+Nach Bereitstellung von `OGameX-3D-13-Schiffsmodelle-Web.zip` die 39 Dateien wie unten beschrieben importieren und die vollständigen Asset- und Browserchecks erneut ausführen. Der GitHub-API-Zugriff auf PR #3 wird in dieser Umgebung mit HTTP 403 abgewiesen; der Git-Zugriff auf den Branch funktioniert.
+
 ## Ziel und Herkunft
 
 Nutzer hat am 18.11.2026 das ZIP `Archiv(2).zip` mit 13 weiteren GLB-Schiffsmodellen hochgeladen und **ausdrücklich festgelegt**: Das 3D-Modell soll automatisch beim Öffnen der Detailansicht des jeweiligen Schiffes geladen werden, nicht erst nach einem Klick auf das Bild.
 
 Basierend auf `codex/ogamex-3d-message-selection` (mit den bisherigen vier optimierten Modellen). Dieses Feature ersetzt **nur die Darstellung**, niemals OGameX-Kosten, Flotten, Spielerdaten oder Produktionsregeln.
 
-## Aktueller tatsächlicher Stand
+## Übergabestand vor dieser Abschlussprüfung
 
 - 13 Modelle wurden aus dem Upload lokal gelesen, auf jeweils maximal ungefähr 65.000 Dreiecke reduziert (falls zuvor größer), und eingebettete Texturen auf maximal 1024 px begrenzt. Ihre zusammengefasste GLB-Größe sank von **463.857.308 Bytes auf 34.837.244 Bytes** (ca. 92,5 % Reduktion).
 - Pro Modell wurde ein JPEG/PNG-texturiertes Standard-GLB ohne verpflichtende externe Kompressions-Extensions erstellt. Zusätzlich entstanden jeweils ein transparentfreies WebP-Vorschaubild im OGameX-Weltraum-Stil und ein JSON-Bearbeitungsbericht mit ursprünglichem SHA-256.

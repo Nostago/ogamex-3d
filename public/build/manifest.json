@@ -35,8 +35,8 @@
       "_layout-SWFQj27H.js"
     ]
   },
-  "_shipAssets-CSoFtgLN.js": {
-    "file": "assets/shipAssets-CSoFtgLN.js",
+  "_shipAssets-cD6wi4PX.js": {
+    "file": "assets/shipAssets-cD6wi4PX.js",
     "name": "shipAssets"
   },
   "_three.module.min-BMGZatoA.js": {
@@ -71,16 +71,17 @@
     "isEntry": true
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-BtTa_83U.js",
+    "file": "assets/index-BWrFMXe3.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
     "imports": [
       "_duration-BAa2BJgA.js",
-      "_shipAssets-CSoFtgLN.js"
+      "_shipAssets-cD6wi4PX.js"
     ],
     "dynamicImports": [
       "resources/js/prototype3d/scene.js",
+      "resources/js/live3d/shipPreviewAsset.js",
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
@@ -89,7 +90,7 @@
     ]
   },
   "resources/js/live3d/objectPreview3d.js": {
-    "file": "assets/objectPreview3d-BJLOcYi0.js",
+    "file": "assets/objectPreview3d-BB6BaIqu.js",
     "name": "objectPreview3d",
     "src": "resources/js/live3d/objectPreview3d.js",
     "isDynamicEntry": true,
@@ -97,20 +98,20 @@
       "_duration-BAa2BJgA.js",
       "_three.module.min-BMGZatoA.js",
       "_buildings-C9gdmBdt.js",
-      "_shipAssets-CSoFtgLN.js"
+      "_shipAssets-cD6wi4PX.js"
     ],
     "dynamicImports": [
       "resources/js/live3d/shipPreviewAsset.js"
     ]
   },
   "resources/js/live3d/shipPreviewAsset.js": {
-    "file": "assets/shipPreviewAsset-IRxNuKVp.js",
+    "file": "assets/shipPreviewAsset-NG5FTqdY.js",
     "name": "shipPreviewAsset",
     "src": "resources/js/live3d/shipPreviewAsset.js",
     "isDynamicEntry": true,
     "imports": [
       "_three.module.min-BMGZatoA.js",
-      "_shipAssets-CSoFtgLN.js"
+      "_shipAssets-cD6wi4PX.js"
     ]
   },
   "resources/js/prototype3d/index.js": {
