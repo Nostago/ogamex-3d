@@ -138,7 +138,7 @@
     ]
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-C-CPjnax.js",
+    "file": "assets/index-Bot-XcBo.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
@@ -156,7 +156,7 @@
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
-      "assets/index-CwtVhRCa.css",
+      "assets/index-BxYV6i6y.css",
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },

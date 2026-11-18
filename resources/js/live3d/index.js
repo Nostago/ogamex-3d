@@ -3,6 +3,7 @@ import '../../css/live3d.css'
 import '../../css/orbital-command.css'
 import '../../css/live3d-messages.css'
 import '../../css/live3d-command.css'
+import '../../css/live3d-ship-grants.css'
 import '../../css/live3d-battle-replay.css'
 import { createMessageDialogs } from './messageDialogs.js'
 import { createSocialUi } from './socialUi.js'
@@ -1118,6 +1119,7 @@ window.addEventListener('pagehide', (event) => {
     socialUi.dispose()
     workbench.dispose()
     systemMap.dispose()
+    adminPanel?.dispose()
     galaxy.dispose()
     fleetMonitor.dispose()
     fleetPanel.dispose()

@@ -30,6 +30,7 @@ use OGame\Http\Controllers\Live3dController;
 use OGame\Http\Controllers\Live3dFleetController;
 use OGame\Http\Controllers\Live3dFleetTemplateController;
 use OGame\Http\Controllers\Live3dGalaxyController;
+use OGame\Http\Controllers\Live3dShipGrantsController;
 use OGame\Http\Controllers\Live3dSystemMapController;
 use OGame\Http\Controllers\MerchantController;
 use OGame\Http\Controllers\MessagesController;
@@ -98,6 +99,9 @@ Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::clas
     Route::post('/play-3d/fleet/send', [Live3dFleetController::class, 'send'])->name('live3d.fleet.send');
     Route::post('/play-3d/fleet/recall', [Live3dFleetController::class, 'recall'])->name('live3d.fleet.recall');
     Route::get('/play-3d/state', [Live3dController::class, 'state'])->name('live3d.state');
+    Route::get('/play-3d/admin/ship-grants/players', [Live3dShipGrantsController::class, 'search'])->name('live3d.ship-grants.search');
+    Route::get('/play-3d/admin/ship-grants/players/{userId}', [Live3dShipGrantsController::class, 'worlds'])->whereNumber('userId')->name('live3d.ship-grants.worlds');
+    Route::post('/play-3d/admin/ship-grants', [Live3dShipGrantsController::class, 'store'])->name('live3d.ship-grants.store');
     Route::post('/play-3d/admin/command', [Live3dAdminController::class, 'command'])->name('live3d.admin.command');
     Route::post('/play-3d/command', [Live3dController::class, 'command'])->name('live3d.command');
 

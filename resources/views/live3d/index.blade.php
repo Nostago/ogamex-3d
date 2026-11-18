@@ -11,6 +11,9 @@
         'fleetTemplateUrl' => route('live3d.fleet.templates'),
         'botsUrl' => route('live3d.bots'),
         'fleetUrl' => route('live3d.fleet'), 'fleetPreviewUrl' => route('live3d.fleet.preview'), 'fleetSendUrl' => route('live3d.fleet.send'), 'fleetRecallUrl' => route('live3d.fleet.recall'),
+        'shipGrantT' => __('t_shipgrants', [], 'de'),
+        'shipGrantSearchUrl' => route('live3d.ship-grants.search'), 'shipGrantStoreUrl' => route('live3d.ship-grants.store'),
+        'adminUserId' => $adminAccess ? auth()->id() : null,
         'isAdmin' => $adminAccess, 'adminCommandUrl' => route('live3d.admin.command'),
         'adminLinks' => $adminAccess ? ['settings' => route('admin.serversettings.index'), 'prices' => route('commerce.prices'), 'security' => route('admin.server-administration.index'), 'rules' => route('admin.rules.index'), 'timing' => route('admin.fleettiming.index'), 'tools' => route('admin.developershortcuts.index')] : [],
         'initial' => $initial, 't' => $t, 'models' => __('t_prototype3d', [], 'de'),
@@ -97,6 +100,7 @@
                     <div id="live-admin-shortcuts" class="admin-shortcuts"></div>
 
                 </div>
+                @if($adminAccess)<section id="live-admin-ship-grants" hidden>@include('live3d.ship-grants')</section>@endif
                 <section id="live-admin-bots" hidden>@include('live3d.bots')</section>
                 <section id="live-admin-advanced" hidden><div class="admin-frame-toolbar"><p id="live-admin-tab-hint"></p><a id="live-admin-original" target="_blank" rel="noopener">{{ $t['open_original'] }} ↗</a></div><div id="live-admin-sections" class="admin-section-switch" hidden></div><iframe id="live-admin-frame" title="{{ $t['admin'] }}"></iframe></section>
             </section>

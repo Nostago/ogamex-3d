@@ -1,3 +1,4 @@
+import { createAdminShipGrants } from './adminShipGrants.js'
 import { createBotsPanel } from './botsPanel.js'
 import { organizeAdminSections } from './adminSections.js'
 // Native test controls delegate to the existing admin controller. Advanced forms
@@ -23,6 +24,7 @@ export function createAdmin({
         frameTab = ''
     const names = {
         test: t.admin_test,
+        shipGrants: config.shipGrantT.title,
         bots: t.bots_title,
         settings: t.admin_universe,
         prices: t.admin_prices,
@@ -48,9 +50,14 @@ export function createAdmin({
     function show(key) {
         tab = key
         document.querySelector('#live-admin-test').hidden = key !== 'test'
-        document.querySelector('#live-admin-advanced').hidden = ['test','bots'].includes(key)
+        document.querySelector('#live-admin-advanced').hidden = [
+            'test',
+            'bots',
+            'shipGrants',
+        ].includes(key)
         document.querySelector('#live-admin-bots').hidden = key !== 'bots'
-        if (key === 'bots') { botsPanel.show(); return }
+        document.querySelector('#live-admin-ship-grants').hidden =
+            key !== 'shipGrants'
         document
             .querySelectorAll('[data-admin-tab]')
             .forEach((button) =>
@@ -59,6 +66,14 @@ export function createAdmin({
                     String(button.dataset.adminTab === key),
                 ),
             )
+        if (key === 'shipGrants') {
+            shipGrants.show()
+            return
+        }
+        if (key === 'bots') {
+            botsPanel.show()
+            return
+        }
         if (key === 'test') {
             document.querySelector('#live-admin-sections').hidden = true
             return
@@ -75,7 +90,14 @@ export function createAdmin({
             frame.src = url(key)
         }
     }
-    const botsPanel = createBotsPanel({config, t, el, number})
+    const shipGrants = createAdminShipGrants({
+        config,
+        onTarget(label) {
+            if (tab === 'shipGrants')
+                document.querySelector('#live-admin-target').textContent = label
+        },
+    })
+    const botsPanel = createBotsPanel({ config, t, el, number })
     for (const [key, name] of Object.entries(names)) {
         const button = el('button', '', name)
         button.dataset.adminTab = key
@@ -160,9 +182,12 @@ export function createAdmin({
             catalog()
         }
     }
-    document.querySelector('#live-admin-finish').addEventListener('click', () => {
-        if (confirm(t.admin_finish_confirm)) command({action:'finish-orders'})
-    })
+    document
+        .querySelector('#live-admin-finish')
+        .addEventListener('click', () => {
+            if (confirm(t.admin_finish_confirm))
+                command({ action: 'finish-orders' })
+        })
     document
         .querySelector('#live-admin-resources')
         .addEventListener('submit', (event) => {
@@ -240,10 +265,18 @@ export function createAdmin({
     return {
         renderContext() {
             document.querySelector('#live-admin-target').textContent =
-                `${state().planet.name} [${state().planet.coordinates}]`
-            if (tab !== 'test' && framePlanet !== String(state().planet.id))
+                tab === 'shipGrants'
+                    ? shipGrants.targetLabel()
+                    : `${state().planet.name} [${state().planet.coordinates}]`
+            if (
+                !['test', 'bots', 'shipGrants'].includes(tab) &&
+                framePlanet !== String(state().planet.id)
+            )
                 show(tab)
         },
         show,
+        dispose() {
+            shipGrants.dispose()
+        },
     }
 }

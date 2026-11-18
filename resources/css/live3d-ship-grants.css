@@ -1,0 +1,21 @@
+#live-admin-ship-grants { min-width:0; }
+.ship-grants>h2 { color:#b5f0ff; }
+.ship-grant-search { display:flex; flex-wrap:wrap; align-items:end; gap:12px; }
+.ship-grant-search label { flex:1; min-width:min(100%,240px); }
+.ship-grant-results { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0; }
+#ship-grant-fields { border:1px solid #3f6e80; padding:18px; border-radius:8px; min-width:0; }
+#ship-grant-fields legend { color:#bbf1ff; font-weight:700; padding:0 10px; }
+.ship-grant-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.ship-grants :is(label,p,button,legend,select,input) { font-size:calc(18px * var(--ui-text-scale,1)); }
+.ship-grants label { display:grid; gap:8px; }
+.ship-grants :is(input,select) { width:100%; min-width:0; box-sizing:border-box; min-height:46px; }
+.ship-grant-preview { margin:18px 0; padding:18px; border:1px solid #65cfe8; background:#102d3c; border-radius:8px; overflow-wrap:anywhere; }
+.ship-grant-preview>strong { display:block; font-size:calc(22px * var(--ui-heading-scale,.8)); }
+.ship-grant-preview img { width:96px; height:72px; object-fit:contain; float:left; margin-right:16px; }
+.ship-grant-preview::after { content:''; display:block; clear:both; }
+#ship-grant-status { overflow-wrap:anywhere; padding:10px 0; }
+#ship-grant-status[data-tone='success'] { color:#b5ffda; }
+#ship-grant-status[data-tone='error'],.ship-grant-error { color:#ffb5ae; }
+.ship-grant-history article { border-bottom:1px solid #426577; padding:10px 0; }
+.ship-grant-history article p { margin:6px 0; overflow-wrap:anywhere; }
+@media(max-width:700px) { .ship-grant-fields { grid-template-columns:1fr; }.ship-grants { padding:14px; } }
