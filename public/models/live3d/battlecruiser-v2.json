@@ -21,5 +21,25 @@
     "normal_bits": 10,
     "uv_bits": 12,
     "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "battlecruiser",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.5042589902877808,
+        -0.13833465681235357,
+        -0.2396125961695948
+      ],
+      "max": [
+        0.5231614112854004,
+        0.38874859616915747,
+        0.28320633067238715
+      ]
+    },
+    "image": "/img/live3d/ships/battlecruiser-35-v3.webp"
   }
 }

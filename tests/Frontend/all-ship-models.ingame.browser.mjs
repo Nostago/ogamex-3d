@@ -89,6 +89,53 @@ try {
         [shipPreviewAssets[initialKey].model],
         'Initial detail must load only the selected ship without an image click',
     )
+    async function checkThumbnailFrames(
+        width,
+        height,
+        removeOptionalClass = false,
+    ) {
+        const frames = await page.evaluate(
+            ({ removeOptionalClass }) => {
+                const legacy = [
+                    'light_fighter',
+                    'heavy_fighter',
+                    'large_cargo',
+                    'colony_ship',
+                ]
+                return [
+                    ...document.querySelectorAll(
+                        '#live-catalog [data-object] img',
+                    ),
+                ].map((img) => {
+                    const key = img.closest('[data-object]').dataset.object
+                    if (removeOptionalClass && !legacy.includes(key))
+                        img.classList.remove('model-thumbnail')
+                    const box = img.getBoundingClientRect()
+                    return { key, width: box.width, height: box.height }
+                })
+            },
+            { removeOptionalClass },
+        )
+        assert.equal(frames.length, 17)
+        for (const frame of frames) {
+            assert.equal(
+                frame.width,
+                width,
+                `${frame.key}: same thumbnail width as the fighters`,
+            )
+            assert.equal(
+                frame.height,
+                height,
+                `${frame.key}: same thumbnail height as the fighters`,
+            )
+        }
+    }
+    await checkThumbnailFrames(96, 72)
+    // The ship page must keep equal frames even when the optional registry class is absent.
+    await checkThumbnailFrames(96, 72, true)
+    await page
+        .locator('#live-catalog')
+        .screenshot({ path: `${artifacts}/equal-thumbnail-frames.png` })
     const bootstrap = JSON.parse(
         await page.locator('#live-bootstrap').textContent(),
     )
@@ -115,6 +162,7 @@ try {
     await preview.waitFor()
     await ready(await preview.getAttribute('data-preview-object'))
     await page.setViewportSize({ width: 390, height: 844 })
+    await checkThumbnailFrames(72, 54)
     await page.locator('[data-object="deathstar"]').click()
     await ready('deathstar')
     await preview.scrollIntoViewIfNeeded()

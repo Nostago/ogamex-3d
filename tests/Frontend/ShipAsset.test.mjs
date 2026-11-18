@@ -133,7 +133,13 @@ const addedShips = [
     'destroyer',
 ]
 const compressedKeys = addedShips
-const repairedKeys = new Set(['bomber', 'crawler'])
+const repairedKeys = new Set([
+    'bomber',
+    'crawler',
+    'reaper',
+    'solar_satellite',
+    'small_cargo',
+])
 const portraitKeys = new Set(['espionage_probe', 'pathfinder'])
 test('all seventeen ships have distinct versioned model and thumbnail mappings', () => {
     assert.equal(Object.keys(shipPreviewAssets).length, 17)
@@ -152,7 +158,7 @@ test('all seventeen ships have distinct versioned model and thumbnail mappings',
         )
         assert.equal(
             shipPreviewAssets[key].image,
-            `/img/live3d/ships/${key}-35-${repairedKeys.has(key) ? 'v3' : portraitKeys.has(key) ? 'v2' : 'v1'}.webp`,
+            `/img/live3d/ships/${key}-35-${portraitKeys.has(key) ? 'v2' : 'v3'}.webp`,
         )
     }
 })

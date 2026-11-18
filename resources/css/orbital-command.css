@@ -1165,6 +1165,22 @@
 .object-thumbnail.model-thumbnail { width: 96px; height: 72px; border-radius: 4px; }
 @media(max-width:650px) { .object-thumbnail.model-thumbnail { width: 72px; height: 54px; } }
 
+/* Every ship uses the fighter reference frame, even without a model alias. */
+#prototype[data-page='ships'] #live-catalog .object-thumbnail {
+    width: 96px;
+    height: 72px;
+    flex: 0 0 96px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+@media(max-width:650px) {
+    #prototype[data-page='ships'] #live-catalog .object-thumbnail {
+        width: 72px;
+        height: 54px;
+        flex-basis: 72px;
+    }
+}
+
 /* Full original workflows share the Orbital Command visual shell. */
 .main-nav{position:relative}.main-nav>[data-live-page]{padding-right:34px!important}
 .nav-help{position:relative;float:right;margin-top:-44px;margin-right:7px;width:26px;height:28px;min-height:0;padding:0;z-index:2;color:#77dcee}

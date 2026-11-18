@@ -2,7 +2,7 @@
 
 ## Aktuelle Qualitätskorrektur
 
-Die technische Integration ist vorhanden. **Crawler und Bomber sind aus den neu übertragenen Originalen repariert und besitzen größere, vollständige v3-Miniaturen.** Spionagesonde und Pathfinder haben bereits größere v2-Miniaturen. Die ebenfalls hochgeladenen Originale von Solarsatellit, Reaper und kleinem Transporter überschreiten die 32-MiB-Transfergrenze und benötigen ZIP-/Teilarchive. Für diese drei bleibt die Reparatur offen. Details: [Neuaufbereitung und Bildausschnitt](OGAMEX-3D-SHIP-REPAIR.md); frühere Ladezeitmessungen: [Kompression](OGAMEX-3D-SHIP-QUALITY.md).
+Die Integration und Qualitätskorrektur sind vollständig. **Crawler, Bomber, Reaper, Solarsatellit und kleiner Transporter sind aus den Originalen repariert und als v3 eingebunden.** Alle 13 zusätzlichen Schiffe haben größere vollständige Miniaturen; alle 17 Katalog-Bildfelder entsprechen leichtem und schwerem Jäger (96×72 px, mobil 72×54 px). Die aktuellen 13 GLBs benötigen zusammen 10.408.516 Bytes. Die bisherigen vier Modelle, Bilder und Berichte bleiben bytegleich. Details: [Neuaufbereitung und Bildausschnitt](OGAMEX-3D-SHIP-REPAIR.md); frühere Ladezeitmessungen: [Kompression](OGAMEX-3D-SHIP-QUALITY.md).
 
 Die nachfolgenden Angaben dokumentieren die ursprüngliche Integration; aktuelle Dateipfade stehen in `shipAssets.js` und `Live3dArtworkService.php`.
 
@@ -60,23 +60,23 @@ Die vollständigen Assets, Implementierung und Testergebnisse gehören zum beste
 
 Das Bearbeiten von PR-Beschreibung und Draft-Status ist in dieser Umgebung weiterhin blockiert: Verbindungen zu `api.github.com` scheitern bereits am Cloud-Proxy mit HTTP 403 (auch außerhalb des normalen Command-Sandboxes). Git-Zugriff auf den Branch funktioniert. Eine gewünschte fertige PR-Beschreibung liegt in `docs/OGAMEX-3D-ALL-SHIP-MODELS-PR.md`; eine Aktualisierung des Draft-Status kann daher nicht bestätigt werden.
 
-## Zuordnung neuer Assets
+## Aktuelle Zuordnung neuer Assets
 
 | OGameX-Machine-Key | Neue Modelldatei | Neues Vorschaubild |
 |---|---|---|
-| `bomber` | `public/models/live3d/bomber-v1.glb` | `public/img/live3d/ships/bomber-35-v1.webp` |
-| `crawler` | `public/models/live3d/crawler-v1.glb` | `public/img/live3d/ships/crawler-35-v1.webp` |
-| `small_cargo` | `public/models/live3d/small_cargo-v1.glb` | `public/img/live3d/ships/small_cargo-35-v1.webp` |
-| `cruiser` | `public/models/live3d/cruiser-v1.glb` | `public/img/live3d/ships/cruiser-35-v1.webp` |
-| `pathfinder` | `public/models/live3d/pathfinder-v1.glb` | `public/img/live3d/ships/pathfinder-35-v1.webp` |
-| `reaper` | `public/models/live3d/reaper-v1.glb` | `public/img/live3d/ships/reaper-35-v1.webp` |
-| `recycler` | `public/models/live3d/recycler-v1.glb` | `public/img/live3d/ships/recycler-35-v1.webp` |
-| `battlecruiser` | `public/models/live3d/battlecruiser-v1.glb` | `public/img/live3d/ships/battlecruiser-35-v1.webp` |
-| `battle_ship` | `public/models/live3d/battle_ship-v1.glb` | `public/img/live3d/ships/battle_ship-35-v1.webp` |
-| `solar_satellite` | `public/models/live3d/solar_satellite-v1.glb` | `public/img/live3d/ships/solar_satellite-35-v1.webp` |
-| `espionage_probe` | `public/models/live3d/espionage_probe-v1.glb` | `public/img/live3d/ships/espionage_probe-35-v1.webp` |
-| `deathstar` | `public/models/live3d/deathstar-v1.glb` | `public/img/live3d/ships/deathstar-35-v1.webp` |
-| `destroyer` | `public/models/live3d/destroyer-v1.glb` | `public/img/live3d/ships/destroyer-35-v1.webp` |
+| `bomber` | `public/models/live3d/bomber-v3.glb` | `public/img/live3d/ships/bomber-35-v3.webp` |
+| `crawler` | `public/models/live3d/crawler-v3.glb` | `public/img/live3d/ships/crawler-35-v3.webp` |
+| `small_cargo` | `public/models/live3d/small_cargo-v3.glb` | `public/img/live3d/ships/small_cargo-35-v3.webp` |
+| `cruiser` | `public/models/live3d/cruiser-v2.glb` | `public/img/live3d/ships/cruiser-35-v3.webp` |
+| `pathfinder` | `public/models/live3d/pathfinder-v2.glb` | `public/img/live3d/ships/pathfinder-35-v2.webp` |
+| `reaper` | `public/models/live3d/reaper-v3.glb` | `public/img/live3d/ships/reaper-35-v3.webp` |
+| `recycler` | `public/models/live3d/recycler-v2.glb` | `public/img/live3d/ships/recycler-35-v3.webp` |
+| `battlecruiser` | `public/models/live3d/battlecruiser-v2.glb` | `public/img/live3d/ships/battlecruiser-35-v3.webp` |
+| `battle_ship` | `public/models/live3d/battle_ship-v2.glb` | `public/img/live3d/ships/battle_ship-35-v3.webp` |
+| `solar_satellite` | `public/models/live3d/solar_satellite-v3.glb` | `public/img/live3d/ships/solar_satellite-35-v3.webp` |
+| `espionage_probe` | `public/models/live3d/espionage_probe-v2.glb` | `public/img/live3d/ships/espionage_probe-35-v2.webp` |
+| `deathstar` | `public/models/live3d/deathstar-v2.glb` | `public/img/live3d/ships/deathstar-35-v3.webp` |
+| `destroyer` | `public/models/live3d/destroyer-v2.glb` | `public/img/live3d/ships/destroyer-35-v3.webp` |
 
 Datei `Zerstörer.glb` trug eine beschädigt decodierte ZIP-Kodierung; Zuordnung über Unicode-normalisierten Namen `destroyer` geprüft.
 

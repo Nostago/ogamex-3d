@@ -342,7 +342,7 @@ function renderCatalog() {
         if (item.image) {
             const image = el(
                 'img',
-                modelAliases[item.key] || shipPreviewAssets[item.key]
+                item.type === 'ship' || modelAliases[item.key]
                     ? 'object-thumbnail model-thumbnail'
                     : 'object-thumbnail',
             )

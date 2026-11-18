@@ -21,5 +21,25 @@
     "normal_bits": 10,
     "uv_bits": 12,
     "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "deathstar",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.48960475262345315,
+        2.190712946803508e-05,
+        -0.4901968240737915
+      ],
+      "max": [
+        0.48978887137116434,
+        0.9773803031061277,
+        0.49051371216773987
+      ]
+    },
+    "image": "/img/live3d/ships/deathstar-35-v3.webp"
   }
 }

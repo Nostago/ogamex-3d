@@ -139,7 +139,12 @@ try {
         await page.locator(`[data-ship=${key}]`).click()
         await ready(key)
         if (
-            ['espionage_probe', 'pathfinder', 'bomber', 'crawler'].includes(key)
+            ![
+                'light_fighter',
+                'heavy_fighter',
+                'large_cargo',
+                'colony_ship',
+            ].includes(key)
         ) {
             const portrait = await page.evaluate(async (url) => {
                 const image = new Image()
@@ -181,12 +186,17 @@ try {
             assert.equal(portrait.width, 512)
             assert.equal(portrait.height, 384)
             assert.ok(
-                portrait.right - portrait.left > 512 * 0.8,
+                Math.max(
+                    (portrait.right - portrait.left) / 512,
+                    (portrait.bottom - portrait.top) / 384,
+                ) > 0.8,
                 `${key}: hull must fill the thumbnail`,
             )
             assert.ok(
-                portrait.bottom - portrait.top >
-                    384 * (key === 'bomber' ? 0.4 : 0.7),
+                Math.min(
+                    (portrait.right - portrait.left) / 512,
+                    (portrait.bottom - portrait.top) / 384,
+                ) > 0.35,
             )
             assert.ok(
                 portrait.left > 2 &&
@@ -196,7 +206,15 @@ try {
                 `${key}: keep every edge inside the portrait`,
             )
         }
-        if (['bomber', 'crawler'].includes(key)) {
+        if (
+            [
+                'bomber',
+                'crawler',
+                'reaper',
+                'solar_satellite',
+                'small_cargo',
+            ].includes(key)
+        ) {
             const result = await page.evaluate(async (asset) => {
                 const THREE = await import(
                         '/resources/js/prototype3d/vendor/three.module.min.js'

@@ -21,5 +21,25 @@
     "normal_bits": 10,
     "uv_bits": 12,
     "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "recycler",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.16240189465254917,
+        1.626814070571081e-05,
+        -0.489776611328125
+      ],
+      "max": [
+        0.16240189465254917,
+        0.3317555824452318,
+        0.489776611328125
+      ]
+    },
+    "image": "/img/live3d/ships/recycler-35-v3.webp"
   }
 }

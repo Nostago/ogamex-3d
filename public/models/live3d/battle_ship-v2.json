@@ -21,5 +21,25 @@
     "normal_bits": 10,
     "uv_bits": 12,
     "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "battle_ship",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.45688812505934395,
+        -0.04960584647307298,
+        -0.5031754970550537
+      ],
+      "max": [
+        0.2554719902250544,
+        0.6248234995389929,
+        0.6827763319015503
+      ]
+    },
+    "image": "/img/live3d/ships/battle_ship-35-v3.webp"
   }
 }

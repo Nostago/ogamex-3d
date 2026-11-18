@@ -21,5 +21,25 @@
     "normal_bits": 10,
     "uv_bits": 12,
     "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "cruiser",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.15812940419195015,
+        7.189474517343974e-05,
+        -0.5
+      ],
+      "max": [
+        0.15818188608167488,
+        0.2330117165726786,
+        0.4995729625225067
+      ]
+    },
+    "image": "/img/live3d/ships/cruiser-35-v3.webp"
   }
 }
