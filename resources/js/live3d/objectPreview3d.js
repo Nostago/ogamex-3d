@@ -246,7 +246,7 @@ export function createObjectPreview(host) {
         const ticket = ++showVersion
         const alias = modelAliases[item.key],
             ship = shipModelAliases[item.key]
-        if (!alias && !ship) return false
+        if (!alias && !ship && !shipPreviewAssets[item.key]) return false
         release()
         fittedView = ''
         const uploaded = shipPreviewAssets[item.key]
