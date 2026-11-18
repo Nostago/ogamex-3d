@@ -8,7 +8,25 @@ ZIP-SHA-256: `d4fb7916a75615c184acabe92dfafc1a0bd44e51c3f7b7c9e5c4ef5f72fb732a`.
 
 Die 13 GLBs belegen zusammen **34.837.244 Bytes (33,22 MiB)** statt ursprünglich 463.857.308 Bytes. Einzeldateien liegen zwischen 612.936 und 4.230.876 Bytes, haben maximal 65.000 Dreiecke und eingebettete JPEG-/PNG-Texturen bis 1024 px. Struktur, Dreiecksindizes, tatsächliche Texturgrößen und Übereinstimmung mit den Bearbeitungsberichten wurden geprüft. Keine verpflichtenden externen Kompressionsdecoder für die neuen Modelle.
 
-Die ursprünglichen vier Modelle (`light_fighter`, `heavy_fighter`, `large_cargo`, `colony_ship`) behalten ihre bisherigen Pfade. Ihre vier GLBs, vier JSON-Berichte und vier WebP-Bilder wurden per SHA-256 als unverändert bestätigt. Der Branch basiert weiterhin wie beauftragt auf `codex/ogamex-3d-message-selection`.
+Die ursprünglichen vier Modelle (`light_fighter`, `heavy_fighter`, `large_cargo`, `colony_ship`) behalten ihre bisherigen Pfade. Ihre vier GLBs, vier JSON-Berichte und vier WebP-Bilder wurden per SHA-256 als unverändert bestätigt. Der Branch wurde zunächst auf `codex/ogamex-3d-message-selection` erstellt und anschließend mit dem gemeldeten Serverstand `2563ce3c698c128e90d73bf3f51b2378d8018a94` zusammengeführt. Dessen Händler-/Notizenoberfläche und neue Auftragszeitanzeige bleiben dadurch erhalten.
+
+## Übernahme auf der bestehenden Testinstallation
+
+Der Nutzer meldete als Server-HEAD `ea3c36b1` auf `test/live-3d-20261113T190640Z`, einen lokalen Merge des UI-Stands `2563ce3c`. Der neue Modellcommit war dort nicht enthalten; Kreuzer-GLB und Vorschaubild fehlten. `public/hot` existierte ebenfalls nicht. Ein vorheriges `git fetch` hatte die Assets lediglich in Git heruntergeladen und noch nicht in das laufende Arbeitsverzeichnis übernommen.
+
+Die lokale Prüfung des Zusammenführens von `2563ce3c` mit dem ursprünglichen Modellabschluss `e09e07a7` zeigte Konflikte ausschließlich in generierten Frontend-Dateien und im Build-Manifest. Der bisherige Updatehelfer hätte bei seiner Konfliktprüfung vor dem Merge abgebrochen. Der Modellbranch enthält deshalb nun den bekannten Serverstand; das Frontend wurde aus den gemeinsam übernommenen Quellen vollständig neu gebaut. Der private Server-Mergecommit selbst liegt nicht in der Cloud vor; zusätzliche lokale Änderungen werden weiterhin vom Helfer geschützt.
+
+Der bestehende Updateweg benötigt weder `gh` noch neue Pakete auf dem VPS:
+
+```bash
+cd /home/ogamedev/OGameX
+git fetch https://github.com/Nostago/ogamex-3d.git codex/ogamex-3d-all-ship-models
+release=$(git rev-parse FETCH_HEAD)
+git show "$release:scripts/codex/update-test-interface.sh" > /tmp/ogamex-3d-update.sh
+bash /tmp/ogamex-3d-update.sh "$release"
+```
+
+Für einen reproduzierbaren Stand den vollständig veröffentlichten Commit aus der Übergabe als `release` verwenden. Der unveränderte Helfer sichert Code und Build, prüft lokale Änderungen und Mergekonflikte, übernimmt die Dateien und leert Route-/View-Caches. Er enthält weiterhin die bereits früher verwendeten benannten additiven Migrationen sowie Bot-Auffüllung und Cron-Einrichtung. Er setzt keine Spieltabellen zurück. Dieser Ablauf wurde nicht von der Cloud aus auf dem VPS ausgeführt; die SSH-Befehle richten sich ausschließlich an die vorhandene Testinstallation.
 
 ## Verhalten der Oberfläche
 
@@ -24,7 +42,7 @@ Die ursprünglichen vier Modelle (`light_fighter`, `heavy_fighter`, `large_cargo
 - `node --test tests/Frontend/*.test.mjs`: **103 bestanden, 0 fehlgeschlagen, 0 übersprungen**. Die Assettests prüfen alle 17 Zuordnungen, bestehende Meshopt-Modelle sowie neue GLBs, Indizes, WebP-Bilder, Ursprungs-Hashes und passende Dateigrößen/Dreieckszahlen der JSON-Berichte.
 - `npm run build`: erfolgreich. Kompilierte Dateien und Manifest sind im Branch enthalten.
 - `composer run rector`, `composer run cs`, `composer run stan`: erfolgreich.
-- Vollständiges `composer run tests`: **1.201 bestanden, 42 Hinweise, 27.134 Assertions**. Eine veraltete Händler-UI-Erwartung im Expeditionstest wurde bereits im vorbereitenden Commit an die vorhandene Oberfläche angepasst; keine Spielmechanik geändert.
+- Vollständiges `composer run tests` nach dem UI-Abgleich (mit `COMPOSER_PROCESS_TIMEOUT=0`): **1.204 bestanden, 42 Hinweise, 27.294 Assertions**. Eine veraltete Händler-UI-Erwartung im Expeditionstest wurde bereits im vorbereitenden Commit an die vorhandene Oberfläche angepasst; keine Spielmechanik geändert.
 - `tests/Frontend/all-ship-models.browser.mjs`: **17/17 erfolgreich** mit echtem GLB-Decoding in Chromium. Geprüft: Sofortladen ohne Bildklick, Refresh, Drehen, schnelle Wechsel, stabile GPU-Ressourcenzahlen, mobile Breite, WebGL-Ausfall und Downloads ausschließlich ausgewählter Schiffe.
 - `tests/Frontend/all-ship-models.ingame.browser.mjs`: zusätzlicher Check derselben 17 Modelle in der vollständigen gebauten Spieloberfläche mit Login, passenden Katalog-/Flottenbildern und automatischem Erstaufruf/Refresh. Benötigt `LIVE_BASE_URL`, `LIVE_ACCOUNT_FILE` und Playwright; ausschließlich mit einem separaten Entwicklungskonto ausführen. Es werden keine Bau- oder Flottenaufträge ausgelöst.
 
