@@ -1,0 +1,25 @@
+{
+  "name": "Bomber.glb",
+  "model_id": "bomber",
+  "source_sha256": "0afdd5d3835dd08d6390754e630e3baf74642eb6b00688bfa08934cefb59d04f",
+  "source_bytes": 29466548,
+  "source_triangles": 962528,
+  "output_bytes": 902976,
+  "output_triangles": 64999,
+  "vertex_count": 64271,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 10.69,
+  "previous_output_bytes": 2646688,
+  "previous_model_sha256": "884820c9852c0c9c81826aeeddd5efd63d183e8a3a6e09f57e2b47564bd7cef4",
+  "previous_output_triangles": 64999,
+  "geometry_repair_pending": true,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  }
+}

@@ -4,8 +4,14 @@ import { readFile } from 'node:fs/promises'
 import { shipPreviewAssets } from '../../resources/js/live3d/shipAssets.js'
 import { MeshoptDecoder } from '../../resources/js/prototype3d/vendor/meshopt/meshopt_decoder.mjs'
 const root = new URL('../../public/', import.meta.url)
+const legacyKeys = new Set([
+    'light_fighter',
+    'heavy_fighter',
+    'large_cargo',
+    'colony_ship',
+])
 for (const [key, asset] of Object.entries(shipPreviewAssets)) {
-    if (!asset.model.endsWith('-v2.glb')) continue
+    if (!legacyKeys.has(key)) continue
     test(`${key}: compressed self-contained GLB decodes to valid detailed geometry`, async () => {
         const data = await readFile(new URL(asset.model.slice(1), root))
         assert.equal(data.toString('ascii', 0, 4), 'glTF')
@@ -108,8 +114,8 @@ for (const [key, asset] of Object.entries(shipPreviewAssets)) {
     })
 }
 
-// The thirteen additional uploads are standard GLB files, not the four older
-// Meshopt/WebP assets. Missing uploads intentionally fail rather than being skipped.
+// All thirteen additional uploads use the existing Meshopt/WebP decoder.
+// Geometry repairs are separately tracked; decoding does not prove visual quality.
 const addedShips = [
     'bomber',
     'crawler',
@@ -125,6 +131,8 @@ const addedShips = [
     'deathstar',
     'destroyer',
 ]
+const compressedKeys = addedShips
+const portraitKeys = new Set(['espionage_probe', 'pathfinder'])
 test('all seventeen ships have distinct versioned model and thumbnail mappings', () => {
     assert.equal(Object.keys(shipPreviewAssets).length, 17)
     assert.equal(
@@ -138,56 +146,82 @@ test('all seventeen ships have distinct versioned model and thumbnail mappings',
     for (const key of addedShips) {
         assert.equal(
             shipPreviewAssets[key].model,
-            `/models/live3d/${key}-v1.glb`,
+            `/models/live3d/${key}-${compressedKeys.includes(key) ? 'v2' : 'v1'}.glb`,
         )
         assert.equal(
             shipPreviewAssets[key].image,
-            `/img/live3d/ships/${key}-35-v1.webp`,
+            `/img/live3d/ships/${key}-35-${portraitKeys.has(key) ? 'v2' : 'v1'}.webp`,
         )
     }
 })
 for (const key of addedShips) {
-    test(`${key}: uploaded standard GLB, processing report and thumbnail are present and self-contained`, async () => {
-        const asset = shipPreviewAssets[key],
+    test(`${key}: versioned GLB decodes, matches its processing report and has a self-contained thumbnail`, async () => {
+        const compressed = compressedKeys.includes(key),
+            asset = shipPreviewAssets[key],
             data = await readFile(new URL(asset.model.slice(1), root))
         assert.equal(data.toString('ascii', 0, 4), 'glTF')
         assert.equal(data.readUInt32LE(4), 2)
         assert.equal(data.readUInt32LE(8), data.length)
         assert.ok(
-            data.length <= 5_000_000,
+            data.length <= (compressed ? 1_400_000 : 5_000_000),
             `${key}: optimized model exceeds download budget`,
         )
         assert.equal(data.toString('ascii', 16, 20), 'JSON')
         const jsonLength = data.readUInt32LE(12),
             gltf = JSON.parse(data.toString('utf8', 20, 20 + jsonLength)),
             binStart = 28 + jsonLength
-        for (const extension of gltf.extensionsRequired || [])
+        if (compressed)
+            assert.deepEqual([...gltf.extensionsRequired].sort(), [
+                'EXT_meshopt_compression',
+                'EXT_texture_webp',
+                'KHR_mesh_quantization',
+            ])
+        else
             assert.ok(
-                ![
-                    'KHR_draco_mesh_compression',
+                !(gltf.extensionsRequired || []).includes(
                     'EXT_meshopt_compression',
-                    'KHR_texture_basisu',
-                ].includes(extension),
-                `${key}: standard uploads must not require an external compression decoder`,
+                ),
             )
         assert.equal(
             data.toString('ascii', 24 + jsonLength, 28 + jsonLength),
             'BIN\0',
         )
         assert.ok(binStart + data.readUInt32LE(20 + jsonLength) <= data.length)
-        assert.ok(
-            gltf.buffers.every(
-                (buffer) =>
-                    !buffer.uri && buffer.byteLength <= data.length - binStart,
-            ),
-        )
-        for (const view of gltf.bufferViews) {
-            assert.equal(view.buffer, 0)
-            assert.ok(
-                (view.byteOffset || 0) + view.byteLength <=
-                    data.length - binStart,
+        assert.ok(gltf.buffers.every((buffer) => !buffer.uri))
+        assert.ok(gltf.buffers[0].byteLength <= data.length - binStart)
+        await MeshoptDecoder.ready
+        const decoded = gltf.bufferViews.map((view) => {
+            const compression = view.extensions?.EXT_meshopt_compression
+            if (!compression) {
+                assert.equal(view.buffer, 0)
+                const offset = view.byteOffset || 0
+                assert.ok(offset + view.byteLength <= data.length - binStart)
+                return data.subarray(
+                    binStart + offset,
+                    binStart + offset + view.byteLength,
+                )
+            }
+            assert.equal(compression.buffer, 0)
+            const offset = compression.byteOffset || 0
+            assert.ok(offset + compression.byteLength <= data.length - binStart)
+            assert.equal(
+                view.byteLength,
+                compression.count * compression.byteStride,
             )
-        }
+            const output = new Uint8Array(view.byteLength)
+            MeshoptDecoder.decodeGltfBuffer(
+                output,
+                compression.count,
+                compression.byteStride,
+                data.subarray(
+                    binStart + offset,
+                    binStart + offset + compression.byteLength,
+                ),
+                compression.mode,
+                compression.filter,
+            )
+            return output
+        })
         let triangles = 0
         for (const mesh of gltf.meshes)
             for (const primitive of mesh.primitives) {
@@ -205,11 +239,11 @@ for (const key of addedShips) {
                 )
                 assert.equal(indices.count % 3, 0)
                 triangles += indices.count / 3
-                const view = gltf.bufferViews[indices.bufferView],
+                const indexBytes = decoded[indices.bufferView],
                     bytes = new DataView(
-                        data.buffer,
-                        data.byteOffset + binStart + (view.byteOffset || 0),
-                        view.byteLength,
+                        indexBytes.buffer,
+                        indexBytes.byteOffset,
+                        indexBytes.byteLength,
                     ),
                     width =
                         indices.componentType === 5125
@@ -231,7 +265,13 @@ for (const key of addedShips) {
         assert.ok(triangles > 0 && triangles <= 65_000)
         for (const image of gltf.images || []) {
             assert.ok(Number.isInteger(image.bufferView) && !image.uri)
-            assert.ok(['image/png', 'image/jpeg'].includes(image.mimeType))
+            assert.ok(
+                (compressed
+                    ? ['image/webp']
+                    : ['image/png', 'image/jpeg']
+                ).includes(image.mimeType),
+            )
+            assert.ok(decoded[image.bufferView].length > 0)
         }
         const thumbnail = await readFile(new URL(asset.image.slice(1), root))
         assert.equal(thumbnail.toString('ascii', 0, 4), 'RIFF')
@@ -245,6 +285,11 @@ for (const key of addedShips) {
         assert.equal(report.model_id, key)
         assert.equal(report.output_bytes, data.length)
         assert.equal(report.output_triangles, triangles)
+        if (compressed) {
+            assert.equal(report.previous_output_triangles, triangles)
+            assert.ok(report.output_bytes < report.previous_output_bytes)
+            assert.equal(report.compression.topology_unchanged, true)
+        }
         assert.match(
             report.source_sha256,
             /^[a-f0-9]{64}$/i,

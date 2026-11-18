@@ -1,0 +1,25 @@
+{
+  "name": "Kleiner Transporter.glb",
+  "model_id": "small_cargo",
+  "source_sha256": "bab6329b0fe234d359eebb0d6ee9b8136f28bc552952e2bd7d04fb4be7e715c5",
+  "source_bytes": 66462152,
+  "source_triangles": 1875949,
+  "output_bytes": 1242144,
+  "output_triangles": 65000,
+  "vertex_count": 63013,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 20.29,
+  "previous_output_bytes": 3672520,
+  "previous_model_sha256": "5cac8c8863f672b2730b51cb2c9f5b338dad1049eba4d086f31ec5390c433846",
+  "previous_output_triangles": 65000,
+  "geometry_repair_pending": true,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Schlachtschiff.glb",
+  "model_id": "battle_ship",
+  "source_sha256": "f4f35cc8dbffe3d30d5081964695ec5e75cb5ed762f8dcc16f64094e4b927968",
+  "source_bytes": 29449312,
+  "source_triangles": 980240,
+  "output_bytes": 799004,
+  "output_triangles": 65000,
+  "vertex_count": 59850,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 9.92,
+  "previous_output_bytes": 2504336,
+  "previous_model_sha256": "e48a6f39586f55bb39193e1d7112f67d738752661507ef87bbe6ae8070db722b",
+  "previous_output_triangles": 65000,
+  "geometry_repair_pending": false,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  }
+}

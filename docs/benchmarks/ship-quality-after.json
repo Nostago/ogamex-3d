@@ -1,0 +1,99 @@
+{
+  "connection": "10 Mbit/s, 80 ms latency; Chromium software WebGL",
+  "importMs": 737.5999999996275,
+  "createMs": 43.29999999888241,
+  "warmMs": 27.600000001490116,
+  "models": [
+    {
+      "key": "bomber",
+      "showMs": 1235.0999999996275,
+      "firstPaintMs": 1237.199999999255,
+      "downloadMs": 851.6999999992549,
+      "bytes": 902976
+    },
+    {
+      "key": "reaper",
+      "showMs": 1113.7999999988824,
+      "firstPaintMs": 1115.5999999996275,
+      "downloadMs": 1000,
+      "bytes": 1080536
+    },
+    {
+      "key": "small_cargo",
+      "showMs": 1220.800000000745,
+      "firstPaintMs": 1226.6000000014901,
+      "downloadMs": 1112.9000000003725,
+      "bytes": 1242144
+    },
+    {
+      "key": "espionage_probe",
+      "showMs": 735.5999999996275,
+      "firstPaintMs": 736.8000000007451,
+      "downloadMs": 634.2999999988824,
+      "bytes": 655360
+    },
+    {
+      "key": "pathfinder",
+      "showMs": 650.1999999992549,
+      "firstPaintMs": 651.0999999996275,
+      "downloadMs": 561.9000000003725,
+      "bytes": 574364
+    },
+    {
+      "key": "cruiser",
+      "showMs": 799.1999999992549,
+      "firstPaintMs": 812.6999999992549,
+      "downloadMs": 703.6999999992549,
+      "bytes": 752800
+    },
+    {
+      "key": "battle_ship",
+      "showMs": 815.5999999996275,
+      "firstPaintMs": 816.4000000003725,
+      "downloadMs": 741.3000000007451,
+      "bytes": 799004
+    },
+    {
+      "key": "battlecruiser",
+      "showMs": 981.4000000003725,
+      "firstPaintMs": 982.1999999992549,
+      "downloadMs": 882.5,
+      "bytes": 990092
+    },
+    {
+      "key": "destroyer",
+      "showMs": 463.09999999962747,
+      "firstPaintMs": 463.7999999988824,
+      "downloadMs": 377.3999999985099,
+      "bytes": 352264
+    },
+    {
+      "key": "deathstar",
+      "showMs": 740.1999999992549,
+      "firstPaintMs": 741.6999999992549,
+      "downloadMs": 649,
+      "bytes": 699920
+    },
+    {
+      "key": "recycler",
+      "showMs": 535.6999999992549,
+      "firstPaintMs": 536.4000000003725,
+      "downloadMs": 449.2000000011176,
+      "bytes": 451592
+    },
+    {
+      "key": "crawler",
+      "showMs": 1040.9000000003725,
+      "firstPaintMs": 1041.7000000011176,
+      "downloadMs": 916.7000000011176,
+      "bytes": 1032396
+    },
+    {
+      "key": "solar_satellite",
+      "showMs": 1266.800000000745,
+      "firstPaintMs": 1268.2000000011176,
+      "downloadMs": 1153.9000000003725,
+      "bytes": 1273396
+    }
+  ]
+}

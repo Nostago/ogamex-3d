@@ -1,6 +1,12 @@
 # Alle 13 neuen GLB-Schiffsmodelle – Integration mit Sofortladen
 
-## Stand vom 18.11.2026
+## Aktuelle Qualitätskorrektur
+
+Die technische Integration ist vorhanden, aber **fünf Modelle benötigen eine erneute Aufbereitung aus den fehlenden Original-GLBs**: Solarsatellit, Crawler, Bomber, Reaper und kleiner Transporter. Die später gemeldeten Geometriespitzen waren durch die bisherigen Format-/Ladetests nicht abgesichert. Alle 13 neuen GLBs sind inzwischen ohne weitere Dreiecksreduktion um insgesamt 69 % komprimiert; Spionagesonde und Pathfinder besitzen größere, neu gerenderte Miniaturen. Stand, offene Punkte und gemessene Ladezeiten: [Qualitätskorrektur](OGAMEX-3D-SHIP-QUALITY.md).
+
+Die nachfolgenden Angaben dokumentieren die ursprüngliche Integration; aktuelle Dateipfade stehen in `shipAssets.js` und `Live3dArtworkService.php`.
+
+## Stand der ursprünglichen Integration vom 18.11.2026
 
 Die ZIP `OGameX-3D-13-Schiffsmodelle-Web.zip` wurde importiert. Alle **39 benötigten Dateien** sind im Branch enthalten: 13 GLBs, 13 JSON-Bearbeitungsberichte und 13 WebP-Vorschaubilder. Die zusätzliche Testgrafik aus der ZIP und enthaltene Hilfsskripte gehören nicht zu den Spielassets und wurden nicht übernommen.
 

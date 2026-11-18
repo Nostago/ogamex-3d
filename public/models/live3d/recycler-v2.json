@@ -1,0 +1,25 @@
+{
+  "name": "Recycler.glb",
+  "model_id": "recycler",
+  "source_sha256": "ec9ba5f4613ae302215ff453fc476414bf387161dc582c6044ae88c173c3f86d",
+  "source_bytes": 19864780,
+  "source_triangles": 9525,
+  "output_bytes": 451592,
+  "output_triangles": 9525,
+  "vertex_count": 7046,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 0.0,
+  "previous_output_bytes": 1400068,
+  "previous_model_sha256": "6b34ae3bea33d1ac2b892acd208eb25e7f3d8adbf6e153ba438f84bfc46529ae",
+  "previous_output_triangles": 9525,
+  "geometry_repair_pending": false,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  }
+}

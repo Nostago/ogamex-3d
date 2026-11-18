@@ -23,10 +23,10 @@ class Live3dArtworkService
         'deathstar' => '/img/live3d/ships/deathstar-35-v1.webp',
         'reaper' => '/img/live3d/ships/reaper-35-v1.webp',
         'recycler' => '/img/live3d/ships/recycler-35-v1.webp',
-        'pathfinder' => '/img/live3d/ships/pathfinder-35-v1.webp',
+        'pathfinder' => '/img/live3d/ships/pathfinder-35-v2.webp',
         'crawler' => '/img/live3d/ships/crawler-35-v1.webp',
         'solar_satellite' => '/img/live3d/ships/solar_satellite-35-v1.webp',
-        'espionage_probe' => '/img/live3d/ships/espionage_probe-35-v1.webp',
+        'espionage_probe' => '/img/live3d/ships/espionage_probe-35-v2.webp',
     ];
 
     public static function image(GameObject $object, string $fallback): string

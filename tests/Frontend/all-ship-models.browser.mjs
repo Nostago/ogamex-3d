@@ -138,6 +138,59 @@ try {
         await stat(path.join(repo, 'public', shipPreviewAssets[key].model))
         await page.locator(`[data-ship=${key}]`).click()
         await ready(key)
+        if (['espionage_probe', 'pathfinder'].includes(key)) {
+            const portrait = await page.evaluate(async (url) => {
+                const image = new Image()
+                image.src = url
+                await image.decode()
+                const canvas = document.createElement('canvas')
+                canvas.width = image.naturalWidth
+                canvas.height = image.naturalHeight
+                const context = canvas.getContext('2d')
+                context.drawImage(image, 0, 0)
+                const pixels = context.getImageData(
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height,
+                ).data
+                let left = canvas.width,
+                    right = 0,
+                    top = canvas.height,
+                    bottom = 0
+                for (let y = 0; y < canvas.height; y++)
+                    for (let x = 0; x < canvas.width; x++) {
+                        if (pixels[(y * canvas.width + x) * 4 + 3] < 64)
+                            continue
+                        left = Math.min(left, x)
+                        right = Math.max(right, x)
+                        top = Math.min(top, y)
+                        bottom = Math.max(bottom, y)
+                    }
+                return {
+                    width: canvas.width,
+                    height: canvas.height,
+                    left,
+                    right,
+                    top,
+                    bottom,
+                }
+            }, shipPreviewAssets[key].image)
+            assert.equal(portrait.width, 512)
+            assert.equal(portrait.height, 384)
+            assert.ok(
+                portrait.right - portrait.left > 512 * 0.8,
+                `${key}: hull must fill the thumbnail`,
+            )
+            assert.ok(portrait.bottom - portrait.top > 384 * 0.7)
+            assert.ok(
+                portrait.left > 2 &&
+                    portrait.top > 2 &&
+                    portrait.right < 510 &&
+                    portrait.bottom < 382,
+                `${key}: keep every edge inside the portrait`,
+            )
+        }
         const before = await preview.getAttribute('data-preview-frames')
         await preview.focus()
         await page.keyboard.press('ArrowLeft')
