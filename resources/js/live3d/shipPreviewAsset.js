@@ -5,9 +5,11 @@ import { shipPreviewAssets } from './shipAssets.js'
 
 const pending = new Map()
 // Keep one CPU master. Each visible preview owns/disposes its GPU resources.
-export async function loadShipPreview(key) {
+// Start downloading and decoding the selected ship as soon as its detail view opens.
+// This shares the request with the WebGL renderer, so rapid re-renders never redownload it.
+export function preloadShipPreview(key) {
     const asset = shipPreviewAssets[key]
-    if (!asset) return null
+    if (!asset) return Promise.resolve(null)
     if (!pending.has(key)) {
         const request = new GLTFLoader()
             .setMeshoptDecoder(MeshoptDecoder)
@@ -18,8 +20,12 @@ export async function loadShipPreview(key) {
             })
         pending.set(key, request)
     }
-    const gltf = await pending.get(key),
-        instance = gltf.scene.clone(true)
+    return pending.get(key)
+}
+export async function loadShipPreview(key) {
+    const gltf = await preloadShipPreview(key)
+    if (!gltf) return null
+    const instance = gltf.scene.clone(true)
     const textures = new Map()
     instance.traverse((mesh) => {
         if (!mesh.isMesh) return
