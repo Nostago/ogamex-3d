@@ -210,7 +210,10 @@ try {
         await page.locator('#live-dock [data-order-active=false]').count(),
     )
     assert.match(
-        await page.locator('#live-dock').innerText(),
+        await page
+            .locator('#live-dock .duration-parts')
+            .first()
+            .getAttribute('aria-label'),
         /Tage: \d+ Stunden: \d+ Minuten: \d+ Sekunden: \d+/,
     )
     assert.ok(

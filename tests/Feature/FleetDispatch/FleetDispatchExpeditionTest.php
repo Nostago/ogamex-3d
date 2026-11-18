@@ -1070,13 +1070,14 @@ class FleetDispatchExpeditionTest extends FleetDispatchTestCase
         $response = $this->get('/merchant/resource-market');
         $response->assertStatus(200);
 
-        // Should show "Already paid" section (not "Call merchant")
-        $response->assertSee('Already paid', false);
-        $response->assertSee('trade', false);
+        // The current market keeps the already-paid merchant and its trade form.
+        $response->assertSee(__('t_commerce.active_merchant'));
+        $response->assertSee('id="commerce-active-merchant"', false);
+        $response->assertSee(route('merchant.trade'), false);
 
-        // Should have the active merchant highlighted with 'active' class
+        // The form must sell the resource of the merchant found on expedition.
         $merchantType = $activeMerchant['type'];
-        $response->assertSee('data-resource-type="' . $merchantType . '"', false);
+        $response->assertSee('name="give_resource" value="' . $merchantType . '"', false);
     }
 
     /**

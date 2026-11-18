@@ -1,0 +1,45 @@
+{
+  "name": "Kreuzer.glb",
+  "model_id": "cruiser",
+  "source_sha256": "b12d3431d43ffa9ff380f14b1efbc22fe24ea9c928e49c5fb2b62b48cd8e3d35",
+  "source_bytes": 28383932,
+  "source_triangles": 952740,
+  "output_bytes": 752800,
+  "output_triangles": 65000,
+  "vertex_count": 53214,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 9.94,
+  "previous_output_bytes": 2314112,
+  "previous_model_sha256": "d1d0230c9d21e1f1f23a0d5ae4eb30e41bbfe23c974a5b48695ce8ef760d0d2b",
+  "previous_output_triangles": 65000,
+  "geometry_repair_pending": false,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "cruiser",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.15812940419195015,
+        7.189474517343974e-05,
+        -0.5
+      ],
+      "max": [
+        0.15818188608167488,
+        0.2330117165726786,
+        0.4995729625225067
+      ]
+    },
+    "image": "/img/live3d/ships/cruiser-35-v3.webp"
+  }
+}

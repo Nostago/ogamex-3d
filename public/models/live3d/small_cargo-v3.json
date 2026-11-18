@@ -1,0 +1,87 @@
+{
+  "name": "Kleiner Transporter.glb",
+  "model_id": "small_cargo",
+  "source_sha256": "bab6329b0fe234d359eebb0d6ee9b8136f28bc552952e2bd7d04fb4be7e715c5",
+  "source_bytes": 66462152,
+  "source_triangles": 1875949,
+  "output_triangles": 65000,
+  "source_bounds_gltf": {
+    "min": [
+      -0.272491455078125,
+      0.0,
+      -0.4897308349609375
+    ],
+    "max": [
+      0.272491455078125,
+      0.2645721435546875,
+      0.4897308349609375
+    ]
+  },
+  "reduced_bounds_gltf": {
+    "min": [
+      -0.27293145656585693,
+      -3.942951298085973e-05,
+      -0.48984962701797485
+    ],
+    "max": [
+      0.27278780937194824,
+      0.2649814784526825,
+      0.4899408519268036
+    ]
+  },
+  "texture_max_resolution": 1024,
+  "geometry_repair_pending": false,
+  "reduction": "Blender DECIMATE with original UV/normal attributes; no manual vertex-index remapping",
+  "surface_check": {
+    "source_extent": 0.979461669921875,
+    "sample_count": 4217,
+    "max_boundary_error": 0.0004400014877319336,
+    "nearest_original_vertex_p99": 0.001238412098027766,
+    "nearest_original_vertex_max": 0.001984868897125125
+  },
+  "previous_output_bytes": 6188544,
+  "previous_output_triangles": 65000,
+  "previous_model_sha256": "fa8b4cb3d94738e12163ae1edc489b67ca02c9ed794897c53cd3307225cf2d2f",
+  "replaced_model_sha256": "44c03c0f46f939e45357c3896ab7812fabb25104e89b9c4a0226ebb954b8b07e",
+  "output_bytes": 1155184,
+  "output_sha256": "92e9ef07fd9a6d5cfb6bea3ca10766bce4ead64d3828249c696423237ddd4990",
+  "vertex_count": 55203,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "small_cargo",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.2729252468694878,
+        -6.846031431406718e-05,
+        -0.48984962701797485
+      ],
+      "max": [
+        0.27278159967557913,
+        0.2650105092540157,
+        0.4899408519268036
+      ]
+    },
+    "image": "/img/live3d/ships/small_cargo-35-v3.webp"
+  },
+  "source_comparison": {
+    "silhouette_iou": 0.9975538509036502,
+    "render_width": 1024,
+    "render_height": 768,
+    "azimuth": 35,
+    "elevation": 22,
+    "min_silhouette_iou": 0.97,
+    "original_visually_reviewed": true
+  }
+}

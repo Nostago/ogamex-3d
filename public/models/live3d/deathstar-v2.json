@@ -1,0 +1,45 @@
+{
+  "name": "Todesstern.glb",
+  "model_id": "deathstar",
+  "source_sha256": "70cd4fb44b645c412f091ccd902b0d14ae00989ef133eb987eabc2615899cab9",
+  "source_bytes": 64743004,
+  "source_triangles": 1933924,
+  "output_bytes": 699920,
+  "output_triangles": 64999,
+  "vertex_count": 48596,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 19.79,
+  "previous_output_bytes": 2852120,
+  "previous_model_sha256": "e8327413a0b55dfffdcd4566853e27c8d73c3250714c5ef882a436f5397ffb51",
+  "previous_output_triangles": 64999,
+  "geometry_repair_pending": false,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "deathstar",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.48960475262345315,
+        2.190712946803508e-05,
+        -0.4901968240737915
+      ],
+      "max": [
+        0.48978887137116434,
+        0.9773803031061277,
+        0.49051371216773987
+      ]
+    },
+    "image": "/img/live3d/ships/deathstar-35-v3.webp"
+  }
+}

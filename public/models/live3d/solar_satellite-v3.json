@@ -1,0 +1,87 @@
+{
+  "name": "Solarsatellit.glb",
+  "model_id": "solar_satellite",
+  "source_sha256": "014748489e0f51464da4a299795d0e57605dcdf438f6b5b25cc1fedc8162cf11",
+  "source_bytes": 68564020,
+  "source_triangles": 1970563,
+  "output_triangles": 64999,
+  "source_bounds_gltf": {
+    "min": [
+      -0.493133544921875,
+      0.0,
+      -0.08251572400331497
+    ],
+    "max": [
+      0.493133544921875,
+      0.4468841552734375,
+      0.08251572400331497
+    ]
+  },
+  "reduced_bounds_gltf": {
+    "min": [
+      -0.4931534230709076,
+      -0.00015231798170134425,
+      -0.08273430913686752
+    ],
+    "max": [
+      0.493367075920105,
+      0.4469335973262787,
+      0.08245738595724106
+    ]
+  },
+  "texture_max_resolution": 1024,
+  "geometry_repair_pending": false,
+  "reduction": "Blender DECIMATE with original UV/normal attributes; no manual vertex-index remapping",
+  "surface_check": {
+    "source_extent": 0.98626708984375,
+    "sample_count": 4147,
+    "max_boundary_error": 0.00023353099822998047,
+    "nearest_original_vertex_p99": 0.0005177760927472262,
+    "nearest_original_vertex_max": 0.0011655872222036123
+  },
+  "previous_output_bytes": 6460440,
+  "previous_output_triangles": 64999,
+  "previous_model_sha256": "df1406e5a6af7f4db55ecdc75dfe98f06abb3f77e5cddb471cf06cc52eece3c2",
+  "replaced_model_sha256": "8883ef088db474326ef4425c70b142426c638d027859a7d6cb1c85424ae05da9",
+  "output_bytes": 1233156,
+  "output_sha256": "92a0142ea8137de9be053939786de8d029d2e166b06ab44602b4d19a6bda043d",
+  "vertex_count": 60255,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "solar_satellite",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.4931534230709076,
+        -0.00013978559577898508,
+        -0.08275244056962032
+      ],
+      "max": [
+        0.493367075920105,
+        0.4469210649403563,
+        0.08247551738999385
+      ]
+    },
+    "image": "/img/live3d/ships/solar_satellite-35-v3.webp"
+  },
+  "source_comparison": {
+    "silhouette_iou": 0.9956754099732262,
+    "render_width": 1024,
+    "render_height": 768,
+    "azimuth": 35,
+    "elevation": 22,
+    "min_silhouette_iou": 0.97,
+    "original_visually_reviewed": true
+  }
+}

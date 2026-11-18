@@ -246,7 +246,7 @@ export function createObjectPreview(host) {
         const ticket = ++showVersion
         const alias = modelAliases[item.key],
             ship = shipModelAliases[item.key]
-        if (!alias && !ship) return false
+        if (!alias && !ship && !shipPreviewAssets[item.key]) return false
         release()
         fittedView = ''
         const uploaded = shipPreviewAssets[item.key]
@@ -255,6 +255,7 @@ export function createObjectPreview(host) {
             const { loadShipPreview, disposeShipPreview } = await import(
                 './shipPreviewAsset.js'
             )
+            if (disposed || ticket !== showVersion) return false
             const loaded = await loadShipPreview(item.key)
             if (disposed || ticket !== showVersion) {
                 if (loaded) disposeShipPreview(loaded)

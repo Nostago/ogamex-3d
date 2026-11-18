@@ -1,0 +1,87 @@
+{
+  "name": "Reaper.glb",
+  "model_id": "reaper",
+  "source_sha256": "a987808164aed3091b644eb8821edd264a4e8771578e4c7e65d6838ec65e27ca",
+  "source_bytes": 38542224,
+  "source_triangles": 927547,
+  "output_triangles": 64999,
+  "source_bounds_gltf": {
+    "min": [
+      -0.13764190673828125,
+      0.0,
+      -0.4897613525390625
+    ],
+    "max": [
+      0.13764190673828125,
+      0.43756103515625,
+      0.4897613525390625
+    ]
+  },
+  "reduced_bounds_gltf": {
+    "min": [
+      -0.13742659986019135,
+      4.515833279583603e-05,
+      -0.48981425166130066
+    ],
+    "max": [
+      0.13733713328838348,
+      0.43583443760871887,
+      0.4897269010543823
+    ]
+  },
+  "texture_max_resolution": 1024,
+  "geometry_repair_pending": false,
+  "reduction": "Blender DECIMATE with original UV/normal attributes; no manual vertex-index remapping",
+  "surface_check": {
+    "source_extent": 0.979522705078125,
+    "sample_count": 4399,
+    "max_boundary_error": 5.289912223815918e-05,
+    "nearest_original_vertex_p99": 0.000985597474500521,
+    "nearest_original_vertex_max": 0.0017812951700761914
+  },
+  "previous_output_bytes": 5918340,
+  "previous_output_triangles": 64999,
+  "previous_model_sha256": "a2f891d95a414a6d3a61751c302866f7f986ace534be6f6702bba981dc836fbe",
+  "replaced_model_sha256": "72be936234e23771a737fa34279acb356c59f41797e60d8afbcb65ea6e356160",
+  "output_bytes": 891384,
+  "output_sha256": "2afe42317e25126e099e47b7c725dac168a4cb31e671dd305ddcbd3b842929d0",
+  "vertex_count": 52757,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "reaper",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.13745312918597527,
+        5.638808983277066e-05,
+        -0.48981425166130066
+      ],
+      "max": [
+        0.1373636626141674,
+        0.43582320785168194,
+        0.4897269010543823
+      ]
+    },
+    "image": "/img/live3d/ships/reaper-35-v3.webp"
+  },
+  "source_comparison": {
+    "silhouette_iou": 0.9909598371933642,
+    "render_width": 1024,
+    "render_height": 768,
+    "azimuth": 35,
+    "elevation": 22,
+    "min_silhouette_iou": 0.97,
+    "original_visually_reviewed": true
+  }
+}

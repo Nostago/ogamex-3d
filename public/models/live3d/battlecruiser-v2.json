@@ -1,0 +1,45 @@
+{
+  "name": "Schlachtkreuzer.glb",
+  "model_id": "battlecruiser",
+  "source_sha256": "bd5332e4be3e5dfeb0d947638b95475f818c4db6c884f9a6d1f7031df6e0a8bb",
+  "source_bytes": 38278052,
+  "source_triangles": 978747,
+  "output_bytes": 990092,
+  "output_triangles": 65000,
+  "vertex_count": 59847,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 10.01,
+  "previous_output_bytes": 3289656,
+  "previous_model_sha256": "f6ae665d2e4374107eea2acbb24cd75b487f406b4c891ef944257f9864e9b109",
+  "previous_output_triangles": 65000,
+  "geometry_repair_pending": false,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "battlecruiser",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.5042589902877808,
+        -0.13833465681235357,
+        -0.2396125961695948
+      ],
+      "max": [
+        0.5231614112854004,
+        0.38874859616915747,
+        0.28320633067238715
+      ]
+    },
+    "image": "/img/live3d/ships/battlecruiser-35-v3.webp"
+  }
+}

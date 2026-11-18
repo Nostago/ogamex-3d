@@ -4,10 +4,11 @@ import '../../css/orbital-command.css'
 import '../../css/live3d-messages.css'
 import { createMessageDialogs } from './messageDialogs.js'
 import { createSocialUi } from './socialUi.js'
+import { createWorkbench } from './workbench.js'
 import { createSceneHost } from './sceneHost.js'
 import { visualState, modelAliases } from './visualState.js'
 import { createLiveClient } from './client.js'
-import { formatDuration } from './duration.js'
+import { formatDuration, renderDuration } from './duration.js'
 import { renderDashboard } from './dashboard.js'
 import { createGalaxy } from './galaxy.js'
 import { createQuickFleet } from './quickFleet.js'
@@ -150,6 +151,7 @@ function objects() {
 function show(name, fromFrame = false, fleetTarget) {
     messageDialogs.hide()
     socialUi.hide()
+    workbench.hide()
     quickFleet.hide()
     planetName.hide()
     systemMap.hide()
@@ -340,7 +342,7 @@ function renderCatalog() {
         if (item.image) {
             const image = el(
                 'img',
-                modelAliases[item.key] || shipPreviewAssets[item.key]
+                item.type === 'ship' || modelAliases[item.key]
                     ? 'object-thumbnail model-thumbnail'
                     : 'object-thumbnail',
             )
@@ -611,12 +613,29 @@ function updateCountdowns() {
             Number(node.dataset.remaining) -
                 Math.floor((Date.now() - received) / 1000),
         )
-        node.textContent =
-            node.dataset.active === 'true'
+        let clock = node.querySelector('.order-countdown-clock')
+        if (!clock) {
+            const caption = el('span', 'order-countdown-status')
+            clock = el('span', 'order-countdown-clock')
+            node.classList.add('order-countdown')
+            node.replaceChildren(caption, clock)
+        }
+        const active = node.dataset.active === 'true',
+            remaining = active
                 ? left
-                    ? formatDuration(left, t)
+                : Math.max(0, Number(node.dataset.remaining)),
+            caption = node.querySelector('.order-countdown-status'),
+            label = active
+                ? remaining > 0
+                    ? ''
                     : t.processing
-                : `${t.queued} · ${Number(node.dataset.remaining) > 0 ? formatDuration(node.dataset.remaining, t) : t.op_duration_on_start}`
+                : remaining > 0
+                  ? t.queued
+                  : `${t.queued} · ${t.op_duration_on_start}`
+        if (caption.textContent !== label) caption.textContent = label
+        caption.hidden = !label
+        clock.hidden = remaining <= 0
+        if (remaining > 0) renderDuration(clock, remaining, t)
     }
 }
 function failure(error) {
@@ -746,6 +765,7 @@ frame.addEventListener('load', () => {
             onLoading: originalLoading,
             messages: messageDialogs,
             social: socialUi,
+            workbench,
         })
         clearTimeout(originalTimer)
         frame.dataset.ready = 'true'
@@ -770,7 +790,11 @@ frame.addEventListener('load', () => {
                     ? 'highscore'
                     : url.pathname.startsWith('/buddies')
                       ? 'buddies'
-                      : null
+                      : url.pathname.startsWith('/merchant')
+                        ? 'merchant'
+                        : url.pathname.includes('/notes')
+                          ? 'notes'
+                          : null
         if (area === 'fleets') {
             openFleet(url.href)
             return
@@ -957,6 +981,12 @@ const socialUi = createSocialUi({
         )
     },
 })
+const workbench = createWorkbench({
+    t: config.workT,
+    resourceNames: config.t,
+    planet: () => planet,
+    refresh,
+})
 const systemMap = createSystemMap({
     config,
     t,
@@ -1041,6 +1071,7 @@ window.addEventListener('pagehide', (event) => {
     quickFleet.dispose()
     messageDialogs.dispose()
     socialUi.dispose()
+    workbench.dispose()
     systemMap.dispose()
     galaxy.dispose()
     fleetMonitor.dispose()
@@ -1085,12 +1116,7 @@ function renderAreaTabs(area) {
                     [t.fleet_dispatch, '/fleet'],
                     [t.fleet_movements, '/fleet/movement'],
                 ]
-              : area === 'merchant'
-                ? [
-                      [t.merchant, '/merchant'],
-                      [t.resource_market, '/merchant/resource-market'],
-                  ]
-                : []
+              : []
     for (const [label, url] of links) {
         const button = el('button', '', label)
         button.addEventListener('click', () => {

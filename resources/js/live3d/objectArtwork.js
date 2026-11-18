@@ -52,9 +52,9 @@ export function createObjectArtwork(t) {
         disposed = false
     function fallback(item) {
         const asset = shipPreviewAssets[item.key]
-        if (!asset) return blueprint(item)
+        if (!asset || (!asset.image && !item.image)) return blueprint(item)
         const image = document.createElement('img')
-        image.src = asset.image
+        image.src = asset.image || item.image
         image.alt = item.name
         image.className = 'ship-preview-fallback'
         return image
@@ -84,8 +84,20 @@ export function createObjectArtwork(t) {
             'aria-label',
             `${item.name} · ${element.dataset.caption}`,
         )
-        const supported = modelAliases[item.key] || shipModelAliases[item.key]
+        const supported =
+            modelAliases[item.key] ||
+            shipModelAliases[item.key] ||
+            shipPreviewAssets[item.key]
         if (!supported || webglFailed) return element
+        // Preload just the selected ship immediately. The full renderer initializes
+        // concurrently; nothing waits for a click on the image.
+        if (shipPreviewAssets[item.key])
+            void import('./shipPreviewAsset.js')
+                .then(({ preloadShipPreview }) => {
+                    if (disposed || version !== generation) return null
+                    return preloadShipPreview(item.key)
+                })
+                .catch(() => {}) // The existing image remains as the fallback.
         loading ||= import('./objectPreview3d.js')
         loading
             .then(async ({ createObjectPreview }) => {
@@ -103,7 +115,10 @@ export function createObjectArtwork(t) {
                         )
                     }
                 } catch {
-                    /* Crisp vector view remains available if WebGL is unavailable. */
+                    // A failed model request must not disable other ships. A failed
+                    // renderer initialization, however, should not be retried on
+                    // every selection on a device without WebGL.
+                    if (!engine) webglFailed = true
                 }
             })
             .catch(() => {})

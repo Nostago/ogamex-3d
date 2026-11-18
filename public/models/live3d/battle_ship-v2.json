@@ -1,0 +1,45 @@
+{
+  "name": "Schlachtschiff.glb",
+  "model_id": "battle_ship",
+  "source_sha256": "f4f35cc8dbffe3d30d5081964695ec5e75cb5ed762f8dcc16f64094e4b927968",
+  "source_bytes": 29449312,
+  "source_triangles": 980240,
+  "output_bytes": 799004,
+  "output_triangles": 65000,
+  "vertex_count": 59850,
+  "texture_max_resolution": 1024,
+  "decimation_seconds": 9.92,
+  "previous_output_bytes": 2504336,
+  "previous_model_sha256": "e48a6f39586f55bb39193e1d7112f67d738752661507ef87bbe6ae8070db722b",
+  "previous_output_triangles": 65000,
+  "geometry_repair_pending": false,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "battle_ship",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.45688812505934395,
+        -0.04960584647307298,
+        -0.5031754970550537
+      ],
+      "max": [
+        0.2554719902250544,
+        0.6248234995389929,
+        0.6827763319015503
+      ]
+    },
+    "image": "/img/live3d/ships/battle_ship-35-v3.webp"
+  }
+}

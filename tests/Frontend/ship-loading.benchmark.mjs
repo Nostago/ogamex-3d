@@ -31,6 +31,9 @@ const browser = await chromium.launch({
         '--use-angle=swiftshader',
     ],
 })
+const keys = process.env.SHIP_MODEL_KEYS
+    ? process.env.SHIP_MODEL_KEYS.split(',')
+    : ['light_fighter', 'large_cargo', 'colony_ship', 'heavy_fighter']
 const results = []
 try {
     const context = await browser.newContext({
@@ -73,12 +76,7 @@ try {
         document.querySelector('#preview').append(window.preview.canvas)
         return performance.now() - t
     })
-    for (const key of [
-        'light_fighter',
-        'large_cargo',
-        'colony_ship',
-        'heavy_fighter',
-    ]) {
+    for (const key of keys) {
         const result = await page.evaluate(async (key) => {
             const t = performance.now()
             await window.preview.show({ key, type: 'ship', amount: 1 }, null)
@@ -104,14 +102,11 @@ try {
             .locator('#preview')
             .screenshot({ path: `${artifacts}/${label}-${key}.png` })
     }
-    const warmMs = await page.evaluate(async () => {
+    const warmMs = await page.evaluate(async (key) => {
         const t = performance.now()
-        await window.preview.show(
-            { key: 'light_fighter', type: 'ship', amount: 1 },
-            null,
-        )
+        await window.preview.show({ key, type: 'ship', amount: 1 }, null)
         return performance.now() - t
-    })
+    }, keys.at(-1))
     assert.deepEqual(errors, [])
     const out = {
         connection: `${mbits} Mbit/s, ${latency} ms latency; Chromium software WebGL`,

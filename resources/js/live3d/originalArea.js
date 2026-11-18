@@ -3,13 +3,14 @@ import embeddedCss from '../../css/live3d-embedded.css?inline'
 // Retain the original controllers/forms/scripts, replace their presentation shell.
 export function skinOriginalArea(
     frame,
-    { t, planet, refresh, openFleet, onLoading, messages, social },
+    { t, planet, refresh, openFleet, onLoading, messages, social, workbench },
 ) {
     const doc = frame.contentDocument
     if (!doc?.body) return
     applyFrameReadability(doc)
     messages?.attach(frame)
     social?.attach(frame)
+    workbench?.attach(frame)
     doc.addEventListener(
         'click',
         (event) => {

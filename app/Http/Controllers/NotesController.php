@@ -24,6 +24,9 @@ class NotesController extends OGameController
         $notesDeleted = false;
 
         if ($request->isMethod('post')) {
+            if ($request->attributes->get('live3d')) {
+                $request->validate(['noticeDeleteMethode' => ['required', 'in:1,2'], 'delIds' => ['required_if:noticeDeleteMethode,1', 'array', 'max:500'], 'delIds.*' => ['integer', 'min:1', 'distinct']]);
+            }
             $deleteMethod = $request->input('noticeDeleteMethode');
 
             if ($deleteMethod === "1") {
@@ -43,7 +46,7 @@ class NotesController extends OGameController
         }
 
         $data['notes'] = $noteService->getAllNotesForUser();
-        return view('ingame.notes.overlay', $data);
+        return view($request->attributes->get('live3d') ? 'live3d.notes' : 'ingame.notes.overlay', $data);
     }
 
     /**
@@ -60,9 +63,12 @@ class NotesController extends OGameController
         $noteId = $request->input('id');
         if ($noteId) {
             $note = $noteService->getNoteById($noteId);
+            if ($request->attributes->get('live3d')) {
+                abort_if($note === null, 404);
+            }
         }
 
-        return view('ingame.notes.create')->with([
+        return view($request->attributes->get('live3d') ? 'live3d.notes.editor' : 'ingame.notes.create')->with([
             'noteId' => $note ? $note->id : 0,
             'priority' => $note ? $note->priority : 2,
             'subject' => $note ? $note->subject : '',
@@ -97,7 +103,7 @@ class NotesController extends OGameController
         $data = [
             'priority' => $validated['noticePrio'] ?? 2,
             'subject' => $validated['noticeSubject'] ?? __('Your subject'),
-            'content' => $validated['noticeText'],
+            'content' => $validated['noticeText'] ?? '',
         ];
 
         try {
