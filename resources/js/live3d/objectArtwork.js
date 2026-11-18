@@ -84,7 +84,7 @@ export function createObjectArtwork(t) {
             'aria-label',
             `${item.name} · ${element.dataset.caption}`,
         )
-        const supported = modelAliases[item.key] || shipModelAliases[item.key]
+        const supported = modelAliases[item.key] || shipModelAliases[item.key] || shipPreviewAssets[item.key]
         if (!supported || webglFailed) return element
         // Preload just the selected ship immediately. The full renderer initializes
         // concurrently; nothing waits for a click on the image.
