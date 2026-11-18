@@ -24,6 +24,7 @@ use OGame\Http\Controllers\HighscoreController;
 use OGame\Http\Controllers\JumpGateController;
 use OGame\Http\Controllers\LanguageController;
 use OGame\Http\Controllers\Live3dAdminController;
+use OGame\Http\Controllers\Live3dBattleReplayController;
 use OGame\Http\Controllers\Live3dBotsController;
 use OGame\Http\Controllers\Live3dController;
 use OGame\Http\Controllers\Live3dFleetController;
@@ -83,6 +84,7 @@ Route::get('/ajax/main/contact', [RulesController::class, 'ajaxContact'])->name(
 // Group: all logged in pages:
 Route::middleware(['auth', 'banned', 'globalgame', 'locale', Live3dContext::class, 'firstlogin'])->group(function () {
     // Authenticated 3D interface: original backend, separate public demo.
+    Route::get('/play-3d/messages/{messageId}/battle-replay', [Live3dBattleReplayController::class, 'show'])->whereNumber('messageId')->name('live3d.battle-replay');
     Route::get('/play-3d', [Live3dController::class, 'index'])->name('live3d.index');
     Route::get('/play-3d/system-map', [Live3dSystemMapController::class, 'index'])->name('live3d.system-map');
     Route::get('/play-3d/galaxy', [Live3dController::class, 'galaxy'])->name('live3d.galaxy');

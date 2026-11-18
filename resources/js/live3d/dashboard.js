@@ -96,8 +96,8 @@ export function renderDashboard(state, t, el, number, navigate) {
             el('small', '', `${item.planetName} [${item.coordinates}]`),
         )
         const countdown = el('span')
-        countdown.dataset.remaining = item.remaining
-        countdown.dataset.active = String(active || kind === 'unit')
+        countdown.dataset.remaining = active ? item.remaining : item.seconds
+        countdown.dataset.active = String(active)
         button.append(countdown)
         if (active) {
             const progress = el('progress')

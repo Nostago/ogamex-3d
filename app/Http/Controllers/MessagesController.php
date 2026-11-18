@@ -144,6 +144,7 @@ class MessagesController extends OGameController
         return view($request->attributes->get('live3d') ? 'live3d.messages.detail' : 'ingame.messages.message')->with([
             'messageId' => $messageId,
             'messageBody' => $paginationData['message']->getBodyFull(),
+            'battleReplayUrl' => $paginationData['message']->getKey() === 'battle_report' ? route('live3d.battle-replay', ['messageId' => $messageId]) : null,
             'pagination' => $paginationData['pagination'],
         ]);
     }

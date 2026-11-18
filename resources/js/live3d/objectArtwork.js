@@ -44,6 +44,7 @@ export function createObjectArtwork(t) {
     element.className = 'object-artwork'
     element.tabIndex = 0
     let current,
+        currentJob = null,
         engine,
         loading,
         generation = 0,
@@ -60,7 +61,9 @@ export function createObjectArtwork(t) {
         return image
     }
     function set(item, job = null) {
-        const key = `${item.key}:${item.type === 'ship' ? 'ship' : Math.min(8, Number(item.amount))}:${job?.id || 'idle'}`
+        currentJob = job
+        // A queue transition changes the animation, not the uploaded ship geometry.
+        const key = `${item.key}:${item.type === 'ship' ? 'ship' : Math.min(8, Number(job?.target || item.amount))}`
         if (key === currentKey) {
             engine?.setJob(job)
             return element
@@ -104,8 +107,9 @@ export function createObjectArtwork(t) {
                 if (disposed || version !== generation) return
                 try {
                     engine ||= createObjectPreview(element)
-                    if (await engine.show(item, job)) {
+                    if (await engine.show(item, currentJob)) {
                         if (disposed || version !== generation) return
+                        engine.setJob(currentJob)
                         element.replaceChildren(engine.canvas, engine.progress)
                         element.dataset.artwork = '3d'
                         element.dataset.caption = t.object_preview

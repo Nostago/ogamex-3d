@@ -5,5 +5,6 @@
 @if($key === 'prevId')<span>{{ __('t_messageui.page_of', ['current'=>$pagination['currentIndex'],'total'=>$pagination['totalCount']]) }}</span>@endif
 @endforeach
 </nav>
+@if($battleReplayUrl ?? null)<section data-battle-replay><button type="button" data-battle-replay-url="{{ $battleReplayUrl }}">{{ __('t_battlereplay.open') }}</button></section>@endif
 <div class="live-report-body">{!! $messageBody !!}</div>
 </section>

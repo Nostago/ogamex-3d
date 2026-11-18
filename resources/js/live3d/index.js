@@ -3,6 +3,7 @@ import '../../css/live3d.css'
 import '../../css/orbital-command.css'
 import '../../css/live3d-messages.css'
 import '../../css/live3d-command.css'
+import '../../css/live3d-battle-replay.css'
 import { createMessageDialogs } from './messageDialogs.js'
 import { createSocialUi } from './socialUi.js'
 import { createWorkbench } from './workbench.js'
@@ -440,6 +441,12 @@ function renderCatalog() {
                 : null,
         ),
     )
+    if (
+        item.type === 'ship' &&
+        !activeJob &&
+        state.queues.unit.some((job) => job.objectId === item.id)
+    )
+        detail.append(el('p', 'unit-waiting-hint', t.unit_waiting_hint))
     detail.append(
         el('h2', '', item.name),
         el('p', '', item.description),
@@ -600,8 +607,18 @@ function renderQueues() {
                 ),
             )
             const time = el('span')
-            time.dataset.remaining = item.remaining
-            time.dataset.active = String(kind === 'unit' || item.active)
+            if (kind === 'unit') {
+                const badge = el(
+                    'strong',
+                    'unit-queue-state',
+                    item.active ? t.unit_active : t.unit_waiting,
+                )
+                badge.dataset.unitQueueActive = String(item.active)
+                row.append(badge)
+            }
+            time.dataset.remaining =
+                item.active === false ? item.seconds : item.remaining
+            time.dataset.active = String(item.active)
             row.append(time)
             if (kind !== 'unit') {
                 const cancel = el('button', '', t.cancel)
@@ -983,6 +1000,7 @@ const quickFleet = createQuickFleet({
 })
 const messageDialogs = createMessageDialogs({
     t: config.messageT,
+    replayT: config.replayT,
     refresh,
     planet: () => planet,
     objects: () => state.objects,

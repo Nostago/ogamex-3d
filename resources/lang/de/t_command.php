@@ -40,4 +40,7 @@ return [
     'event_animations' => 'Ereignisanimationen',
     'event_scope' => 'Abschlüsse und Berichte der letzten fünf Minuten; sichtbare Flotten mit Ankunft innerhalb einer Minute.',
     'event_level' => 'Stufe',
+    'unit_active' => 'Wird gebaut',
+    'unit_waiting' => 'Wartet',
+    'unit_waiting_hint' => 'Dieser Schiffstyp wartet noch. Die Bauanimation beginnt, sobald der Auftrag an der Reihe ist.',
 ];

@@ -40,4 +40,7 @@ return [
     'event_animations' => 'Event animations',
     'event_scope' => 'Completions and reports from the last five minutes; visible fleets arriving within one minute.',
     'event_level' => 'Level',
+    'unit_active' => 'Under construction',
+    'unit_waiting' => 'Waiting',
+    'unit_waiting_hint' => 'This unit type is queued. The construction animation begins when its order starts.',
 ];

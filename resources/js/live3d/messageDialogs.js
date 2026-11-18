@@ -1,6 +1,9 @@
+import { createBattleReplay } from './battleReplay.js'
+
 // The original message endpoints retain ownership, read-state and report logic.
 export function createMessageDialogs({
     t,
+    replayT,
     refresh,
     planet,
     openFleet,
@@ -28,6 +31,7 @@ export function createMessageDialogs({
     header.append(title, remove, close)
     dialog.append(header, notice, body)
     document.body.append(dialog)
+    let replay = null
     let frame = null,
         current = null,
         generation = 0,
@@ -36,6 +40,8 @@ export function createMessageDialogs({
         opener = null
     const csrf = () => document.querySelector('meta[name=csrf-token]').content
     function hide() {
+        replay?.dispose()
+        replay = null
         generation++
         controller?.abort()
         current = null
@@ -97,6 +103,8 @@ export function createMessageDialogs({
             !/^\/ajax\/messages\/\d+$/.test(target.pathname)
         )
             return
+        replay?.dispose()
+        replay = null
         frame = originatingFrame
         opener = source || opener
         controller?.abort()
@@ -128,6 +136,8 @@ export function createMessageDialogs({
             if (!content) throw new Error(t.error)
             current = Number(content.dataset.liveMessageId)
             body.replaceChildren(document.importNode(content, true))
+            const replayRoot = body.querySelector('[data-battle-replay]')
+            if (replayRoot) replay = createBattleReplay(replayRoot, replayT)
             notice.textContent = ''
             remove.disabled = false
             refresh()

@@ -1,6 +1,10 @@
 {
-  "_buildings-D5awy10x.js": {
-    "file": "assets/buildings-D5awy10x.js",
+  "_battleTimeline-CNzzqA_-.js": {
+    "file": "assets/battleTimeline-CNzzqA_-.js",
+    "name": "battleTimeline"
+  },
+  "_buildings-CxsKHtfD.js": {
+    "file": "assets/buildings-CxsKHtfD.js",
     "name": "buildings",
     "imports": [
       "_three.module.min-BMGZatoA.js"
@@ -10,13 +14,9 @@
     "file": "assets/catalog-CT4oIouG.js",
     "name": "catalog"
   },
-  "_duration-BAa2BJgA.js": {
-    "file": "assets/duration-BAa2BJgA.js",
-    "name": "duration",
-    "imports": [
-      "_catalog-CT4oIouG.js",
-      "_layout-SWFQj27H.js"
-    ]
+  "_duration-BzCB2t9r.js": {
+    "file": "assets/duration-BzCB2t9r.js",
+    "name": "duration"
   },
   "_layout-SWFQj27H.js": {
     "file": "assets/layout-SWFQj27H.js",
@@ -40,13 +40,14 @@
     "file": "assets/prototype3d-BC_hx_BB.css",
     "src": "_prototype3d-BC_hx_BB.css"
   },
-  "_scene-BzWJBtBY.js": {
-    "file": "assets/scene-BzWJBtBY.js",
+  "_scene-uv_yZB_-.js": {
+    "file": "assets/scene-uv_yZB_-.js",
     "name": "scene",
     "imports": [
       "_three.module.min-BMGZatoA.js",
       "_materials-C1ud4vMJ.js",
-      "_buildings-D5awy10x.js",
+      "_shipVariants-CXmNUZ-T.js",
+      "_buildings-CxsKHtfD.js",
       "_layout-SWFQj27H.js"
     ]
   },
@@ -62,9 +63,24 @@
       "_shipAssets-DLVbWHH-.js"
     ]
   },
+  "_shipVariants-CXmNUZ-T.js": {
+    "file": "assets/shipVariants-CXmNUZ-T.js",
+    "name": "shipVariants",
+    "imports": [
+      "_three.module.min-BMGZatoA.js"
+    ]
+  },
   "_three.module.min-BMGZatoA.js": {
     "file": "assets/three.module.min-BMGZatoA.js",
     "name": "three.module.min"
+  },
+  "_visualState-Cfn7mZsx.js": {
+    "file": "assets/visualState-Cfn7mZsx.js",
+    "name": "visualState",
+    "imports": [
+      "_layout-SWFQj27H.js",
+      "_catalog-CT4oIouG.js"
+    ]
   },
   "resources/css/ingame.css": {
     "file": "assets/ingame-C9U8U3hi.css",
@@ -93,6 +109,22 @@
     "src": "resources/css/outgame.css",
     "isEntry": true
   },
+  "resources/js/live3d/battleReplay3d.js": {
+    "file": "assets/battleReplay3d-BuiK7tuJ.js",
+    "name": "battleReplay3d",
+    "src": "resources/js/live3d/battleReplay3d.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_three.module.min-BMGZatoA.js",
+      "_materials-C1ud4vMJ.js",
+      "_buildings-CxsKHtfD.js",
+      "_visualState-Cfn7mZsx.js",
+      "_shipAssets-DLVbWHH-.js",
+      "_shipPreviewAsset-Bx8_IaOG.js",
+      "_modelCamera-VG8Ef8AM.js",
+      "_battleTimeline-CNzzqA_-.js"
+    ]
+  },
   "resources/js/live3d/fleetFormation3d.js": {
     "file": "assets/fleetFormation3d-93dKLT-q.js",
     "name": "fleetFormation3d",
@@ -106,36 +138,41 @@
     ]
   },
   "resources/js/live3d/index.js": {
-    "file": "assets/index-B6_P9i-y.js",
+    "file": "assets/index-C-CPjnax.js",
     "name": "index",
     "src": "resources/js/live3d/index.js",
     "isEntry": true,
     "imports": [
-      "_duration-BAa2BJgA.js",
+      "_battleTimeline-CNzzqA_-.js",
+      "_duration-BzCB2t9r.js",
+      "_visualState-Cfn7mZsx.js",
       "_shipAssets-DLVbWHH-.js"
     ],
     "dynamicImports": [
+      "resources/js/live3d/battleReplay3d.js",
       "resources/js/prototype3d/scene.js",
       "resources/js/live3d/fleetFormation3d.js",
       "resources/js/live3d/shipPreviewAsset.js",
       "resources/js/live3d/objectPreview3d.js"
     ],
     "css": [
-      "assets/index-C6EXHv5X.css",
+      "assets/index-CwtVhRCa.css",
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },
   "resources/js/live3d/objectPreview3d.js": {
-    "file": "assets/objectPreview3d-B0n1dRF1.js",
+    "file": "assets/objectPreview3d-B35F2ecu.js",
     "name": "objectPreview3d",
     "src": "resources/js/live3d/objectPreview3d.js",
     "isDynamicEntry": true,
     "imports": [
-      "_duration-BAa2BJgA.js",
+      "_duration-BzCB2t9r.js",
       "_three.module.min-BMGZatoA.js",
       "_materials-C1ud4vMJ.js",
-      "_buildings-D5awy10x.js",
+      "_buildings-CxsKHtfD.js",
+      "_shipVariants-CXmNUZ-T.js",
       "_modelCamera-VG8Ef8AM.js",
+      "_visualState-Cfn7mZsx.js",
       "_shipAssets-DLVbWHH-.js"
     ],
     "dynamicImports": [
@@ -152,27 +189,27 @@
     ]
   },
   "resources/js/prototype3d/index.js": {
-    "file": "assets/index-C_LLaHk8.js",
+    "file": "assets/index-B_P4M9WM.js",
     "name": "index",
     "src": "resources/js/prototype3d/index.js",
     "isEntry": true,
     "imports": [
       "_catalog-CT4oIouG.js",
       "_layout-SWFQj27H.js",
-      "_buildings-D5awy10x.js",
-      "_scene-BzWJBtBY.js"
+      "_shipVariants-CXmNUZ-T.js",
+      "_scene-uv_yZB_-.js"
     ],
     "css": [
       "assets/prototype3d-BC_hx_BB.css"
     ]
   },
   "resources/js/prototype3d/scene.js": {
-    "file": "assets/scene-BlE-cmwc.js",
+    "file": "assets/scene-CRNmAGc0.js",
     "name": "scene",
     "src": "resources/js/prototype3d/scene.js",
     "isDynamicEntry": true,
     "imports": [
-      "_scene-BzWJBtBY.js"
+      "_scene-uv_yZB_-.js"
     ]
   },
   "resources/js/ingame.js": {

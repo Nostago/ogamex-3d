@@ -103,7 +103,9 @@ export function renderEmpire(host, worlds, { t, el, number, navigate }) {
                 row.type = 'button'
                 row.dataset.empireOrder = key
                 const clock = el('span')
-                clock.dataset.remaining = order.remaining
+                clock.dataset.remaining = order.active
+                    ? order.remaining
+                    : order.seconds
                 renderDuration(clock, order.remaining, t)
                 row.append(el('strong'), el('small'), clock)
                 orders.append(row)
@@ -112,8 +114,10 @@ export function renderEmpire(host, worlds, { t, el, number, navigate }) {
             row.querySelector('small').textContent =
                 `${order.active ? t.active_order : t.planned_order}${order.quantity ? ' · ' + number(order.quantity) : ' · ' + t.level + ' ' + order.target}`
             const clock = row.lastElementChild
-            clock.dataset.remaining = order.remaining
-            clock.dataset.active = String(order.active || order.kind === 'unit')
+            clock.dataset.remaining = order.active
+                ? order.remaining
+                : order.seconds
+            clock.dataset.active = String(order.active)
             row.onclick = () =>
                 navigate(
                     order.kind === 'research'

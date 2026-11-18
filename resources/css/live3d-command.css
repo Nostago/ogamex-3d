@@ -45,3 +45,6 @@
 .empire-resource[data-storage-state='full'] progress::-webkit-progress-value { background:#ff9b9b; }
 .empire-resource[data-storage-state='warning'] progress::-moz-progress-bar { background:#ffd178; }
 .empire-resource[data-storage-state='full'] progress::-moz-progress-bar { background:#ff9b9b; }
+.unit-queue-state { padding:5px 10px; border:1px solid #809aad; border-radius:5px; color:#d4e5ed; }
+.unit-queue-state[data-unit-queue-active='true'] { border-color:#68e4b2; background:#153b37; color:#b7ffdb; }
+.unit-waiting-hint { padding:12px; border-left:3px solid #f8d287; background:#283130; color:#ffedbe; }

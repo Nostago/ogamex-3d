@@ -92,9 +92,10 @@ class Live3dViewService
                 'research' => array_map(fn (ResearchQueueViewModel $item): array => [
                     'id' => $item->id, 'objectId' => $item->object->id, 'name' => $item->object->title, 'remaining' => $item->time_countdown, 'seconds' => $item->time_total, 'active' => $item->building, 'target' => $item->level_target, 'planet' => $item->planet->getPlanetId(),
                 ], $researchQueue->queue),
-                'unit' => array_map(fn (UnitQueueViewModel $item): array => [
+                'unit' => array_map(fn (UnitQueueViewModel $item, int $index): array => [
+                    'active' => $index === 0,
                     'id' => $item->id, 'objectId' => $item->object->id, 'name' => $item->object->title, 'remaining' => $item->time_countdown, 'seconds' => $item->time_total, 'quantity' => (string)$item->object_amount_remaining, 'unitSeconds' => $item->time_countdown_per_object, 'nextRemaining' => $item->time_countdown_object_next,
-                ], $unitQueue->queue),
+                ], $unitQueue->queue, array_keys($unitQueue->queue)),
             ],
         ];
     }
