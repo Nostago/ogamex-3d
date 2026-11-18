@@ -2,7 +2,7 @@
 
 return [
     'bots_title' => 'Autonomous bots',
-    'bots_intro' => 'NPCs use original building, research, shipbuilding, espionage, raid and fleet-save rules. Raids target other NPCs by default; inactive human targets are a separate option. Decisions run without an open browser.',
+    'bots_intro' => 'NPCs use original building, research, shipbuilding, espionage, raid and fleet-save rules. With raiding enabled, balanced and explorer bots build combat ships earlier and check targets every second decision. Clearly weaker guarded targets require a sufficiently complete espionage report in their own inbox. Raids target other NPCs by default; inactive human targets are a separate option. Decisions run without an open browser.',
     'bots_create' => 'Create bot',
     'bots_name' => 'Name (unique)',
     'bots_profile' => 'Behaviour',

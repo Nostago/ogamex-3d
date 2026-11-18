@@ -3,7 +3,7 @@
 // AI-TRANSLATED: verify against original OGame text
 return [
     'bots_title' => 'Autonome Bots',
-    'bots_intro' => 'NPCs nutzen die Originalregeln für Bau, Forschung, Schiffsproduktion, Spionage, Raids und Flottensicherung. Raids zielen standardmäßig auf andere Bots; inaktive menschliche Spieler sind separat zuschaltbar. Die Entscheidungen laufen auch ohne geöffneten Browser.',
+    'bots_intro' => 'NPCs nutzen die Originalregeln für Bau, Forschung, Schiffsproduktion, Spionage, Raids und Flottensicherung. Mit aktiven Raids bauen ausgewogene Bots und Entdecker früher Kampfschiffe und prüfen alle zwei Entscheidungen ein Ziel. Deutlich schwächere bewachte Ziele werden nur nach einem ausreichend vollständigen eigenen Spionagebericht angegriffen. Raids zielen standardmäßig auf andere Bots; inaktive menschliche Spieler sind separat zuschaltbar. Die Entscheidungen laufen auch ohne geöffneten Browser.',
     'bots_create' => 'Neuen Bot erstellen',
     'bots_name' => 'Name (frei wählbar, eindeutig)',
     'bots_profile' => 'Verhalten',

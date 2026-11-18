@@ -137,7 +137,7 @@ class Live3dBotOperationsTest extends IsolatedAccountTestCase
     public function testRaidingUsesOnlyOwnedReportsAndOriginalScoutAndAttackMissions(): void
     {
         $this->travelTo(Date::createFromTimestamp(time()));
-        $bot = AutonomousBot::create(['user_id' => $this->currentUserId, ...$this->botOptions(), 'cycles' => 3, 'auto_raid' => true]);
+        $bot = AutonomousBot::create(['user_id' => $this->currentUserId, ...$this->botOptions(), 'cycles' => 1, 'auto_raid' => true]);
         $target = $this->createForeignPlanet();
         $owner = $target->getPlayer();
         $this->assertNotNull($owner);
@@ -171,7 +171,8 @@ class Live3dBotOperationsTest extends IsolatedAccountTestCase
         $message->save();
         // The latest real report is authoritative; the target is undefended in this fixture.
         $bot->refresh();
-        $bot->cycles = 11;
+        // Every second decision checks raids; decision six rotates back to the first world.
+        $bot->cycles = 5;
         $bot->save();
         $this->assertSame(1, $service->tickDue(1, $bot->id, true));
         $this->assertDatabaseHas('autonomous_bots', ['id' => $bot->id, 'last_action' => 'raid']);

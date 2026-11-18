@@ -114,12 +114,27 @@ class AutonomousBotFleetService
                 continue;
             }
             $target = $targetPlanet->getPlanetCoordinates();
+            // Bound repeated raids by this NPC, including successful outbound
+            // legs whose returning fleet has already landed.
+            $recentAttacks = FleetMission::where('user_id', $player->getId())->where('planet_id_to', $targetRow->id)
+                ->whereNull('parent_id')->whereIn('mission_type', [1, 2])->where('canceled', 0)
+                ->where('time_departure', '>=', (int)Date::now()->timestamp - 86400);
+            if ((clone $recentAttacks)->count() >= 6 || (clone $recentAttacks)->where('time_departure', '>=', (int)Date::now()->timestamp - 1800)->exists()) {
+                continue;
+            }
             $report = EspionageReport::where('planet_galaxy', $source->galaxy)->where('planet_system', $target->system)->where('planet_position', $target->position)
                 ->where('planet_type', 1)->where('planet_user_id', $owner->getId())->where('created_at', '>=', Date::now()->subMinutes(30))
                 ->whereIn('id', Message::select('espionage_report_id')->where('user_id', $player->getId())->where('key', 'espionage_report'))->latest('id')->first();
             $units = new UnitCollection();
-            if ($report === null) {
-                $probes = min(3, $planet->getObjectAmount('espionage_probe'));
+            $knownForces = $report !== null && is_array($report->ships) && is_array($report->defense);
+            $armed = $knownForces && (array_sum($report->ships) > 0 || array_sum($report->defense) > 0);
+            if (!$knownForces || ($armed && !is_array($report?->research))) {
+                // Eight probes can reveal research at equal espionage levels.
+                // Incomplete reports may be refreshed, but not on every tick.
+                if ($report !== null && $report->created_at?->isAfter(Date::now()->subMinutes(5))) {
+                    continue;
+                }
+                $probes = min(8, $planet->getObjectAmount('espionage_probe'));
                 if ($probes > 0) {
                     $units->addUnit(ObjectService::getShipObjectByMachineName('espionage_probe'), $probes);
                     if ($this->dispatch($bot, $player, $planet, $target, PlanetType::Planet, 6, $units, 'scout')) {
@@ -128,8 +143,9 @@ class AutonomousBotFleetService
                 }
                 continue;
             }
-            // Unknown forces are never treated as zero. No live enemy inventories are inspected.
-            if (!is_array($report->getAttribute('ships')) || !is_array($report->getAttribute('defense')) || array_sum($report->ships) > 0 || array_sum($report->defense) > 0 || array_sum($report->resources) < 1000) {
+            // Energy is not loot. Unknown forces are never treated as zero and
+            // no live enemy inventories or technologies are inspected.
+            if ($report === null || ($armed && $bot->profile === 'economy') || array_sum(array_intersect_key($report->resources ?? [], array_flip(['metal', 'crystal', 'deuterium']))) < 1000) {
                 continue;
             }
             foreach (['small_cargo', 'large_cargo'] as $key) {
@@ -138,11 +154,69 @@ class AutonomousBotFleetService
                     $units->addUnit(ObjectService::getShipObjectByMachineName($key), $amount);
                 }
             }
-            if ($units->getAmount() > 0 && $this->dispatch($bot, $player, $planet, $target, PlanetType::Planet, 1, $units, 'raid')) {
+            foreach (ObjectService::getMilitaryShipObjects() as $ship) {
+                $amount = min(3 * $bot->batch_size, $planet->getObjectAmount($ship->machine_name));
+                if ($amount > 0) {
+                    $units->addUnit($ship, $amount);
+                }
+            }
+            if ($units->getAmount() > 0 && (!$armed || $this->clearlyStronger($player, $units, $report)) && $this->dispatch($bot, $player, $planet, $target, PlanetType::Planet, 1, $units, 'raid')) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Conservative target selection, not a battle simulation or a guaranteed outcome. */
+    private function clearlyStronger(PlayerService $player, UnitCollection $units, EspionageReport $report): bool
+    {
+        if (!is_array($report->research) || !is_array($report->ships) || !is_array($report->defense)) {
+            return false;
+        }
+        $power = 0;
+        $durability = 0;
+        $strongestShot = 0;
+        foreach ($units->units as $unit) {
+            $properties = $unit->unitObject->properties;
+            $attack = $properties->attack->calculate($player)->totalValue;
+            $power += $attack * $unit->amount;
+            $durability += ($properties->structural_integrity->calculate($player)->totalValue / 10 + $properties->shield->calculate($player)->totalValue) * $unit->amount;
+            $strongestShot = max($strongestShot, $attack);
+        }
+        $catalog = [];
+        foreach (ObjectService::getUnitObjects() as $object) {
+            $catalog[$object->machine_name] = $object;
+        }
+        $enemyPower = 0;
+        $enemyDurability = 0;
+        $strongestShield = 0;
+        foreach (array_merge($report->ships, $report->defense) as $key => $amount) {
+            if (!is_numeric($amount) || (float)$amount < 0 || !is_finite((float)$amount) || (!isset($catalog[$key]) && (int)$amount > 0)) {
+                return false;
+            }
+            if ((int)$amount === 0) {
+                continue;
+            }
+            $properties = $catalog[$key]->properties;
+            $stats = [];
+            foreach (['attack' => 'weapon_technology', 'shield' => 'shielding_technology', 'structural_integrity' => 'armor_technology'] as $property => $research) {
+                $level = $report->research[$research] ?? 0;
+                if (!is_numeric($level) || (float)$level < 0 || !is_finite((float)$level)) {
+                    return false;
+                }
+                // Same raw properties and 10%-per-level formula as OGameX;
+                // only the NPC's retained report supplies the opposing levels.
+                $raw = $properties->{$property}->rawValue;
+                $stats[$property] = $raw + intdiv($raw * (int)$level, 10);
+            }
+            $enemyPower += $stats['attack'] * (int)$amount;
+            $enemyDurability += ($stats['structural_integrity'] / 10 + $stats['shield']) * (int)$amount;
+            $strongestShield = max($strongestShield, $stats['shield']);
+        }
+        // Require an ample margin in both damage and durability, and a shot
+        // that can penetrate the largest known shield. Rapid fire and random
+        // combat effects remain solely the original battle engine's decision.
+        return $power > 0 && $power >= 3 * $enemyPower && $durability >= 3 * $enemyDurability && $strongestShot > $strongestShield;
     }
 
     private function missions(PlayerService $player): FleetMissionService

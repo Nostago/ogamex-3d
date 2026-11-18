@@ -148,14 +148,17 @@ class AutonomousBotService
         if ($worlds === []) {
             return;
         }
-        // Round-robin owned colonies; never operate on a human player's planet.
-        $planet = $worlds[($bot->cycles - 1) % count($worlds)];
+        $offensive = $bot->auto_raid && $bot->profile !== 'economy';
+        // Rotate each strategy turn across colonies as well, so a four-turn
+        // strategy cannot reserve all economy turns for the same colony.
+        $decisionWorld = $offensive ? intdiv($bot->cycles - 1, 4) + ($bot->cycles - 1) % 4 : $bot->cycles - 1;
+        $planet = $worlds[$decisionWorld % count($worlds)];
         $player->setCurrentPlanetId($planet->getPlanetId());
         $planet->update();
-        if ($bot->cycles % 4 === 0) {
-            // Rotate military checks separately so a four-cycle cadence cannot skip
-            // every other colony of an account with two or four worlds.
-            $raidPlanet = $worlds[(intdiv($bot->cycles, 4) - 1) % count($worlds)];
+        $raidEvery = $offensive ? 2 : 4;
+        if ($bot->cycles % $raidEvery === 0) {
+            // Rotate raid worlds separately from the ordinary decision world.
+            $raidPlanet = $worlds[(intdiv($bot->cycles, $raidEvery) - 1) % count($worlds)];
             $player->setCurrentPlanetId($raidPlanet->getPlanetId());
             $raidPlanet->update();
             if ($fleets->raid($bot, $player, $raidPlanet)) {
@@ -173,14 +176,23 @@ class AutonomousBotService
             usort($economy, fn (string $left, string $right): int => $planet->getObjectLevel($left) <=> $planet->getObjectLevel($right));
         }
         $research = ['energy_technology' => 3, 'combustion_drive' => 6, 'computer_technology' => 4, 'espionage_technology' => 4, 'impulse_drive' => 3, 'astrophysics' => 3, 'weapon_technology' => 3, 'shielding_technology' => 3, 'armor_technology' => 3];
-        // Every third cycle pursues research/shipyard prerequisites instead of spending all income on mines.
-        if ($bot->cycles % 3 === 0) {
+        if ($offensive) {
+            // Two fleet turns, one economy turn and one research turn. Keep an
+            // income-building turn even while a complete fleet is affordable.
+            if (in_array($bot->cycles % 4, [1, 2], true) && $this->military($bot, $player, $planet)) {
+                return;
+            }
+            $research = ['computer_technology' => 2, 'weapon_technology' => 3, 'armor_technology' => 3,
+                'shielding_technology' => 3, 'impulse_drive' => 4, 'laser_technology' => 3,
+                'ion_technology' => 2, 'espionage_technology' => 4, 'combustion_drive' => 6, 'astrophysics' => 3];
+        }
+        if ($offensive ? $bot->cycles % 4 === 0 : $bot->cycles % 3 === 0) {
             foreach ($research as $key => $level) {
                 if ($player->getResearchLevel($key) < min($level, $bot->max_level) && $this->pursue($bot, $player, $planet, $key)) {
                     return;
                 }
             }
-            foreach (['small_cargo', 'light_fighter', 'espionage_probe'] as $key) {
+            foreach ($offensive ? [] : ['small_cargo', 'light_fighter', 'espionage_probe'] as $key) {
                 if ($planet->getObjectAmount($key) < $bot->ship_limit && $this->pursue($bot, $player, $planet, $key)) {
                     return;
                 }
@@ -193,7 +205,30 @@ class AutonomousBotService
         }
     }
 
-    private function pursue(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0): bool
+    private function military(AutonomousBot $bot, PlayerService $player, PlanetService $planet): bool
+    {
+        if (!$bot->auto_shipbuilding || $bot->ship_limit < 1) {
+            return false;
+        }
+        $inventory = resolve(Live3dShipInventory::class)->forPlanet($player, $planet);
+        // Reach an operational force before pursuing expensive optional research
+        // or filling the entire transporter stock target.
+        foreach (['light_fighter' => 20, 'small_cargo' => 5, 'espionage_probe' => 8] as $key => $target) {
+            if ((int)$inventory[$key]['total'] < min($target, $bot->ship_limit) && $this->pursue($bot, $player, $planet, $key, 0, $target)) {
+                return true;
+            }
+        }
+        // Prefer stronger ships once ordinary research has unlocked them. Do not
+        // delay the first fighters to develop cruisers from scratch.
+        foreach (['cruiser', 'heavy_fighter', 'light_fighter'] as $key) {
+            if ((int)$inventory[$key]['total'] < $bot->ship_limit && ObjectService::objectRequirementsMet($key, $planet) && $this->pursue($bot, $player, $planet, $key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function pursue(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0, int|null $unitTarget = null): bool
     {
         if ($depth > 12) {
             return false;
@@ -227,7 +262,11 @@ class AutonomousBotService
             if (!$bot->auto_shipbuilding || $queue->retrieveQueue($planet)->queue !== []) {
                 return false;
             }
-            $amount = min($bot->batch_size, $bot->ship_limit - $planet->getObjectAmount($key), ObjectService::getObjectMaxBuildAmount($key, $planet, true));
+            // Ships in flight also count toward the per-world stock target.
+            $stock = $object->type === GameObjectType::Ship
+                ? (int)resolve(Live3dShipInventory::class)->forPlanet($player, $planet)[$key]['total']
+                : $planet->getObjectAmount($key);
+            $amount = min($bot->batch_size, min($bot->ship_limit, $unitTarget ?? $bot->ship_limit) - $stock, ObjectService::getObjectMaxBuildAmount($key, $planet, true));
             if ($amount < 1) {
                 return false;
             }
