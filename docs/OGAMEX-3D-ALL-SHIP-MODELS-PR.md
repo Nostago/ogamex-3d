@@ -1,6 +1,8 @@
-**Qualitätskorrektur noch offen:** Solarsatellit, Crawler, Bomber, Reaper und kleiner Transporter zeigen Geometrieschäden in den gelieferten reduzierten Dateien. Für die Neuaufbereitung fehlen die ursprünglichen GLBs. Alle 13 neuen GLBs sind inzwischen um insgesamt 69 % kleiner, ohne weitere Dreiecksreduktion; Spionagesonde und Pathfinder haben größere Miniaturen. Details und Messungen: [Qualitätsstand](docs/OGAMEX-3D-SHIP-QUALITY.md).
+**Crawler und Bomber sind aus den neu bereitgestellten Originalen neu reduziert und als v3 eingebunden.** Keine herausragenden Flächen; vollständige, deutlich größere Miniaturen. Beide GLBs bleiben unter 1 MB. Originalvergleich und Regressionstests: [Neuaufbereitung](docs/OGAMEX-3D-SHIP-REPAIR.md).
 
-Die Schiffsdetailseiten zeigen alle 17 Upload-Modelle automatisch beim Öffnen bzw. Auswählen eines Schiffes, ohne Bildklick. Die 13 zusätzlichen GLBs, WebP-Vorschaubilder und JSON-Berichte sind vollständig enthalten; ihre Modelldateien belegen nach der Kompression zusammen 10,31 MiB. Die bisherigen vier Modelle und Bilder sind per SHA-256 unverändert.
+**Noch offen:** Solarsatellit, Reaper und kleiner Transporter. Ihre Originaluploads überschreiten die 32-MiB-Transfergrenze der Arbeitsumgebung; benötigt werden ZIP-/Teilarchive.
+
+Die Schiffsdetailseiten zeigen alle 17 Upload-Modelle automatisch beim Öffnen bzw. Auswählen eines Schiffes, ohne Bildklick. Die 13 zusätzlichen GLBs, WebP-Vorschaubilder und JSON-Berichte sind vollständig enthalten; ihre Modelldateien belegen nach der Kompression zusammen 10,23 MiB. Die bisherigen vier Modelle und Bilder sind per SHA-256 unverändert.
 
 Der Modelllader behebt einen `ReferenceError`, schützt schnelle Auswahlwechsel und begrenzt den Cache auf vier dekodierte Modelle. Während des Ladens und bei WebGL-Ausfall bleibt das passende Bild sichtbar. Alle 17 Thumbnail-Zuordnungen sind auch serverseitig registriert; Bildlisten lösen keine GLB-Downloads aus.
 

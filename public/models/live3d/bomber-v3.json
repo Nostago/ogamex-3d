@@ -1,0 +1,87 @@
+{
+  "name": "Bomber.glb",
+  "model_id": "bomber",
+  "source_sha256": "0afdd5d3835dd08d6390754e630e3baf74642eb6b00688bfa08934cefb59d04f",
+  "source_bytes": 29466548,
+  "source_triangles": 962528,
+  "output_triangles": 65000,
+  "source_bounds_gltf": {
+    "min": [
+      -0.32952880859375,
+      0.0,
+      -0.5
+    ],
+    "max": [
+      0.32952880859375,
+      0.3782654106616974,
+      0.5
+    ]
+  },
+  "reduced_bounds_gltf": {
+    "min": [
+      -0.3294060528278351,
+      -0.0009790444746613503,
+      -0.4998513162136078
+    ],
+    "max": [
+      0.3298415243625641,
+      0.3780566155910492,
+      0.5001792311668396
+    ]
+  },
+  "texture_max_resolution": 1024,
+  "geometry_repair_pending": false,
+  "reduction": "Blender DECIMATE with original UV/normal attributes; no manual vertex-index remapping",
+  "surface_check": {
+    "source_extent": 1.0,
+    "sample_count": 4339,
+    "max_boundary_error": 0.0009790444746613503,
+    "nearest_original_vertex_p99": 0.001805447032675147,
+    "nearest_original_vertex_max": 0.002641216618940234
+  },
+  "previous_output_bytes": 3634348,
+  "previous_output_triangles": 65000,
+  "previous_model_sha256": "22483da4c2cf7c3a070a231b097109d95ef6ef5f7c7a09f7fd8b4a82aa2f2889",
+  "replaced_model_sha256": "bb2c9560ee9b40fadf72e8365e2c873be95762b965d3b13f9f09a74546bcd64e",
+  "output_bytes": 876988,
+  "vertex_count": 56453,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "bomber",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.3294227544287539,
+        -0.001002207346443934,
+        -0.4998513162136078
+      ],
+      "max": [
+        0.3298582259634829,
+        0.3780797784628318,
+        0.5001792311668396
+      ]
+    },
+    "image": "/img/live3d/ships/bomber-35-v3.webp"
+  },
+  "source_comparison": {
+    "silhouette_iou": 0.9964274249025453,
+    "render_width": 1024,
+    "render_height": 768,
+    "azimuth": 35,
+    "elevation": 22,
+    "min_silhouette_iou": 0.97,
+    "original_visually_reviewed": true
+  },
+  "output_sha256": "8e6ec005f19b2b7fcd9a58381196740e3651316b4c535a4231fcd2d29482baa6"
+}

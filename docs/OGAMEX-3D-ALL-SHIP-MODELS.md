@@ -2,7 +2,7 @@
 
 ## Aktuelle Qualitätskorrektur
 
-Die technische Integration ist vorhanden, aber **fünf Modelle benötigen eine erneute Aufbereitung aus den fehlenden Original-GLBs**: Solarsatellit, Crawler, Bomber, Reaper und kleiner Transporter. Die später gemeldeten Geometriespitzen waren durch die bisherigen Format-/Ladetests nicht abgesichert. Alle 13 neuen GLBs sind inzwischen ohne weitere Dreiecksreduktion um insgesamt 69 % komprimiert; Spionagesonde und Pathfinder besitzen größere, neu gerenderte Miniaturen. Stand, offene Punkte und gemessene Ladezeiten: [Qualitätskorrektur](OGAMEX-3D-SHIP-QUALITY.md).
+Die technische Integration ist vorhanden. **Crawler und Bomber sind aus den neu übertragenen Originalen repariert und besitzen größere, vollständige v3-Miniaturen.** Spionagesonde und Pathfinder haben bereits größere v2-Miniaturen. Die ebenfalls hochgeladenen Originale von Solarsatellit, Reaper und kleinem Transporter überschreiten die 32-MiB-Transfergrenze und benötigen ZIP-/Teilarchive. Für diese drei bleibt die Reparatur offen. Details: [Neuaufbereitung und Bildausschnitt](OGAMEX-3D-SHIP-REPAIR.md); frühere Ladezeitmessungen: [Kompression](OGAMEX-3D-SHIP-QUALITY.md).
 
 Die nachfolgenden Angaben dokumentieren die ursprüngliche Integration; aktuelle Dateipfade stehen in `shipAssets.js` und `Live3dArtworkService.php`.
 

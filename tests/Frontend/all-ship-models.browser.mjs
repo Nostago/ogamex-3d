@@ -138,7 +138,9 @@ try {
         await stat(path.join(repo, 'public', shipPreviewAssets[key].model))
         await page.locator(`[data-ship=${key}]`).click()
         await ready(key)
-        if (['espionage_probe', 'pathfinder'].includes(key)) {
+        if (
+            ['espionage_probe', 'pathfinder', 'bomber', 'crawler'].includes(key)
+        ) {
             const portrait = await page.evaluate(async (url) => {
                 const image = new Image()
                 image.src = url
@@ -182,7 +184,10 @@ try {
                 portrait.right - portrait.left > 512 * 0.8,
                 `${key}: hull must fill the thumbnail`,
             )
-            assert.ok(portrait.bottom - portrait.top > 384 * 0.7)
+            assert.ok(
+                portrait.bottom - portrait.top >
+                    384 * (key === 'bomber' ? 0.4 : 0.7),
+            )
             assert.ok(
                 portrait.left > 2 &&
                     portrait.top > 2 &&
@@ -190,6 +195,51 @@ try {
                     portrait.bottom < 382,
                 `${key}: keep every edge inside the portrait`,
             )
+        }
+        if (['bomber', 'crawler'].includes(key)) {
+            const result = await page.evaluate(async (asset) => {
+                const THREE = await import(
+                        '/resources/js/prototype3d/vendor/three.module.min.js'
+                    ),
+                    { GLTFLoader } = await import(
+                        '/resources/js/prototype3d/vendor/loaders/GLTFLoader.js'
+                    ),
+                    { MeshoptDecoder } = await import(
+                        '/resources/js/prototype3d/vendor/meshopt/meshopt_decoder.mjs'
+                    ),
+                    { disposeShipPreview } = await import(
+                        '/resources/js/live3d/shipPreviewAsset.js'
+                    ),
+                    report = await (
+                        await fetch(asset.model.replace('.glb', '.json'))
+                    ).json(),
+                    model = (
+                        await new GLTFLoader()
+                            .setMeshoptDecoder(MeshoptDecoder)
+                            .loadAsync(asset.model)
+                    ).scene,
+                    bounds = new THREE.Box3().setFromObject(model)
+                const result = {
+                    min: bounds.min.toArray(),
+                    max: bounds.max.toArray(),
+                    source: report.source_bounds_gltf,
+                    extent: report.surface_check.source_extent,
+                }
+                disposeShipPreview(model)
+                return result
+            }, shipPreviewAssets[key])
+            for (let axis = 0; axis < 3; axis++) {
+                assert.ok(
+                    result.min[axis] >=
+                        result.source.min[axis] - result.extent * 0.01,
+                    `${key}: geometry extends beyond original bounds`,
+                )
+                assert.ok(
+                    result.max[axis] <=
+                        result.source.max[axis] + result.extent * 0.01,
+                    `${key}: geometry extends beyond original bounds`,
+                )
+            }
         }
         const before = await preview.getAttribute('data-preview-frames')
         await preview.focus()

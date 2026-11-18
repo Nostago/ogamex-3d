@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { shipPreviewAssets } from '../../resources/js/live3d/shipAssets.js'
 import { MeshoptDecoder } from '../../resources/js/prototype3d/vendor/meshopt/meshopt_decoder.mjs'
@@ -132,6 +133,7 @@ const addedShips = [
     'destroyer',
 ]
 const compressedKeys = addedShips
+const repairedKeys = new Set(['bomber', 'crawler'])
 const portraitKeys = new Set(['espionage_probe', 'pathfinder'])
 test('all seventeen ships have distinct versioned model and thumbnail mappings', () => {
     assert.equal(Object.keys(shipPreviewAssets).length, 17)
@@ -146,11 +148,11 @@ test('all seventeen ships have distinct versioned model and thumbnail mappings',
     for (const key of addedShips) {
         assert.equal(
             shipPreviewAssets[key].model,
-            `/models/live3d/${key}-${compressedKeys.includes(key) ? 'v2' : 'v1'}.glb`,
+            `/models/live3d/${key}-${repairedKeys.has(key) ? 'v3' : 'v2'}.glb`,
         )
         assert.equal(
             shipPreviewAssets[key].image,
-            `/img/live3d/ships/${key}-35-${portraitKeys.has(key) ? 'v2' : 'v1'}.webp`,
+            `/img/live3d/ships/${key}-35-${repairedKeys.has(key) ? 'v3' : portraitKeys.has(key) ? 'v2' : 'v1'}.webp`,
         )
     }
 })
@@ -285,6 +287,27 @@ for (const key of addedShips) {
         assert.equal(report.model_id, key)
         assert.equal(report.output_bytes, data.length)
         assert.equal(report.output_triangles, triangles)
+        if (repairedKeys.has(key)) {
+            assert.equal(report.geometry_repair_pending, false)
+            assert.equal(
+                report.output_sha256,
+                createHash('sha256').update(data).digest('hex'),
+            )
+            const reference = report.surface_check
+            assert.ok(reference.sample_count >= 4096)
+            assert.ok(
+                reference.max_boundary_error <= reference.source_extent * 0.01,
+            )
+            assert.ok(
+                reference.nearest_original_vertex_p99 <=
+                    reference.source_extent * 0.01,
+            )
+            assert.ok(
+                reference.nearest_original_vertex_max <=
+                    reference.source_extent * 0.025,
+            )
+            assert.ok(report.source_comparison.silhouette_iou > 0.97)
+        }
         if (compressed) {
             assert.equal(report.previous_output_triangles, triangles)
             assert.ok(report.output_bytes < report.previous_output_bytes)

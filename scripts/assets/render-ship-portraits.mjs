@@ -14,6 +14,11 @@ const require = createRequire(import.meta.url),
     [output, ...keys] = process.argv.slice(2)
 if (!output || !keys.length || keys.some((key) => !shipPreviewAssets[key]))
     throw new Error('Provide an output directory and registered ship keys')
+// Optional local originals for source-versus-reduction inspection. They are
+// served only on this temporary loopback server, never copied into public/.
+const sourceFiles = process.env.SOURCE_MODELS_FILE
+    ? JSON.parse(await readFile(process.env.SOURCE_MODELS_FILE, 'utf8'))
+    : {}
 await mkdir(output, { recursive: true })
 const server = createServer(async (request, response) => {
     const pathname = new URL(request.url, 'http://localhost').pathname
@@ -23,6 +28,14 @@ const server = createServer(async (request, response) => {
         return
     }
     try {
+        const sourceKey = pathname.match(
+            /^\/source-model\/([a-z_]+)\.glb$/,
+        )?.[1]
+        if (sourceKey && Object.hasOwn(sourceFiles, sourceKey)) {
+            response.setHeader('Content-Type', 'model/gltf-binary')
+            response.end(await readFile(sourceFiles[sourceKey]))
+            return
+        }
         const relative = decodeURIComponent(pathname).replace(/^\/+/, ''),
             base = relative.startsWith('resources/js/')
                 ? repo
@@ -216,16 +229,28 @@ try {
                     elevation: asset.elevation,
                     portraitRoll: key === 'espionage_probe' ? -45 : 0,
                     margin: 1.16,
+                    nativeBounds: {
+                        min: box.min.toArray(),
+                        max: box.max.toArray(),
+                    },
                 }
             },
-            { key, asset: shipPreviewAssets[key] },
+            {
+                key,
+                asset: {
+                    ...shipPreviewAssets[key],
+                    ...(Object.hasOwn(sourceFiles, key)
+                        ? { model: `/source-model/${key}.glb` }
+                        : {}),
+                },
+            },
         )
         await writeFile(
             path.join(output, `${key}-35.png`),
             Buffer.from(result.png, 'base64'),
         )
         await writeFile(
-            path.join(output, `${key}-35-v2.webp`),
+            path.join(output, path.basename(shipPreviewAssets[key].image)),
             Buffer.from(result.webp, 'base64'),
         )
         delete result.png

@@ -1,0 +1,87 @@
+{
+  "name": "Crawler.glb",
+  "model_id": "crawler",
+  "source_sha256": "d7dd7f9c153b1c195454a235a9b9c909ef65bbae950e65400824e9e40e1f404a",
+  "source_bytes": 30463816,
+  "source_triangles": 976542,
+  "output_triangles": 65000,
+  "source_bounds_gltf": {
+    "min": [
+      -0.373382568359375,
+      0.0,
+      -0.5
+    ],
+    "max": [
+      0.373382568359375,
+      0.7510986328125,
+      0.5
+    ]
+  },
+  "reduced_bounds_gltf": {
+    "min": [
+      -0.3727605938911438,
+      0.00012400600826367736,
+      -0.500160813331604
+    ],
+    "max": [
+      0.37362757325172424,
+      0.7505102753639221,
+      0.4986129105091095
+    ]
+  },
+  "texture_max_resolution": 1024,
+  "geometry_repair_pending": false,
+  "reduction": "Blender DECIMATE with original UV/normal attributes; no manual vertex-index remapping",
+  "surface_check": {
+    "source_extent": 1.0,
+    "sample_count": 4226,
+    "max_boundary_error": 0.00024500489234924316,
+    "nearest_original_vertex_p99": 0.002846175048034638,
+    "nearest_original_vertex_max": 0.0064248936250805855
+  },
+  "previous_output_bytes": 3992832,
+  "previous_output_triangles": 65000,
+  "previous_model_sha256": "d8a7fca97dea34cf7adc3c3023095ac71f78b8bcef3a62043235293d0b0d5f46",
+  "replaced_model_sha256": "01f4997019ef96b512fe493b90f70da5eb39b0224bafac160f74fda7da098a94",
+  "output_bytes": 976408,
+  "vertex_count": 59113,
+  "compression": {
+    "geometry": "EXT_meshopt_compression",
+    "texture": "EXT_texture_webp",
+    "texture_quality": 85,
+    "position_bits": 14,
+    "normal_bits": 10,
+    "uv_bits": 12,
+    "topology_unchanged": true
+  },
+  "portrait": {
+    "key": "crawler",
+    "azimuth": 35,
+    "elevation": 22,
+    "portraitRoll": 0,
+    "margin": 1.16,
+    "nativeBounds": {
+      "min": [
+        -0.37274643832599214,
+        0.00011022050367576197,
+        -0.500160813331604
+      ],
+      "max": [
+        0.3736134176865726,
+        0.75052406086851,
+        0.4986129105091095
+      ]
+    },
+    "image": "/img/live3d/ships/crawler-35-v3.webp"
+  },
+  "source_comparison": {
+    "silhouette_iou": 0.9953041661905281,
+    "render_width": 1024,
+    "render_height": 768,
+    "azimuth": 35,
+    "elevation": 22,
+    "min_silhouette_iou": 0.97,
+    "original_visually_reviewed": true
+  },
+  "output_sha256": "639e9487b57828e7f5210d63dacddffd4d94dfdd92979f1bbbd2c8034aaa6208"
+}
