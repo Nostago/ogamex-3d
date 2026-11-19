@@ -149,13 +149,17 @@ class AutonomousBotService
             return;
         }
         $offensive = $bot->auto_raid && $bot->profile !== 'economy';
+        $customStrategy = $bot->strategy !== null;
+        $strategy = AutonomousBotStrategy::settings($bot);
+        $turn = $customStrategy ? AutonomousBotStrategy::turn($strategy, $bot->cycles) : null;
+        $period = $customStrategy ? AutonomousBotStrategy::period($strategy) : 4;
         // Rotate each strategy turn across colonies as well, so a four-turn
         // strategy cannot reserve all economy turns for the same colony.
-        $decisionWorld = $offensive ? intdiv($bot->cycles - 1, 4) + ($bot->cycles - 1) % 4 : $bot->cycles - 1;
+        $decisionWorld = ($offensive || $customStrategy) ? intdiv($bot->cycles - 1, $period) + ($bot->cycles - 1) % $period : $bot->cycles - 1;
         $planet = $worlds[$decisionWorld % count($worlds)];
         $player->setCurrentPlanetId($planet->getPlanetId());
         $planet->update();
-        $raidEvery = $offensive ? 2 : 4;
+        $raidEvery = $strategy['raid_every'];
         if ($bot->cycles % $raidEvery === 0) {
             // Rotate raid worlds separately from the ordinary decision world.
             $raidPlanet = $worlds[(intdiv($bot->cycles, $raidEvery) - 1) % count($worlds)];
@@ -176,23 +180,23 @@ class AutonomousBotService
             usort($economy, fn (string $left, string $right): int => $planet->getObjectLevel($left) <=> $planet->getObjectLevel($right));
         }
         $research = ['energy_technology' => 3, 'combustion_drive' => 6, 'computer_technology' => 4, 'espionage_technology' => 4, 'impulse_drive' => 3, 'astrophysics' => 3, 'weapon_technology' => 3, 'shielding_technology' => 3, 'armor_technology' => 3];
+        if (($customStrategy ? $turn === 'fleet' : ($offensive && in_array($bot->cycles % 4, [1, 2], true))) && $this->military($bot, $player, $planet)) {
+            return;
+        }
         if ($offensive) {
             // Two fleet turns, one economy turn and one research turn. Keep an
             // income-building turn even while a complete fleet is affordable.
-            if (in_array($bot->cycles % 4, [1, 2], true) && $this->military($bot, $player, $planet)) {
-                return;
-            }
             $research = ['computer_technology' => 2, 'weapon_technology' => 3, 'armor_technology' => 3,
                 'shielding_technology' => 3, 'impulse_drive' => 4, 'laser_technology' => 3,
                 'ion_technology' => 2, 'espionage_technology' => 4, 'combustion_drive' => 6, 'astrophysics' => 3];
         }
-        if ($offensive ? $bot->cycles % 4 === 0 : $bot->cycles % 3 === 0) {
+        if ($customStrategy ? $turn === 'research' : ($offensive ? $bot->cycles % 4 === 0 : $bot->cycles % 3 === 0)) {
             foreach ($research as $key => $level) {
                 if ($player->getResearchLevel($key) < min($level, $bot->max_level) && $this->pursue($bot, $player, $planet, $key)) {
                     return;
                 }
             }
-            foreach ($offensive ? [] : ['small_cargo', 'light_fighter', 'espionage_probe'] as $key) {
+            foreach (($offensive || $customStrategy) ? [] : ['small_cargo', 'light_fighter', 'espionage_probe'] as $key) {
                 if ($planet->getObjectAmount($key) < $bot->ship_limit && $this->pursue($bot, $player, $planet, $key)) {
                     return;
                 }

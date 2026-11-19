@@ -48,6 +48,8 @@ php artisan migrate --force --path=database/migrations/2026_11_15_120000_add_aut
 php artisan migrate --force --path=database/migrations/2026_11_18_200000_add_settings_to_fleet_templates.php
 # Add immutable ship-compensation receipts; existing ship inventories are untouched.
 php artisan migrate --force --path=database/migrations/2026_11_18_230000_create_admin_ship_grants_table.php
+# Add optional per-NPC strategy overrides; existing bots retain their profile defaults.
+php artisan migrate --force --path=database/migrations/2026_11_19_010000_add_strategy_to_autonomous_bots_table.php
 # Requested initial population; idempotent and leaves existing human accounts untouched.
 php artisan ogamex:bots:populate --count=50
 # Enable bounded NPC decisions even when no browser is open.

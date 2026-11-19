@@ -160,7 +160,7 @@ class AutonomousBotFleetService
                     $units->addUnit($ship, $amount);
                 }
             }
-            if ($units->getAmount() > 0 && (!$armed || $this->clearlyStronger($player, $units, $report)) && $this->dispatch($bot, $player, $planet, $target, PlanetType::Planet, 1, $units, 'raid')) {
+            if ($units->getAmount() > 0 && (!$armed || $this->clearlyStronger($player, $units, $report, AutonomousBotStrategy::settings($bot)['strength'])) && $this->dispatch($bot, $player, $planet, $target, PlanetType::Planet, 1, $units, 'raid')) {
                 return true;
             }
         }
@@ -168,7 +168,7 @@ class AutonomousBotFleetService
     }
 
     /** Conservative target selection, not a battle simulation or a guaranteed outcome. */
-    private function clearlyStronger(PlayerService $player, UnitCollection $units, EspionageReport $report): bool
+    private function clearlyStronger(PlayerService $player, UnitCollection $units, EspionageReport $report, float $margin): bool
     {
         if (!is_array($report->research) || !is_array($report->ships) || !is_array($report->defense)) {
             return false;
@@ -216,7 +216,7 @@ class AutonomousBotFleetService
         // Require an ample margin in both damage and durability, and a shot
         // that can penetrate the largest known shield. Rapid fire and random
         // combat effects remain solely the original battle engine's decision.
-        return $power > 0 && $power >= 3 * $enemyPower && $durability >= 3 * $enemyDurability && $strongestShot > $strongestShield;
+        return $power > 0 && $power >= $margin * $enemyPower && $durability >= $margin * $enemyDurability && $strongestShot > $strongestShield;
     }
 
     private function missions(PlayerService $player): FleetMissionService

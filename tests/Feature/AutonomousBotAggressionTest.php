@@ -64,6 +64,25 @@ class AutonomousBotAggressionTest extends IsolatedAccountTestCase
         $this->assertDatabaseHas('espionage_reports', ['id' => $report->id]);
     }
 
+    public function testCustomCadenceAndStrengthThresholdControlARealRaid(): void
+    {
+        [$bot, $report] = $this->raidFixture();
+        $report->forceFill(['ships' => ['light_fighter' => 14], 'defense' => []])->save();
+        $bot->strategy = ['fleet' => 2, 'economy' => 1, 'research' => 1, 'raid_every' => 3, 'strength' => 3];
+        $bot->save();
+        $service = resolve(AutonomousBotService::class);
+        $service->tickDue(1, $bot->id, true); // Decision two is not a raid turn anymore.
+        $this->assertDatabaseMissing('fleet_missions', ['user_id' => $this->currentUserId, 'mission_type' => 1]);
+        $service->tickDue(1, $bot->id, true); // Decision three rejects a less than threefold advantage.
+        $this->assertSame('waiting', $bot->refresh()->last_action);
+        $bot->cycles = 2;
+        $bot->strategy = [...($bot->strategy ?? []), 'strength' => 2];
+        $bot->save();
+        $service->tickDue(1, $bot->id, true);
+        $this->assertDatabaseHas('autonomous_bots', ['id' => $bot->id, 'last_action' => 'raid']);
+        $this->assertDatabaseHas('fleet_missions', ['user_id' => $this->currentUserId, 'mission_type' => 1, 'light_fighter' => 30]);
+    }
+
     public function testUnknownForcesMissingResearchAndSuperiorDefendersNeverAuthorizeAnAttack(): void
     {
         [$bot, $report] = $this->raidFixture();

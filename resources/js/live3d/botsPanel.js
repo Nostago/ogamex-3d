@@ -1,3 +1,5 @@
+import { createBotStrategyFields, readBotStrategy } from './botStrategy.js'
+
 export function createBotsPanel({ config, t, el, number }) {
     const status = document.querySelector('#bots-status'),
         create = document.querySelector('#bots-create')
@@ -68,8 +70,24 @@ export function createBotsPanel({ config, t, el, number }) {
             grid.append(label)
         }
         host.append(grid)
+        createBotStrategyFields(host, {
+            t,
+            el,
+            strategy: data.strategy ?? null,
+            effective: data.effectiveStrategy,
+        })
     }
     fields(document.querySelector('#bots-create-fields'))
+    const strategyAll = document.querySelector('#bots-strategy-all')
+    const bulkStrategy = createBotStrategyFields(
+        document.querySelector('#bots-strategy-fields'),
+        {
+            t,
+            el,
+            bulk: true,
+        },
+    )
+    let bulkInitialized = false
     async function api(body) {
         const token = document.querySelector('meta[name="csrf-token"]').content
         const response = await fetch(config.botsUrl, {
@@ -94,6 +112,9 @@ export function createBotsPanel({ config, t, el, number }) {
         const body = Object.fromEntries(new FormData(form))
         for (const field of form.querySelectorAll('input[type=checkbox]'))
             body[field.name] = field.checked
+        for (const key of Object.keys(body))
+            if (key.startsWith('strategy_')) delete body[key]
+        body.strategy = readBotStrategy(form)
         return body
     }
     async function mutate(body, notice) {
@@ -122,6 +143,19 @@ export function createBotsPanel({ config, t, el, number }) {
     async function load() {
         try {
             const data = await api()
+            if (!bulkInitialized) {
+                const first = data.bots[0]?.strategy
+                if (
+                    first &&
+                    data.bots.every(
+                        (bot) =>
+                            JSON.stringify(bot.strategy) ===
+                            JSON.stringify(first),
+                    )
+                )
+                    bulkStrategy.setValues(first)
+                bulkInitialized = true
+            }
             document.querySelector('#bots-heartbeat').textContent =
                 data.schedulerActive
                     ? t.bots_scheduler_active
@@ -205,6 +239,24 @@ export function createBotsPanel({ config, t, el, number }) {
         mutate({ action: 'create', ...payload(create) }, t.bots_created)
     }
     document.querySelector('#bots-refresh').onclick = load
+    strategyAll.onsubmit = (event) => {
+        event.preventDefault()
+        if (!pending && confirm(t.bots_strategy_confirm))
+            mutate(
+                {
+                    action: 'strategy-all',
+                    strategy: readBotStrategy(strategyAll),
+                },
+                t.bots_strategy_saved,
+            )
+    }
+    document.querySelector('#bots-strategy-reset').onclick = () => {
+        if (!pending && confirm(t.bots_strategy_reset_confirm))
+            mutate(
+                { action: 'strategy-all', strategy: null },
+                t.bots_strategy_reset_done,
+            )
+    }
     document.querySelector('#bots-populate').onclick = () =>
         mutate({ action: 'populate' }, t.bots_populated)
     return { show: load }

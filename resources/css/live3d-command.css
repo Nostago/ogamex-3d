@@ -48,3 +48,5 @@
 .unit-queue-state { padding:5px 10px; border:1px solid #809aad; border-radius:5px; color:#d4e5ed; }
 .unit-queue-state[data-unit-queue-active='true'] { border-color:#68e4b2; background:#153b37; color:#b7ffdb; }
 .unit-waiting-hint { padding:12px; border-left:3px solid #f8d287; background:#283130; color:#ffedbe; }
+
+.bot-strategy{margin:18px 0;min-width:0}.bot-strategy fieldset{min-width:0;padding:16px;border:1px solid #46778b;border-radius:7px}.bot-strategy legend{padding:0 10px;color:#b5efff;font-weight:700}.bot-strategy-summary{padding:12px;background:#103447;border-left:3px solid #78def0;border-radius:5px;line-height:1.6;color:#dbf5ff}.bot-strategy .fleet-field-grid{margin-top:10px}.bot-strategy fieldset:disabled{opacity:.65}#bots-strategy-bulk summary{cursor:pointer;color:#b5efff}#bots-strategy-bulk summary h2{display:inline}#bots-strategy-all>button{margin:0 10px 10px 0}

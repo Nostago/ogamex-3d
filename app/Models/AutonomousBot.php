@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property int $max_level
  * @property int $ship_limit
  * @property int $batch_size
+ * @property array<string, int|float>|null $strategy
  * @property bool $auto_build
  * @property bool $auto_research
  * @property bool $auto_shipbuilding
@@ -35,6 +36,6 @@ class AutonomousBot extends Model
 {
     protected function casts(): array
     {
-        return ['auto_build' => 'boolean', 'auto_research' => 'boolean', 'auto_shipbuilding' => 'boolean', 'auto_raid' => 'boolean', 'auto_fleet_save' => 'boolean', 'raid_inactive_players' => 'boolean', 'enabled' => 'boolean', 'next_tick_at' => 'datetime', 'last_tick_at' => 'datetime'];
+        return ['strategy' => 'array', 'auto_build' => 'boolean', 'auto_research' => 'boolean', 'auto_shipbuilding' => 'boolean', 'auto_raid' => 'boolean', 'auto_fleet_save' => 'boolean', 'raid_inactive_players' => 'boolean', 'enabled' => 'boolean', 'next_tick_at' => 'datetime', 'last_tick_at' => 'datetime'];
     }
 }
