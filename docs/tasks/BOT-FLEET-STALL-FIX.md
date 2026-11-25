@@ -20,3 +20,25 @@ Bot Sirius-ecgni6: Rangliste 392 Punkte (Nutzerangabe), 5.430 Entscheidungen, le
 
 ## Zielzustand
 Sirius-ecgni6 und ähnliche Bots bauen legal Schiffe oder die Oberfläche zeigt exakt warum nicht. Bereits erspielte Inhalte unverändert erhalten.
+
+## Technischer Zwischenstand (25.11.2026)
+
+In diesem Branch **bereits implementiert**, ohne Live-Server-Veränderung:
+
+- `AutonomousBotService::starterFleetBudget()` ermittelt die erste fehlende legale Einheit oder die erste fehlende Werft-/Forschungsvoraussetzung für Starterflotten.
+- Priorisierter Flottenaufbau: 20 leichte Jäger, 5 kleine Transporter, 8 Spionagesonden, durch vorhandene Schiffslimits begrenzt.
+- `decide()` schützt die Rohstoffkosten für dieses nächste Ziel auf Wirtschafts- und Forschungsschritten; Militärentscheidungen verwenden die nötige Reserve nicht mehr für nachgelagerte Starter-Schiffstypen.
+- Reserve wird nicht aktiviert, wenn Grundwirtschaft/Energie noch nicht bereit, die vorhandenen Lager zu klein, Schiffsbau deaktiviert oder das Ziel nicht erreichbar ist.
+- `last_action=saving` und `last_object=<Ziel>` sind in der Bot-Verwaltung übersetzt sichtbar.
+- `AutonomousBotAggressionTest` enthält Regression für ein schiffsloses Unternehmen, das auf einem Wirtschaftszug zuvor das letzte Metall/Kristall anderweitig ausgegeben hätte, und für deaktivierten Schiffsbau.
+- Kein Account, Rohstoff, Planet, Flotte, Forschungsstand oder Produktionsauftrag wurde manuell verändert; keine Migration neu.
+
+**Noch offen:** Die syntaktische/automatisierte PHP-Lint-/Test-Ausführung aus einem echten lauffähigen Checkout, die Prüfung des betroffenen Sirius-Bots auf dem existierenden Server und ein Backup-gestützter sicherer Rollout. In dieser Chat-Umgebung liegt weder ein laufender OGameX-Docker-Checkout noch der SSH-Deploy-Schlüssel vor; der GitHub-Connector kann Quellcode aktualisieren, aber keine Codex-Cloud-Terminal-/Serveraktionen ausführen. Draft PR #4 bleibt ausdrücklich nicht merge-/deploybereit, bis diese Prüfungen erfolgreich sind.
+
+## Genaue Abnahme für Codex
+- `php -l app/Services/AutonomousBotService.php` und `php -l tests/Feature/AutonomousBotAggressionTest.php`
+- `composer run cs`, `composer run stan`, `composer run tests -- --filter='AutonomousBotAggressionTest|Live3dBotStrategyTest'`
+- Vollständige Suite und `npm run build`; alle Ergebnisse dokumentieren.
+- Speziell den Test `testFleetBudgetStopsRepeatedEconomicSpendingUntilFirstFighterIsAffordable` ausführen und ggf. Daten-/Zeit-Fixture stabilisieren.
+- Read-only Serverdiagnose inklusive Werft, Verbrennungsantrieb, Energie, Ressourcen und Queues von Sirius; Ergebnisse ohne private Daten notieren.
+- Vor Deployment Backups/Runtime-/Branchidentität prüfen, keinen neuen OGameX-Stack starten; nach Rollout tatsächlichen ersten neuen regulären Schiffsauftrag beobachten.
