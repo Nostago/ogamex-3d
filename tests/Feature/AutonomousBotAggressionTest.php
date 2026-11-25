@@ -17,6 +17,63 @@ use Tests\IsolatedAccountTestCase;
 
 class AutonomousBotAggressionTest extends IsolatedAccountTestCase
 {
+    public function testFleetBudgetStopsRepeatedEconomicSpendingUntilFirstFighterIsAffordable(): void
+    {
+        // The original prebuilt-yard tests did not exercise resource starvation.
+        // Cycle three is an economy turn; before the fix it would spend the
+        // remaining budget on another mine instead of saving for the first ship.
+        $bot = $this->bot(['cycles' => 2]);
+        $this->prepareShipyard();
+        $this->planetSetObjectLevel('metal_mine', 3);
+        $this->planetSetObjectLevel('crystal_mine', 3);
+        $this->planetSetObjectLevel('deuterium_synthesizer', 1);
+        $this->planetSetObjectLevel('solar_plant', 10);
+        $this->planetService->update();
+
+        $this->planetDeductResources(new Resources(
+            (int)$this->planetService->metal()->get() - 2900,
+            (int)$this->planetService->crystal()->get() - 900,
+            max(0, (int)$this->planetService->deuterium()->get() - 1500)
+        ));
+        $service = resolve(AutonomousBotService::class);
+        $service->tickDue(1, $bot->id, true);
+
+        $this->assertDatabaseHas('autonomous_bots', [
+            'id' => $bot->id, 'last_action' => 'saving', 'last_object' => 'light_fighter',
+        ]);
+        $this->assertSame(0, BuildingQueue::where('planet_id', $this->currentPlanetId)->count());
+        $this->assertSame(0, UnitQueue::where('planet_id', $this->currentPlanetId)->count());
+
+        // Existing inventory and completed technologies are untouched. Once
+        // income makes a legal purchase possible, the next fleet turn uses the
+        // normal OGameX unit queue rather than a synthetic ship grant.
+        $this->planetAddResources(new Resources(6000, 2000, 0));
+        $bot->refresh();
+        $bot->cycles = 4; // The next decision is a fleet turn.
+        $bot->save();
+        $service->tickDue(1, $bot->id, true);
+        $this->assertDatabaseHas('autonomous_bots', [
+            'id' => $bot->id, 'last_action' => 'unit', 'last_object' => 'light_fighter',
+        ]);
+        $this->assertDatabaseHas('unit_queues', [
+            'planet_id' => $this->currentPlanetId, 'object_id' => 204,
+        ]);
+    }
+
+    public function testNoFleetSavingsLockWhenAutonomousShipbuildingIsDisabled(): void
+    {
+        $bot = $this->bot(['cycles' => 2, 'auto_shipbuilding' => false]);
+        $this->prepareShipyard();
+        $this->planetSetObjectLevel('metal_mine', 3);
+        $this->planetSetObjectLevel('crystal_mine', 3);
+        $this->planetSetObjectLevel('deuterium_synthesizer', 1);
+        $this->planetSetObjectLevel('solar_plant', 10);
+        $this->planetService->update();
+
+        resolve(AutonomousBotService::class)->tickDue(1, $bot->id, true);
+        $this->assertDatabaseHas('autonomous_bots', ['id' => $bot->id, 'last_action' => 'build']);
+    }
+
     public function testRaidingBotBuildsFightersBeforeCompletingOptionalResearch(): void
     {
         $bot = $this->bot();
