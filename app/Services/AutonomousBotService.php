@@ -122,6 +122,10 @@ class AutonomousBotService
                         $bot->enabled = false;
                         $bot->last_action = 'paused';
                     } else {
+                        // A headless NPC never visits GlobalGame middleware.
+                        // Complete paid research under the existing user lock,
+                        // without recording a synthetic login or granting tech.
+                        $player->updateResearchQueue();
                         $this->decide($bot, $player);
                     }
                     $bot->save();
@@ -180,6 +184,11 @@ class AutonomousBotService
             usort($economy, fn (string $left, string $right): int => $planet->getObjectLevel($left) <=> $planet->getObjectLevel($right));
         }
         $research = ['energy_technology' => 3, 'combustion_drive' => 6, 'computer_technology' => 4, 'espionage_technology' => 4, 'impulse_drive' => 3, 'astrophysics' => 3, 'weapon_technology' => 3, 'shielding_technology' => 3, 'armor_technology' => 3];
+        // Reserve enough for the next starter fleet purchase before spending on
+        // unrelated buildings and research. Nothing is removed from the planet.
+        $fleetBudget = ($offensive || ($customStrategy && $strategy['fleet'] > 0))
+            ? $this->starterFleetBudget($bot, $player, $planet)
+            : null;
         if (($customStrategy ? $turn === 'fleet' : ($offensive && in_array($bot->cycles % 4, [1, 2], true))) && $this->military($bot, $player, $planet)) {
             return;
         }
@@ -192,21 +201,97 @@ class AutonomousBotService
         }
         if ($customStrategy ? $turn === 'research' : ($offensive ? $bot->cycles % 4 === 0 : $bot->cycles % 3 === 0)) {
             foreach ($research as $key => $level) {
-                if ($player->getResearchLevel($key) < min($level, $bot->max_level) && $this->pursue($bot, $player, $planet, $key)) {
+                if ($player->getResearchLevel($key) < min($level, $bot->max_level) && $this->pursue($bot, $player, $planet, $key, 0, null, $fleetBudget)) {
                     return;
                 }
             }
             foreach (($offensive || $customStrategy) ? [] : ['small_cargo', 'light_fighter', 'espionage_probe'] as $key) {
-                if ($planet->getObjectAmount($key) < $bot->ship_limit && $this->pursue($bot, $player, $planet, $key)) {
+                if ($planet->getObjectAmount($key) < $bot->ship_limit && $this->pursue($bot, $player, $planet, $key, 0, null, $fleetBudget)) {
                     return;
                 }
             }
         }
         foreach ([...$economy, 'metal_store', 'crystal_store', 'deuterium_store', 'robot_factory', 'research_lab', 'shipyard'] as $key) {
-            if ($planet->getObjectLevel($key) < $bot->max_level && $this->pursue($bot, $player, $planet, $key)) {
+            if ($planet->getObjectLevel($key) < $bot->max_level && $this->pursue($bot, $player, $planet, $key, 0, null, $fleetBudget)) {
                 return;
             }
         }
+        if ($fleetBudget !== null && $bot->last_action === 'waiting') {
+            $bot->last_action = 'saving';
+            $bot->last_object = $fleetBudget['key'];
+        }
+    }
+
+    /**
+     * A small earmarked purchase towards the first fighter/cargo/probes.
+     * No resource is deducted; regular OGameX queues still validate each order.
+     * @return array{key: string, cost: Resources}|null
+     */
+    private function starterFleetBudget(AutonomousBot $bot, PlayerService $player, PlanetService $planet): array|null
+    {
+        if (!$bot->auto_shipbuilding || $bot->ship_limit < 1) {
+            return null;
+        }
+        // Do not freeze the economy before basic mines and reliable energy exist.
+        if ($planet->getObjectLevel('metal_mine') < 3
+            || $planet->getObjectLevel('crystal_mine') < 3
+            || $planet->getObjectLevel('deuterium_synthesizer') < 1
+            || $planet->getObjectLevel('solar_plant') < 3
+            || $planet->energyProduction()->get() <= $planet->energyConsumption()->get()) {
+            return null;
+        }
+        $inventory = resolve(Live3dShipInventory::class)->forPlanet($player, $planet);
+        foreach (['light_fighter' => 20, 'small_cargo' => 5, 'espionage_probe' => 8] as $key => $target) {
+            if ((int)$inventory[$key]['total'] >= min($target, $bot->ship_limit)) {
+                continue;
+            }
+            $next = $this->nextMilitaryStep($bot, $player, $planet, $key);
+            if ($next === null) {
+                continue;
+            }
+            $cost = ObjectService::getObjectPrice($next, $planet);
+            // Insufficient storage needs the ordinary economy builder, not a
+            // permanent savings lock for resources the planet cannot hold.
+            if ($cost->metal->get() > $planet->metalStorage()->get()
+                || $cost->crystal->get() > $planet->crystalStorage()->get()
+                || $cost->deuterium->get() > $planet->deuteriumStorage()->get()) {
+                return null;
+            }
+            return ['key' => $next, 'cost' => $cost];
+        }
+        return null;
+    }
+
+    private function nextMilitaryStep(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0): string|null
+    {
+        if ($depth > 12) {
+            return null;
+        }
+        $object = ObjectService::getObjectByMachineName($key);
+        if (!ObjectService::objectValidPlanetType($key, $planet) || !ObjectService::objectCharacterClassMet($key, $planet)) {
+            return null;
+        }
+        foreach ($object->requirements as $requirement) {
+            $required = ObjectService::getObjectByMachineName($requirement->object_machine_name);
+            $level = $required->type === GameObjectType::Research
+                ? $player->getResearchLevel($required->machine_name)
+                : $planet->getObjectLevel($required->machine_name);
+            if ($level < $requirement->level) {
+                if ($level >= $bot->max_level) {
+                    return null;
+                }
+                return $this->nextMilitaryStep($bot, $player, $planet, $required->machine_name, $depth + 1);
+            }
+        }
+        if ($object->type === GameObjectType::Research) {
+            return $bot->auto_research && $player->getResearchLevel($key) < $bot->max_level ? $key : null;
+        }
+        if (in_array($object->type, [GameObjectType::Ship, GameObjectType::Defense], true)) {
+            return $bot->auto_shipbuilding ? $key : null;
+        }
+        return $bot->auto_build
+            && $planet->getObjectLevel($key) < $bot->max_level
+            && $planet->getBuildingCount() < $planet->getPlanetFieldMax() ? $key : null;
     }
 
     private function military(AutonomousBot $bot, PlayerService $player, PlanetService $planet): bool
@@ -218,8 +303,17 @@ class AutonomousBotService
         // Reach an operational force before pursuing expensive optional research
         // or filling the entire transporter stock target.
         foreach (['light_fighter' => 20, 'small_cargo' => 5, 'espionage_probe' => 8] as $key => $target) {
-            if ((int)$inventory[$key]['total'] < min($target, $bot->ship_limit) && $this->pursue($bot, $player, $planet, $key, 0, $target)) {
+            if ((int)$inventory[$key]['total'] >= min($target, $bot->ship_limit)) {
+                continue;
+            }
+            if ($this->pursue($bot, $player, $planet, $key, 0, $target)) {
                 return true;
+            }
+            // Once there is a feasible starter-fleet purchase to save for,
+            // do not divert the reserved income into a different ship type
+            // during this military turn either.
+            if ($this->starterFleetBudget($bot, $player, $planet) !== null) {
+                return false;
             }
         }
         // Prefer stronger ships once ordinary research has unlocked them. Do not
@@ -232,7 +326,7 @@ class AutonomousBotService
         return false;
     }
 
-    private function pursue(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0, int|null $unitTarget = null): bool
+    private function pursue(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0, int|null $unitTarget = null, array|null $fleetBudget = null): bool
     {
         if ($depth > 12) {
             return false;
@@ -248,11 +342,25 @@ class AutonomousBotService
                 if ($level >= $bot->max_level) {
                     return false;
                 }
-                return $this->pursue($bot, $player, $planet, $required->machine_name, $depth + 1);
+                return $this->pursue($bot, $player, $planet, $required->machine_name, $depth + 1, null, $fleetBudget);
             }
         }
-        if (!ObjectService::objectRequirementsMet($key, $planet) || !$planet->hasResources(ObjectService::getObjectPrice($key, $planet))) {
+        $price = ObjectService::getObjectPrice($key, $planet);
+        if (!ObjectService::objectRequirementsMet($key, $planet) || !$planet->hasResources($price)) {
             return false;
+        }
+        if ($fleetBudget !== null) {
+            $reserved = $fleetBudget['cost'];
+            $combined = new Resources(
+                $price->metal->get() + $reserved->metal->get(),
+                $price->crystal->get() + $reserved->crystal->get(),
+                $price->deuterium->get() + $reserved->deuterium->get()
+            );
+            if (!$planet->hasResources($combined)) {
+                $bot->last_action = 'saving';
+                $bot->last_object = $fleetBudget['key'];
+                return false;
+            }
         }
         if ($object->type === GameObjectType::Research) {
             $queue = resolve(ResearchQueueService::class);
