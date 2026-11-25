@@ -299,8 +299,17 @@ class AutonomousBotService
         // Reach an operational force before pursuing expensive optional research
         // or filling the entire transporter stock target.
         foreach (['light_fighter' => 20, 'small_cargo' => 5, 'espionage_probe' => 8] as $key => $target) {
-            if ((int)$inventory[$key]['total'] < min($target, $bot->ship_limit) && $this->pursue($bot, $player, $planet, $key, 0, $target)) {
+            if ((int)$inventory[$key]['total'] >= min($target, $bot->ship_limit)) {
+                continue;
+            }
+            if ($this->pursue($bot, $player, $planet, $key, 0, $target)) {
                 return true;
+            }
+            // Once there is a feasible starter-fleet purchase to save for,
+            // do not divert the reserved income into a different ship type
+            // during this military turn either.
+            if ($this->starterFleetBudget($bot, $player, $planet) !== null) {
+                return false;
             }
         }
         // Prefer stronger ships once ordinary research has unlocked them. Do not
