@@ -31,6 +31,7 @@ return [
     'bots_scheduler_missing' => 'No regular bot scheduler detected. Run once on the OGameX host: sh scripts/codex/enable-bots-cron.sh',
     'bots_action_created' => 'Created',
     'bots_action_waiting' => 'Waiting for resources, requirements or a free queue',
+    'bots_action_saving' => 'Saving resources for the next fleet-building step',
     'bots_action_build' => 'Building upgrade ordered',
     'bots_action_research' => 'Research ordered',
     'bots_action_unit' => 'Ship production ordered',
