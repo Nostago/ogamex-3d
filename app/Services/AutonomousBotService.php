@@ -122,6 +122,10 @@ class AutonomousBotService
                         $bot->enabled = false;
                         $bot->last_action = 'paused';
                     } else {
+                        // A headless NPC never visits GlobalGame middleware.
+                        // Complete paid research under the existing user lock,
+                        // without recording a synthetic login or granting tech.
+                        $player->updateResearchQueue();
                         $this->decide($bot, $player);
                     }
                     $bot->save();
@@ -223,7 +227,7 @@ class AutonomousBotService
      * No resource is deducted; regular OGameX queues still validate each order.
      * @return array{key: string, cost: Resources}|null
      */
-    private function starterFleetBudget(AutonomousBot $bot, PlayerService $player, PlanetService $planet): ?array
+    private function starterFleetBudget(AutonomousBot $bot, PlayerService $player, PlanetService $planet): array|null
     {
         if (!$bot->auto_shipbuilding || $bot->ship_limit < 1) {
             return null;
@@ -258,7 +262,7 @@ class AutonomousBotService
         return null;
     }
 
-    private function nextMilitaryStep(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0): ?string
+    private function nextMilitaryStep(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0): string|null
     {
         if ($depth > 12) {
             return null;
@@ -322,7 +326,7 @@ class AutonomousBotService
         return false;
     }
 
-    private function pursue(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0, int|null $unitTarget = null, ?array $fleetBudget = null): bool
+    private function pursue(AutonomousBot $bot, PlayerService $player, PlanetService $planet, string $key, int $depth = 0, int|null $unitTarget = null, array|null $fleetBudget = null): bool
     {
         if ($depth > 12) {
             return false;

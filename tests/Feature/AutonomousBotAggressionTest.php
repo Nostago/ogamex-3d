@@ -47,9 +47,9 @@ class AutonomousBotAggressionTest extends IsolatedAccountTestCase
         // Existing inventory and completed technologies are untouched. Once
         // income makes a legal purchase possible, the next fleet turn uses the
         // normal OGameX unit queue rather than a synthetic ship grant.
-        $this->planetAddResources(new Resources(6000, 2000, 0));
+        $this->travel(2)->hours(); // Earn the missing resources through normal mine production.
         $bot->refresh();
-        $bot->cycles = 4; // The next decision is a fleet turn.
+        $bot->cycles = 8; // Decision nine is a fleet turn on the first planet again.
         $bot->save();
         $service->tickDue(1, $bot->id, true);
         $this->assertDatabaseHas('autonomous_bots', [
@@ -72,6 +72,27 @@ class AutonomousBotAggressionTest extends IsolatedAccountTestCase
 
         resolve(AutonomousBotService::class)->tickDue(1, $bot->id, true);
         $this->assertDatabaseHas('autonomous_bots', ['id' => $bot->id, 'last_action' => 'build']);
+    }
+
+    public function testBotCompletesPaidResearchAndBuildsItsFirstFightersWithoutLoggingIn(): void
+    {
+        $bot = $this->bot();
+        $this->prepareShipyard();
+        $this->playerSetResearchLevel('combustion_drive', 0);
+        $this->playerSetResearchLevel('energy_technology', 1);
+        $service = resolve(AutonomousBotService::class);
+        $service->tickDue(1, $bot->id, true);
+        $research = ResearchQueue::where('planet_id', $this->currentPlanetId)->where('object_id', 115)->firstOrFail();
+        $this->assertSame(0, $research->processed);
+        $this->travelTo(Date::createFromTimestamp($research->time_end + 1));
+        $service->tickDue(1, $bot->id, true);
+        $this->assertDatabaseHas('research_queues', ['id' => $research->id, 'processed' => 1]);
+        $this->assertDatabaseHas('users_tech', ['user_id' => $this->currentUserId, 'combustion_drive' => 1]);
+        $bot->refresh();
+        $bot->cycles = 8; // A later fleet turn on the original equipped world.
+        $bot->save();
+        $service->tickDue(1, $bot->id, true);
+        $this->assertDatabaseHas('unit_queues', ['planet_id' => $this->currentPlanetId, 'object_id' => 204]);
     }
 
     public function testRaidingBotBuildsFightersBeforeCompletingOptionalResearch(): void

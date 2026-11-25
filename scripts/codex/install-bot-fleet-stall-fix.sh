@@ -1,106 +1,141 @@
 #!/usr/bin/env bash
-# Surgical deployment of the autonomous-bot starter-fleet savings fix.
-# No migrations, population, DB writes, model changes, or new Docker volumes.
+# Apply only the reviewed bot PHP fix. No migrations, population, installs or stack restart.
 set -Eeuo pipefail
-umask 077
-
-root=/home/ogamedev/OGameX
-remote=https://github.com/Nostago/ogamex-3d.git
+umask 022
+root=${OGAMEX_PROJECT_DIR:-/home/ogamedev/OGameX}
 base_sha=ac5cb5298f3d86d7c636a0d7b4cd7e70cac65764
-fix_ancestor_sha=91a940804e0ec98ce3492f6cbc39486773e9e52f
-base_ref=refs/remotes/bot-fleet-fix/baseline
-fix_ref=refs/remotes/bot-fleet-fix/update
-app_container=ogamex-ogamex-app-1
-scheduler_container=ogamex-ogamex-scheduler-1
+original_pr_sha=7f7725f54e05a6730f848926c36bfff0b66f2c2f
 files=(app/Services/AutonomousBotService.php resources/lang/de/t_bots.php resources/lang/en/t_bots.php)
-
 die() { printf 'ABBRUCH: %s\n' "$*" >&2; exit 1; }
-cd "$root" || die "Projektordner $root nicht gefunden."
-test -d .git || die "Kein Git-Checkout: $root"
-command -v docker >/dev/null || die 'Docker fehlt.'
-command -v git >/dev/null || die 'Git fehlt.'
+[[ $# == 1 && $1 =~ ^[0-9a-f]{40}$ ]] || die 'Aufruf: bash install-bot-fleet-stall-fix.sh <geprüfter vollständiger Commit-SHA>'
+cd "$root" || die "Projektordner $root fehlt."
+root=$(pwd -P)
+git rev-parse --is-inside-work-tree >/dev/null || die 'Kein Git-Checkout.'
+if command -v flock >/dev/null; then
+    exec 9>"$(git rev-parse --git-path ogamex-bot-fix.lock)"
+    flock -n 9 || die 'Ein anderer Bot-Installer läuft bereits.'
+fi
+test -z "$(git status --porcelain)" || die 'Lokale Änderungen vorhanden; nichts überschrieben.'
+target=$(git rev-parse --verify "$1^{commit}")
+git merge-base --is-ancestor "$base_sha" "$target" || die 'Der Zielcommit gehört nicht zur geprüften Codebasis.'
+git var GIT_AUTHOR_IDENT >/dev/null || die 'Git-Autoridentität fehlt.'
+git var GIT_COMMITTER_IDENT >/dev/null || die 'Git-Commitidentität fehlt.'
 command -v sha256sum >/dev/null || die 'sha256sum fehlt.'
-test -z "$(git status --porcelain)" || die 'Arbeitsverzeichnis hat lokale Aenderungen. Nichts ueberschrieben.'
-git var GIT_AUTHOR_IDENT >/dev/null || die 'Git-Benutzeridentitaet fehlt.'
-git var GIT_COMMITTER_IDENT >/dev/null || die 'Git-Commitidentitaet fehlt.'
 
-for name in "$app_container" "$scheduler_container"; do
-    running=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null) || die "Container $name fehlt."
-    test "$running" = true || die "Container $name ist nicht aktiv."
-done
-# Check that the application container sees the same bind-mounted source.
-host_hash=$(sha256sum app/Services/AutonomousBotService.php | cut -d ' ' -f1)
-container_hash=$(docker exec "$app_container" sha256sum /var/www/app/Services/AutonomousBotService.php | cut -d ' ' -f1) || die 'Quellcode in Docker nicht lesbar.'
-test "$host_hash" = "$container_hash" || die 'Docker nutzt andere PHP-Dateien; kein Eingriff.'
-
-printf 'Pruefe passenden Git-Stand ...\n'
-git fetch -q --no-tags "$remote" \
-    "+refs/heads/codex/ogamex-3d-bot-strategy-controls:$base_ref" \
-    "+refs/heads/codex/ogamex-3d-bot-fleet-stall-fix:$fix_ref" \
-    || die 'GitHub-Fetch fehlgeschlagen.'
-test "$(git rev-parse "$base_ref")" = "$base_sha" || die 'Basis-Branch wurde veraendert.'
-git merge-base --is-ancestor "$fix_ancestor_sha" "$fix_ref" || die 'Fix-Branch enthaelt nicht den freigegebenen Fix.'
+# Select by the actual checkout bind mount, never by a hardcoded container name.
+app_container=
+container_root=
+candidates=
+if command -v docker >/dev/null && candidates=$(docker ps --filter label=com.docker.compose.service=ogamex-app --format '{{.ID}}' 2>/dev/null); then
+    for candidate in $candidates; do
+        while IFS=$'\t' read -r source destination; do
+            if [[ $source == "$root" ]]; then
+                [[ -z $app_container || $app_container == "$candidate" ]] || die 'Mehrere PHP-Container verwenden dieses Checkout.'
+                app_container=$candidate
+                container_root=$destination
+            fi
+        done < <(docker inspect -f '{{range .Mounts}}{{printf "%s\t%s\n" .Source .Destination}}{{end}}' "$candidate")
+    done
+fi
+if [[ -n $app_container ]]; then
+    master=$(docker exec "$app_container" cat /proc/1/comm)
+    [[ $master == php-fpm* ]] || die 'PHP-FPM ist nicht PID 1; automatische Aktualisierung dieses Runtimes wird nicht unterstützt.'
+    for file in "${files[@]}"; do
+        local_hash=$(sha256sum "$file" | cut -d ' ' -f1)
+        remote_hash=$(docker exec "$app_container" sha256sum "$container_root/$file" | cut -d ' ' -f1)
+        [[ $local_hash == "$remote_hash" ]] || die "PHP-Container verwendet andere Quelldateien: $file"
+    done
+    printf 'Passender PHP-FPM-Container: %s\n' "$app_container"
+else
+    [[ -z $candidates ]] || die 'Laufende OGameX-Container verwenden ein anderes Checkout; nichts geändert.'
+    command -v php >/dev/null || die 'Weder passender PHP-Container noch natives PHP gefunden.'
+    test -f vendor/autoload.php || die 'Die bestehende PHP-Installation ist unvollständig.'
+    echo 'Bestehende native PHP-Installation erkannt.'
+fi
 
 patch=$(mktemp)
 applied=0
 committed=0
-restore_if_failed() {
-    status=$?
-    trap - ERR
-    if (( applied == 1 && committed == 0 )); then
-        printf 'Fehler entdeckt; setze ausschliesslich den Bot-Patch zurueck ...\n' >&2
+backup=
+refresh_php() {
+    [[ -n $app_container ]] || return 0
+    # The repository entrypoint runs composer and migrations on a full restart.
+    # USR2 reloads the existing FPM master and OPcache without re-running that entrypoint.
+    docker kill --signal=USR2 "$app_container" >/dev/null
+    local deadline=$((SECONDS + 60)) state
+    while (( SECONDS < deadline )); do
+        state=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Running}}{{end}}' "$app_container")
+        case "$state" in
+            healthy|true) return 0 ;;
+            unhealthy|false) return 1 ;;
+        esac
+        sleep 2
+    done
+    return 1
+}
+finish() {
+    local status=$?
+    trap - EXIT
+    if (( status != 0 && applied == 1 && committed == 0 )); then
+        echo 'Installation fehlgeschlagen; stelle ausschließlich den Bot-Patch zurück.' >&2
         if git apply --reverse --index "$patch"; then
-            docker restart "$app_container" "$scheduler_container" >/dev/null 2>&1 || true
+            refresh_php || echo 'Alte Dateien wiederhergestellt; PHP-FPM bitte prüfen.' >&2
         else
-            printf 'Automatisches Zuruecksetzen fehlgeschlagen; gesicherte Originale wiederherstellen.\n' >&2
+            printf 'Automatisches Zurücksetzen nicht möglich. Originalsicherung: %s\n' "$backup" >&2
         fi
     fi
-    printf 'Installation NICHT erfolgreich, Status %s.\n' "$status" >&2
+    rm -f "$patch" || true
     exit "$status"
 }
-cleanup() { rm -f "$patch"; }
-trap cleanup EXIT
-trap restore_if_failed ERR
+trap finish EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
-git diff --binary "$base_ref" "$fix_ref" -- "${files[@]}" > "$patch"
-test -s "$patch" || die 'Kein Bot-Fix in den ausgewählten Dateien gefunden.'
-if ! git apply --check --index "$patch"; then
-    if git apply --reverse --check "$patch"; then
-        echo 'Der Bot-Fix ist bereits im aktuellen Quellcode enthalten.'
-        exit 0
-    fi
-    die 'Der aktuell installierte Code passt nicht exakt zum Bot-Patch; unveraendert gelassen.'
-fi
-
-backup="$HOME/OGameX-backups/bot-fleet-fix-$(date -u +%Y%m%dT%H%M%SZ)-$$"
-mkdir -p "$backup"
-git rev-parse HEAD > "$backup/PREVIOUS_HEAD"
-git branch --show-current > "$backup/PREVIOUS_BRANCH"
-for f in "${files[@]}"; do
-    mkdir -p "$backup/$(dirname "$f")"
-    cp -p "$f" "$backup/$f"
-done
-printf 'Code-Sicherung: %s\n' "$backup"
-
-git apply --index "$patch"
-applied=1
-docker exec "$app_container" php -l /var/www/app/Services/AutonomousBotService.php
-docker exec "$app_container" php -l /var/www/resources/lang/de/t_bots.php
-docker exec "$app_container" php -l /var/www/resources/lang/en/t_bots.php
-
-# PHP-FPM OPcache and the long-running scheduler must see the new PHP code.
-docker restart "$app_container" "$scheduler_container" >/dev/null
-healthy=0
-for ((i=0; i<45; i++)); do
-    if [[ $(docker inspect -f '{{.State.Health.Status}}' "$app_container" 2>/dev/null || true) == healthy ]]; then
-        healthy=1
+# Also permit upgrading the already installed, originally submitted PR #4.
+compatible=0
+for previous in "$base_sha" "$original_pr_sha"; do
+    git cat-file -e "$previous^{commit}" 2>/dev/null || continue
+    git diff --binary "$previous" "$target" -- "${files[@]}" > "$patch"
+    test -s "$patch" || continue
+    if git apply --check --index "$patch" 2>/dev/null; then
+        compatible=1
         break
     fi
-    sleep 2
+    if git apply --reverse --check "$patch" 2>/dev/null; then
+        echo 'Der geprüfte Bot-Fix ist bereits enthalten.'
+        exit 0
+    fi
 done
-test "$healthy" -eq 1 || die 'PHP-Container wird nach Neustart nicht gesund.'
-test "$(docker inspect -f '{{.State.Running}}' "$scheduler_container")" = true || die 'Scheduler startet nicht.'
-git -c core.hooksPath=/dev/null commit -m "fix(bots): reserve resources for starter fleets" -- "${files[@]}" >/dev/null
+[[ $compatible == 1 ]] || die 'Die installierten Bot-Dateien passen nicht zum geprüften Patch; unverändert gelassen.'
+
+# Lint the candidate via stdin before modifying any deployed PHP source.
+for file in "${files[@]}"; do
+    if [[ -n $app_container ]]; then
+        git show "$target:$file" | docker exec -i "$app_container" php -l
+    else
+        git show "$target:$file" | php -l
+    fi
+done
+backup_root=${OGAMEX_BACKUP_ROOT:-$(dirname "$root")/OGameX-backups}
+backup="$backup_root/bot-fleet-fix-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+(
+    umask 077
+    mkdir -p "$backup"
+    git rev-parse HEAD > "$backup/PREVIOUS_HEAD"
+    git symbolic-ref --quiet --short HEAD > "$backup/PREVIOUS_BRANCH" || true
+    printf '%s\n' "$target" > "$backup/REVIEWED_FIX"
+    cp "$patch" "$backup/fix.patch"
+    for file in "${files[@]}"; do
+        mkdir -p "$backup/$(dirname "$file")"
+        cp -p "$file" "$backup/$file"
+    done
+)
+printf 'Code-Sicherung: %s\n' "$backup"
+git apply --index "$patch"
+applied=1
+refresh_php || die 'PHP-FPM ist nach dem Neuladen nicht gesund.'
+git commit -m 'fix(bots): complete due research and preserve starter fleet savings' -- "${files[@]}" >/dev/null
 committed=1
-printf '\nFERTIG: Bot-Fix aktiv.\nGit-Commit: %s\nBackup: %s\n' "$(git rev-parse --short HEAD)" "$backup"
-printf 'Bei der naechsten Botentscheidung auf "Spart Rohstoffe fuer ..." achten.\n'
+printf '\nFERTIG: Bot-Code aktualisiert. Commit: %s\nSicherung: %s\n' "$(git rev-parse --short HEAD)" "$backup"
+echo 'Der bestehende Bot-Taktgeber lädt den Fix bei seinem nächsten regulären PHP-Aufruf.'
+echo 'Es wurden keine Migrationen, Populationsbefehle oder manuellen Spielstandsänderungen ausgeführt.'
