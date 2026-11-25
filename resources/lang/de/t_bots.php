@@ -32,6 +32,7 @@ return [
     'bots_scheduler_missing' => 'Noch kein regelmäßiger Bot-Takt erkannt. Einmalige Einrichtung auf dem OGameX-Rechner: sh scripts/codex/enable-bots-cron.sh',
     'bots_action_created' => 'Erstellt',
     'bots_action_waiting' => 'Wartet auf Rohstoffe, Voraussetzungen oder einen freien Auftrag',
+    'bots_action_saving' => 'Spart Rohstoffe für den nächsten Schritt zum Flottenbau',
     'bots_action_build' => 'Gebäudeausbau beauftragt',
     'bots_action_research' => 'Forschung beauftragt',
     'bots_action_unit' => 'Schiffsproduktion beauftragt',
