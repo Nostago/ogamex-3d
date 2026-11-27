@@ -237,7 +237,8 @@ class ResearchObjects
 
         // Add custom calculation formulas for max colonies and max expeditions.
         $astrophysics->addCalculation(CalculationType::MAX_COLONIES, function (int $level) {
-            return round($level / 2);
+            // Custom universe rule: three colonies for each original Astrophysics step.
+            return 3 * round($level / 2);
         });
         $astrophysics->addCalculation(CalculationType::MAX_EXPEDITION_SLOTS, function (int $level) {
             return floor(sqrt($level));

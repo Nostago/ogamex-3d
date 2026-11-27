@@ -2,11 +2,34 @@
 
 namespace Tests\Unit;
 
+use OGame\GameObjects\Models\Calculations\CalculationType;
 use OGame\Services\ObjectService;
 use Tests\UnitTestCase;
 
 class ObjectServiceTest extends UnitTestCase
 {
+    public function testAstrophysicsTriplesColonyCapacityWithoutIncreasingExpeditionSlots(): void
+    {
+        foreach ([
+            [0, 1, 0],
+            [1, 4, 1],
+            [2, 4, 1],
+            [3, 7, 1],
+            [4, 7, 2],
+            [5, 10, 2],
+            [6, 10, 2],
+            [7, 13, 2],
+            [8, 13, 2],
+            [9, 16, 3],
+            [10, 16, 3],
+            [25, 40, 5],
+        ] as [$level, $planets, $expeditions]) {
+            $this->createAndSetUserTechModel(['astrophysics' => $level]);
+            $this->assertSame($planets, $this->playerService->getMaxPlanetAmount(), 'Total planets at Astrophysics level '.$level);
+            $this->assertEquals($expeditions, ObjectService::getResearchObjectByMachineName('astrophysics')->performCalculation(CalculationType::MAX_EXPEDITION_SLOTS, $level), 'Base expedition slots at Astrophysics level '.$level);
+        }
+    }
+
     /**
      * Tests maximum building amount returns correct value.
      */

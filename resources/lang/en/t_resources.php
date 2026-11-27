@@ -220,8 +220,9 @@ With each level researched, the flight computer is upgraded to allow an addition
 
     'astrophysics' => [
         'title'            => 'Astrophysics',
-        'description'      => 'With an astrophysics research module, ships can undertake long expeditions. Every second level of this technology will allow you to colonise an extra planet.',
-        'description_long' => 'Further findings in the field of astrophysics allow for the construction of laboratories that can be fitted on more and more ships. This makes long expeditions far into unexplored areas of space possible. In addition these advancements can be used to further colonise the universe. For every two levels of this technology an additional planet can be made usable.',
+        // Custom universe rule: colony capacity is three times the original OGame capacity.
+        'description'      => 'With an astrophysics research module, ships can undertake long expeditions. Level 1 allows three colonies; each subsequent odd level allows three more. The home planet is additional.',
+        'description_long' => 'Further findings in the field of astrophysics allow for the construction of laboratories that can be fitted on more and more ships. This makes long expeditions far into unexplored areas of space possible. In this universe, levels 1 and 2 allow three colonies, levels 3 and 4 allow six, levels 5 and 6 allow nine, and so on. The home planet is additional. The Astrophysics requirements for outer planet positions still apply.',
     ],
 
     'intergalactic_research_network' => [
@@ -280,7 +281,7 @@ To maximize the resources that can be stored in the holds, this ship has little 
         'description'      => 'Vacant planets can be colonised with this ship.',
         'description_long' => 'In the 20th Century, Man decided to go for the stars. First, it was landing on the Moon. After that, a space station was built. Mars was colonized soon afterwards. It was soon determined that our growth depended on colonizing other worlds. Scientists and engineers all over the world gathered together to develop mans greatest achievement ever. The Colony Ship is born.
 
-This ship is used to prepare a newly discovered planet for colonization. Once it arrives at the destination, the ship is instantly transformed into habitual living space to assist in populating and mining the new world. The maximum number of planets is thereby determined by the progress in astrophysics research. Two new levels of Astrotechnology allow for the colonization of one additional planet.',
+This ship is used to prepare a newly discovered planet for colonization. Once it arrives at the destination, the ship is instantly transformed into habitual living space to assist in populating and mining the new world. The maximum number of planets is thereby determined by the progress in astrophysics research. In this universe, Astrophysics level 1 allows three colonies; each subsequent odd level allows three more. The home planet is additional.',
     ],
 
     'recycler' => [

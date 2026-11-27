@@ -149,8 +149,8 @@ return [
     ],
     'astrophysics' => [
         'title' => 'Astrophysik',
-        'description' => 'Ermöglicht Expeditionen und die Besiedlung weiterer Planeten. Die Voraussetzungen werden von der Verwaltung geprüft.',
-        'description_long' => 'Ermöglicht Expeditionen und die Besiedlung weiterer Planeten. Die Voraussetzungen werden von der Verwaltung geprüft.',
+        'description' => 'Ermöglicht Expeditionen und weitere Kolonien. Ab Stufe 1 sind drei Kolonien möglich; jede weitere ungerade Stufe erlaubt drei zusätzliche Kolonien. Der Heimatplanet zählt zusätzlich.',
+        'description_long' => 'Ermöglicht Expeditionen und die Besiedlung weiterer Planeten. Stufe 1 und 2 erlauben drei Kolonien, Stufe 3 und 4 sechs Kolonien, Stufe 5 und 6 neun Kolonien und so weiter. Der Heimatplanet zählt zusätzlich. Für die Besiedlung äußerer Planetenpositionen gelten weiterhin die jeweiligen Astrophysikvoraussetzungen.',
     ],
     'intergalactic_research_network' => [
         'title' => 'Intergalaktisches Forschungsnetzwerk',

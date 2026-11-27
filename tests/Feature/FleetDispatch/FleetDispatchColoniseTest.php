@@ -54,7 +54,7 @@ class FleetDispatchColoniseTest extends FleetDispatchTestCase
         $this->playerSetResearchLevel('energy_technology', 1);
         $this->playerSetResearchLevel('impulse_drive', 3);
         $this->playerSetResearchLevel('espionage_technology', 4);
-        // Astrophysics level 3 gives option for two colonies.
+        // Astrophysics level 3 allows six colonies in this universe.
         $this->playerSetResearchLevel('astrophysics', 3);
         $this->planetAddUnit('small_cargo', 5);
         $this->planetAddUnit('colony_ship', 1);
@@ -147,15 +147,14 @@ class FleetDispatchColoniseTest extends FleetDispatchTestCase
     {
         $this->basicSetup();
 
-        // Astrophysics level 5 should support three colonies.
-        // During tests a new account gets 1 colony already by default. So with astrophysics level 5, 2 more planet
-        // should be able to be created.
+        // Level 5 allows nine colonies plus the home planet. This account
+        // already has one colony, so eight more planets may be established.
         $this->playerSetResearchLevel('astrophysics', 5);
-        $this->planetAddUnit('colony_ship', 5);
+        $this->planetAddUnit('colony_ship', 11);
 
         $created_planets = [];
-        // Send 5 colony ships to empty planets with colonization mission. Only 2 should be created.
-        for ($i = 0; $i < 5; $i++) {
+        // Eight arrivals must succeed; the next three must respect the new limit.
+        for ($i = 0; $i < 11; $i++) {
             // Send fleet to an empty planet.
             $unitCollection = new UnitCollection();
             $unitCollection->addUnit(ObjectService::getUnitObjectByMachineName('colony_ship'), 1);
@@ -177,8 +176,10 @@ class FleetDispatchColoniseTest extends FleetDispatchTestCase
             }
         }
 
-        // Assert that only two planets have been successfully created.
-        $this->assertCount(2, $created_planets, 'Exactly two planets should have been created with astrophysics level 5. Check astrophysics logic.');
+        $this->assertCount(8, $created_planets, 'Level 5 must allow eight additional colonies for an account that already has one.');
+        $player = $this->currentPlayer();
+        $player->load($player->getId());
+        $this->assertSame(10, $player->planets->planetCount());
 
         // Check that 3 messages have been sent to the player about failed colonization attempts.
         $this->assertMessageReceivedAndContainsDatabase($this->currentPlayer(), [
@@ -196,9 +197,15 @@ class FleetDispatchColoniseTest extends FleetDispatchTestCase
         $this->basicSetup();
         $this->planetAddResources(new Resources(12300, 24500, 12300, 0));
 
-        // Astrophysics level 2 should support only one colony. Test user has 1 colony already.
-        // So with these presets it should not be possible to create a new planet.
+        // Fill level 2 capacity: three colonies plus the home planet.
         $this->playerSetResearchLevel('astrophysics', 2);
+        $player = $this->currentPlayer();
+        $planetServiceFactory = resolve(PlanetServiceFactory::class);
+        for ($i = 0; $i < 2; $i++) {
+            $planetServiceFactory->createAdditionalPlanetForPlayer($player, $this->getNearbyEmptyCoordinate());
+        }
+        $player->load($player->getId());
+        $this->assertSame(4, $player->planets->planetCount());
         $this->planetAddUnit('colony_ship', 5);
 
         // Send fleet to an empty planet.
